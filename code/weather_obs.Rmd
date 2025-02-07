@@ -1,0 +1,96 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(readr)
+library(ggplot2)
+library (leaflet)
+```
+
+## raw data
+
+
+### weather
+```{r}
+dir.raw <- 'G:/Shared drives/Wellcome Trust Project Data/0_source_data/'
+
+f <- paste0(dir.raw, 'uk-hourly-weather-obs/', 'midas-open_uk-hourly-weather-obs_dv-202407_station-metadata.csv')
+d.header <- read_csv(f, n_max = 47, show_col_types = F)
+df <- read_csv(f, skip = 48, show_col_types = F)
+
+names(df)
+
+
+## save data for app
+f <- './data/weather_station_metadata.rds'
+saveRDS(df, file = f)
+
+# df %>%
+#   ggplot() +
+#   geom_point(aes(x = station_longitude, y = station_latitude)) +
+#   theme_bw()
+```
+
+
+### EMR
+```{r}
+
+f <- paste0(dir.raw, 'Geolocation Data/', 'EMR address.csv')
+df.emr <- read_csv(f, show_col_types = F)
+
+names(df.emr)
+
+
+df.emr.geo <- df.emr %>%
+  select(town_name, adminstrative_area, latitude, longitude) %>%
+  distinct(latitude, longitude, .keep_all = T) %>%
+  slice_sample(prop = 0.01) %>%
+  as.data.frame()
+
+
+## save data for app
+f <- './data/EMR_address_sample.rds'
+saveRDS(df.emr.geo, file = f)
+```
+
+
+
+### Plot
+```{r plot}
+
+leaflet() %>%
+  addTiles() %>%
+  addProviderTiles(providers$OpenStreetMap) %>%
+  # addPolygons(data = home_tract_ply, color = "green", popup = ~GEOID) %>%
+  addCircleMarkers(
+    data = df, 
+    lng = ~station_longitude, lat = ~station_latitude,
+    # radius = ~ifelse(populous == "Largest", 15, 10),
+    color = "red",
+    # color = ~pal(populous), 
+    popup = ~paste(
+      "<strong> station_name: </strong>", station_name, "<br>",
+      "<strong> station_elevation: </strong>", station_elevation, "<br>",
+      "<strong> first_year: </strong>", first_year, "<br>",
+      "<strong> last_year: </strong>", last_year, "<br>"
+      ),
+    stroke = FALSE, fillOpacity = 0.5
+  ) %>%
+  addCircleMarkers(
+    data = df.emr.geo,
+    lng = ~longitude, lat = ~latitude,
+    popup = ~adminstrative_area,
+    color = "blue", 
+    radius = 2,
+    stroke = FALSE, fillOpacity = 0.5)  %>%
+  setView(-0.119, 51.525, zoom = 10) 
+
+```
+
