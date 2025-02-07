@@ -1,6 +1,7 @@
 # app.R
 library(shiny)
 library(leaflet)
+library(markdown)
 library(readr)
 library(dplyr)
 library(ggplot2)  # Loaded in case you want to explore the ggplot output separately
@@ -100,7 +101,7 @@ server <- function(input, output, session) {
         radius = 3,
         stroke = FALSE, fillOpacity = 0.5
       ) %>%
-      setView(lng = -0.119, lat = 51.525, zoom = 10)
+      setView(lng = -0.119, lat = 51.4, zoom = 11)
   })
   
   # Optional: Use an observer with leafletProxy to update markers without re-rendering the whole map.
