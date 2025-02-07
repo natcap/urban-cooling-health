@@ -14,15 +14,14 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   # Set the raw data directory
-  dir.raw <- 'G:/Shared drives/Wellcome Trust Project Data/0_source_data/'
+  dir.raw <- './data/'
   
   ## Weather Data
-  weather_file <- paste0(dir.raw, 'uk-hourly-weather-obs/', 'midas-open_uk-hourly-weather-obs_dv-202407_station-metadata.csv')
+  weather_file <- paste0(dir.raw, 'weather_station_metadata.rds')
   
-  # Read the header (if needed)
-  d.header <- read_csv(weather_file, n_max = 47, show_col_types = FALSE)
+
   # Read the actual data (skipping the header)
-  df <- read_csv(weather_file, skip = 48, show_col_types = FALSE)
+  df <- readRDS(weather_file)
   
   # (Optional) Create a ggplot of station locations
   # p <- ggplot(df, aes(x = station_longitude, y = station_latitude)) +
@@ -31,14 +30,9 @@ server <- function(input, output, session) {
   # print(p)
   
   ## EMR Data
-  emr_file <- paste0(dir.raw, 'Geolocation Data/', 'EMR address.csv')
-  df.emr <- read_csv(emr_file, show_col_types = FALSE)
-  
-  df.emr.geo <- df.emr %>%
-    select(town_name, adminstrative_area, latitude, longitude) %>%
-    distinct(latitude, longitude, .keep_all = TRUE) %>%
-    slice_sample(prop = 0.01) %>%
-    as.data.frame()
+  emr_file <- paste0(dir.raw, 'EMR_address_sample.rds')
+
+  df.emr.geo <- readRDS(emr_file)
   
   ## Create the leaflet map
   output$map <- renderLeaflet({
