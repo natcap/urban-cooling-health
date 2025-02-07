@@ -33,7 +33,11 @@ last_year_range  <- range(df$last_year, na.rm = TRUE)
   
 #--- UI ---
 ui <- fluidPage(
-  titlePanel("Weather and EMR Map with Filters"),
+  titlePanel("Urban Nature, Heatwave, and Health"),
+  
+  # Place the project description immediately after the title panel
+  includeMarkdown("description.md"),
+  
   sidebarLayout(
     sidebarPanel(
       sliderInput("first_year_filter", "Filter by First Year",
@@ -48,6 +52,8 @@ ui <- fluidPage(
                   step = 1)
     ),
     mainPanel(
+      # # Include Markdown content for the project description
+      # includeMarkdown("description.md"),
       leafletOutput("map", height = "900px")
     )
   )
@@ -91,7 +97,7 @@ server <- function(input, output, session) {
         lat = ~latitude,
         popup = ~adminstrative_area,
         color = "blue",
-        radius = 2,
+        radius = 3,
         stroke = FALSE, fillOpacity = 0.5
       ) %>%
       setView(lng = -0.119, lat = 51.525, zoom = 10)
