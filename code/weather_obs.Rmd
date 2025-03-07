@@ -18,7 +18,9 @@ library (leaflet)
 
 
 ### weather
-```{r}
+
+```{r - weather stations}
+
 dir.raw <- 'G:/Shared drives/Wellcome Trust Project Data/0_source_data/'
 
 f <- paste0(dir.raw, 'uk-hourly-weather-obs/', 'midas-open_uk-hourly-weather-obs_dv-202407_station-metadata.csv')
@@ -36,6 +38,88 @@ saveRDS(df, file = f)
 #   ggplot() +
 #   geom_point(aes(x = station_longitude, y = station_latitude)) +
 #   theme_bw()
+```
+
+
+`src_id`    	unique source identifier or station site number
+`rec_st_ind`	state indicator for the record, state indicator for the current stage in the life of the record (see MIDAS documentation)
+
+
+```{r - selected station}
+library(lubridate)
+library(scales)
+
+df.i <- df %>%
+  filter(station_name == 'KEW GARDENS')
+
+src_id <- df.i$src_id
+
+
+f <- paste0(dir.raw, 'uk-hourly-weather-obs/00723_kew-gardens/qc-version-1/',
+            'midas-open_uk-hourly-weather-obs_dv-202007_greater-london_00723_kew-gardens_qcv-1_2019.csv')
+dat <- read_csv(f, skip = 280, show_col_types = F) %>%
+  mutate(date_time = parse_date_time(ob_time, "ymd HMS", tz="GMT")) %>%
+  select(1, date_time, everything())
+
+
+str(dat)
+
+dat %>%
+  ggplot(aes(x = date_time, air_temperature)) +
+  # geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
+  scale_x_datetime(date_breaks = '1 month', date_labels = "%b") +
+  theme_minimal() +
+  xlab('Date')
+```
+
+
+```{r - temp summer}
+
+dat_stat <- dat %>%
+  select(date_time:rec_st_ind, air_temperature) %>%
+  mutate(year = year(date_time), 
+         month = month(date_time),
+         hour = hour(date_time)) %>%
+  mutate(
+    day_night = case_when(
+      hour >= 8 & hour < 20 ~ "day",
+      TRUE ~ "night"), 
+    season = case_when(
+      month %in%c (1, 2, 3) ~ "winter",
+      month %in%c (4, 5, 6) ~ "spring",
+      month %in%c (7, 8, 9) ~ "summer",
+      TRUE ~ "fall"), 
+      ) %>%
+  group_by(across(c(-air_temperature, -date_time, -hour))) %>%
+  summarise_at(c("air_temperature"), mean, na.rm = TRUE) %>%
+  ## add year and montj as date 
+  filter(!is.na(id)) %>%
+  mutate(date = as.Date(paste(year, month, '01', sep = '-'))) %>%
+  as.data.frame()
+
+
+## save data
+f <- paste0('./data/', src_id, '_', 'air_temperature', '_stat.RDS'); f
+saveRDS(dat_stat, f)
+
+## plot by month
+dat_stat %>%
+  ggplot(aes(x = date, air_temperature, color = day_night, label = round(air_temperature, digits = 1))) +
+  geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
+  geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5) + 
+  theme_minimal() +
+  xlab('Date')
+
+
+dat_summer <- dat_stat %>%
+  filter(season == 'summer')
+
+dat_summer %>%
+  group_by(day_night) %>%
+  summarise_at(c("air_temperature"), mean, na.rm = TRUE)
+
 ```
 
 
