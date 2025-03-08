@@ -71,8 +71,8 @@ ui <- fluidPage(
   ),
   
   fluidRow(
-    column(6, leafletOutput("map", height = "700px")),
-    column(6, plotlyOutput("stat_plot", height = "700px"))
+    column(6, leafletOutput("map", height = "600px")),
+    column(6, plotlyOutput("stat_plot", height = "600px"))
   )
 )
   
