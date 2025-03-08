@@ -124,7 +124,7 @@ str(dat_stat)
 
 
 ## save data
-f <- paste0('./data/', src_id_i, '_', 'air_temperature', '_stat.RDS'); f
+f <- paste0('./data/', 'london_weather_obs_stat.RDS'); f
 saveRDS(dat_stat, f)
 ```
 
