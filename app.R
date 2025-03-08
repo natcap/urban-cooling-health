@@ -10,11 +10,10 @@ library(ggplot2)  # Loaded in case you want to explore the ggplot output separat
 # Set the raw data directory
 dir.raw <- './data/'
 
-## Weather Data
+## Weather Data --------------------------------------------------------------------------
+
+### 1.1 station info ---------
 weather_file <- paste0(dir.raw, 'weather_station_metadata.rds')
-
-
-# Read the actual data (skipping the header)
 df <- readRDS(weather_file)
 
 # (Optional) Create a ggplot of station locations
@@ -23,7 +22,13 @@ df <- readRDS(weather_file)
 #   theme_bw()
 # print(p)
 
-## EMR Data
+
+### 1.2 temperature data -----
+dat_stat <- readRDS(file = paste0(dir.raw, '00723_air_temperature_stat.RDS'))
+
+
+
+## EMR Data ------------------------------------------------------------------------------
 emr_file <- paste0(dir.raw, 'EMR_address_sample.rds')
 
 df.emr.geo <- readRDS(emr_file)
@@ -32,7 +37,15 @@ df.emr.geo <- readRDS(emr_file)
 first_year_range <- range(df$first_year, na.rm = TRUE)
 last_year_range  <- range(df$last_year, na.rm = TRUE)
   
-#--- UI ---
+
+
+## trigger the filtering and update the plot ---------------------------------------------
+# Reactive values to store selected src_id
+selected_src_id <- reactiveVal(NULL)
+
+
+
+#--- UI --- ------------------------------------------------------------------------------
 ui <- fluidPage(
   titlePanel("Urban Nature, Heatwave, and Health"),
   
@@ -42,23 +55,25 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       sliderInput("first_year_filter", "Filter by First Year",
-                  min = first_year_range[1],
-                  max = first_year_range[2],
-                  value = first_year_range,
+                  min = min(df$first_year, na.rm = TRUE),
+                  max = max(df$first_year, na.rm = TRUE),
+                  value = range(df$first_year, na.rm = TRUE),
                   step = 1),
       sliderInput("last_year_filter", "Filter by Last Year",
-                  min = last_year_range[1],
-                  max = last_year_range[2],
-                  value = last_year_range,
+                  min = min(df$last_year, na.rm = TRUE),
+                  max = max(df$last_year, na.rm = TRUE),
+                  value = range(df$last_year, na.rm = TRUE),
                   step = 1)
     ),
     mainPanel(
-      # # Include Markdown content for the project description
-      # includeMarkdown("description.md"),
-      leafletOutput("map", height = "900px")
+      fluidRow(
+        column(12, leafletOutput("map", height = "600px")),
+        column(12, plotOutput("stat_plot", height = "600px"))
+      )
     )
   )
 )
+  
 
 #--- Server ---
 server <- function(input, output, session) {
@@ -89,6 +104,7 @@ server <- function(input, output, session) {
           "<strong>First Year:</strong>", first_year, "<br>",
           "<strong>Last Year:</strong>", last_year, "<br>"
         ),
+        layerId = ~src_id,
         stroke = FALSE, fillOpacity = 0.5
       ) %>%
       # Add markers for EMR data
@@ -121,6 +137,44 @@ server <- function(input, output, session) {
   #       stroke = FALSE, fillOpacity = 0.5
   #     )
   # })
+  
+  # Update src_id when a point is clicked ------------------------------------------------
+  observeEvent(input$map_marker_click, {
+    selected_src_id(input$map_marker_click$id)
+  })
+  
+  # Filter data based on selected src_id
+  filtered_data <- reactive({
+    req(selected_src_id())  # Ensure src_id is selected
+    dat_stat %>%
+      filter(src_id == selected_src_id())
+  })
+  
+  # # Plot static data by month
+  # output$stat_plot <- renderPlot({
+  #   req(filtered_data())
+  #   ggplot(filtered_data(), aes(x = date, y = air_temperature, color = day_night, label = round(air_temperature, 1))) +
+  #     geom_point(alpha = 0.5) +
+  #     geom_line(alpha = 0.5) +
+  #     geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5) +
+  #     theme_minimal() +
+  #     xlab('Date')
+  # })
+  
+  
+  # Plot interactive data by month -- 
+  output$stat_plot <- renderPlotly({
+    req(filtered_data())
+    p <- ggplot(filtered_data(), aes(x = date, y = air_temperature, color = day_night, text = round(air_temperature, 1))) +
+      geom_point(alpha = 0.5) +
+      geom_line(alpha = 0.5) +
+      theme_minimal() +
+      xlab('Date')
+    
+    ggplotly(p, tooltip = "text")  # Convert ggplot to interactive plotly
+  })
+  
+  
 }
 
 # Run the application 
