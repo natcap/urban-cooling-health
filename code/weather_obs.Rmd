@@ -45,29 +45,47 @@ saveRDS(df, file = f)
 `rec_st_ind`	state indicator for the record, state indicator for the current stage in the life of the record (see MIDAS documentation)
 
 
-```{r - selected station}
+```{r - bulk load data}
+
+year <- 2019
+
+getwd()
+fs <- list.files(path = paste0(dir.raw, 'uk-hourly-weather-obs/dataset-version-202407/'), 
+           pattern = paste0('*_', year, '.csv$'), full.names = T)
+fs
+
+library(purrr)
+
+# Read all RDS files and combine them into one dataframe
+dat <- map_dfr(fs, ~ read_csv(.x, skip = 281, col_types = cols(.default = "c")))
+
+unique(dat$src_id)
+unique(dat$met_domain_name)
+
+```
+
+```{r - selected data}
+
 library(lubridate)
 library(scales)
-
-df.i <- df %>%
-  filter(station_name == 'KEW GARDENS')
-
-src_id <- df.i$src_id
+library(stringr)
 
 
-f <- paste0(dir.raw, 'uk-hourly-weather-obs/00723_kew-gardens/qc-version-1/',
-            'midas-open_uk-hourly-weather-obs_dv-202007_greater-london_00723_kew-gardens_qcv-1_2019.csv')
-dat <- read_csv(f, skip = 280, show_col_types = F) %>%
-  mutate(date_time = parse_date_time(ob_time, "ymd HMS", tz="GMT")) %>%
-  select(1, date_time, everything())
+dat_ <- dat %>%
+  filter(!is.na(id)) %>%
+  mutate(date_time = parse_date_time(ob_time, "ymd HMS", tz="GMT"),
+         src_id = str_pad(src_id, 5, pad = "0"),
+         air_temperature = as.numeric(air_temperature)) %>%
+  select(1, date_time, everything()) %>%
+  as.data.frame()
 
+# str(dat_)
 
-str(dat)
-
-dat %>%
-  ggplot(aes(x = date_time, air_temperature)) +
+dat_ %>%
+  ggplot(aes(x = date_time, air_temperature, color = src_id)) +
   # geom_point(alpha = 0.5) +
   geom_line(alpha = 0.5) +
+  # facet_wrap(~src_id) +
   scale_x_datetime(date_breaks = '1 month', date_labels = "%b") +
   theme_minimal() +
   xlab('Date')
@@ -76,7 +94,11 @@ dat %>%
 
 ```{r - temp summer}
 
-dat_stat <- dat %>%
+## test 
+# station_name == 'KEW GARDENS'
+src_id_i <- "00723";
+
+dat_stat <- dat_ %>%
   select(date_time:rec_st_ind, air_temperature) %>%
   mutate(year = year(date_time), 
          month = month(date_time),
@@ -94,21 +116,29 @@ dat_stat <- dat %>%
   group_by(across(c(-air_temperature, -date_time, -hour))) %>%
   summarise_at(c("air_temperature"), mean, na.rm = TRUE) %>%
   ## add year and montj as date 
-  filter(!is.na(id)) %>%
+  
   mutate(date = as.Date(paste(year, month, '01', sep = '-'))) %>%
   as.data.frame()
 
+str(dat_stat)
+
 
 ## save data
-f <- paste0('./data/', src_id, '_', 'air_temperature', '_stat.RDS'); f
+f <- paste0('./data/', src_id_i, '_', 'air_temperature', '_stat.RDS'); f
 saveRDS(dat_stat, f)
+```
+
+
+
+```{r - temp summer - plot}
 
 ## plot by month
 dat_stat %>%
+  filter(src_id %in% c(src_id_i)) %>%
   ggplot(aes(x = date, air_temperature, color = day_night, label = round(air_temperature, digits = 1))) +
   geom_point(alpha = 0.5) +
   geom_line(alpha = 0.5) +
-  geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5) + 
+  geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5, show.legend = F) + 
   theme_minimal() +
   xlab('Date')
 
@@ -121,6 +151,10 @@ dat_summer %>%
   summarise_at(c("air_temperature"), mean, na.rm = TRUE)
 
 ```
+
+
+
+
 
 
 ### EMR
