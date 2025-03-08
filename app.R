@@ -5,6 +5,7 @@ library(markdown)
 library(readr)
 library(dplyr)
 library(ggplot2)  # Loaded in case you want to explore the ggplot output separately
+library(plotly) 
 
 
 # Set the raw data directory
@@ -24,7 +25,7 @@ df <- readRDS(weather_file)
 
 
 ### 1.2 temperature data -----
-dat_stat <- readRDS(file = paste0(dir.raw, '00723_air_temperature_stat.RDS'))
+dat_stat <- readRDS(file = paste0(dir.raw, 'london_weather_obs_stat.RDS'))
 
 
 
@@ -67,8 +68,9 @@ ui <- fluidPage(
   ),
   mainPanel(
     fluidRow(
-      column(12, leafletOutput("map", height = "900px")),
-      column(12, plotOutput("stat_plot", height = "900px"))
+      column(6, leafletOutput("map", height = "900px")),
+      # column(6, plotOutput("stat_plot", height = "900px")) ## for static plot
+      column(6, plotlyOutput("stat_plot", height = "900px")) ## for interactive plot
     )
   )
 )
@@ -91,6 +93,7 @@ server <- function(input, output, session) {
     leaflet() %>%
       addTiles() %>%
       addProviderTiles(providers$OpenStreetMap) %>%
+      
       # Add markers for weather stations based on filtered data
       addCircleMarkers(
         data = filtered_weather(),
@@ -106,6 +109,7 @@ server <- function(input, output, session) {
         layerId = ~src_id,
         stroke = FALSE, fillOpacity = 0.5
       ) %>%
+      
       # Add markers for EMR data
       addCircleMarkers(
         data = df.emr.geo,
@@ -149,27 +153,31 @@ server <- function(input, output, session) {
       filter(src_id == selected_src_id())
   })
   
-  # # Plot static data by month
+  
+  # # 3.1. Plot static data by month
   # output$stat_plot <- renderPlot({
   #   req(filtered_data())
   #   ggplot(filtered_data(), aes(x = date, y = air_temperature, color = day_night, label = round(air_temperature, 1))) +
   #     geom_point(alpha = 0.5) +
   #     geom_line(alpha = 0.5) +
-  #     geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5) +
+  #     geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5, show.legend = F) +
   #     theme_minimal() +
   #     xlab('Date')
   # })
+  # 
   
-  
-  # Plot interactive data by month -- 
+  # 3.2. Plot interactive data by month --
   output$stat_plot <- renderPlotly({
     req(filtered_data())
-    p <- ggplot(filtered_data(), aes(x = date, y = air_temperature, color = day_night, text = round(air_temperature, 1))) +
+    df_plot <- filtered_data()  # Assign data for debugging
+    if (nrow(df_plot) == 0) {
+      return(NULL)  # Avoid plotting if no data
+    }
+    p <- ggplot(df_plot, aes(x = date, y = air_temperature, color = day_night, text = round(air_temperature, 1))) +
       geom_point(alpha = 0.5) +
       geom_line(alpha = 0.5) +
       theme_minimal() +
       xlab('Date')
-    
     ggplotly(p, tooltip = "text")  # Convert ggplot to interactive plotly
   })
   
