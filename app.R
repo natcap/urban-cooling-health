@@ -53,25 +53,26 @@ ui <- fluidPage(
   # Place the project description immediately after the title panel
   includeMarkdown("description.md"),
   
-
-  sidebarPanel(
-    sliderInput("first_year_filter", "Filter by First Year",
-                min = first_year_range[1],
-                max = first_year_range[2],
-                value = first_year_range,
-                step = 1),
-    sliderInput("last_year_filter", "Filter by Last Year",
-                min = last_year_range[1],
-                max = last_year_range[2],
-                value = last_year_range,
-                step = 1)
-  ),
-  mainPanel(
-    fluidRow(
-      column(6, leafletOutput("map", height = "900px")),
-      # column(6, plotOutput("stat_plot", height = "900px")) ## for static plot
-      column(6, plotlyOutput("stat_plot", height = "900px")) ## for interactive plot
+  fluidRow(
+    column(12,
+           sidebarPanel(
+             sliderInput("first_year_filter", "Filter by First Year",
+                         min = min(df$first_year, na.rm = TRUE),
+                         max = max(df$first_year, na.rm = TRUE),
+                         value = range(df$first_year, na.rm = TRUE),
+                         step = 1),
+             sliderInput("last_year_filter", "Filter by Last Year",
+                         min = min(df$last_year, na.rm = TRUE),
+                         max = max(df$last_year, na.rm = TRUE),
+                         value = range(df$last_year, na.rm = TRUE),
+                         step = 1)
+           )
     )
+  ),
+  
+  fluidRow(
+    column(6, leafletOutput("map", height = "700px")),
+    column(6, plotlyOutput("stat_plot", height = "700px"))
   )
 )
   
