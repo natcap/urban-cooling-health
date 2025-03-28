@@ -175,13 +175,14 @@ server <- function(input, output, session) {
   # 3.2. Plot interactive data by month --
   output$stat_plot <- renderPlotly({
     req(filtered_data())
-    df_plot <- filtered_data() %>% # Assign data for debugging
+    df_plot <- filtered_data() %>% 
+      arrange(date) %>% # Assign data for debugging
       dplyr::mutate(tooltip = paste0("Date: ", format(date, "%Y-%m"), "\nTemp: ", round(air_temperature, 1), "°C")) 
     
     # Avoid plotting if no data
     if (nrow(df_plot) == 0) {return(NULL)}
     
-    p <- ggplot(df_plot, aes(x = date, y = air_temperature, color = day_night, text = tooltip)) +
+    p <- ggplot(df_plot, aes(x = date, y = air_temperature, group = day_night, color = day_night, text = tooltip)) +
       geom_point(alpha = 0.5) +
       geom_line(alpha = 0.5) +
       theme_minimal() +
@@ -192,11 +193,12 @@ server <- function(input, output, session) {
   output$humidity_plot <- renderPlotly({
     req(filtered_data())
     df_plot <- filtered_data() %>%
-     dplyr::mutate(tooltip = paste0("Date: ", format(date, "%Y-%m"), "\nRH: ", round(rltv_hum, 1), "%"))
+      arrange(date) %>%
+      dplyr::mutate(tooltip = paste0("Date: ", format(date, "%Y-%m"), "\nRH: ", round(rltv_hum, 1), "%"))
     
     if (nrow(df_plot) == 0) return(NULL)
     
-    p <- ggplot(df_plot, aes(x = date, y = rltv_hum, color = day_night, text = tooltip)) +
+    p <- ggplot(df_plot, aes(x = date, y = rltv_hum, group = day_night, color = day_night, text = tooltip)) +
       geom_point(alpha = 0.5) +
       geom_line(alpha = 0.5) +
       theme_minimal() +
