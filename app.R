@@ -72,7 +72,12 @@ ui <- fluidPage(
   
   fluidRow(
     column(6, leafletOutput("map", height = "600px")),
-    column(6, plotlyOutput("stat_plot", height = "600px"))
+    column(6, 
+           tabsetPanel(
+             tabPanel("Air Temperature", plotlyOutput("stat_plot", height = "600px")),
+             tabPanel("Relative Humidity", plotlyOutput("humidity_plot", height = "600px"))
+           )
+    )
   )
 )
   
@@ -170,16 +175,35 @@ server <- function(input, output, session) {
   # 3.2. Plot interactive data by month --
   output$stat_plot <- renderPlotly({
     req(filtered_data())
-    df_plot <- filtered_data()  # Assign data for debugging
-    if (nrow(df_plot) == 0) {
-      return(NULL)  # Avoid plotting if no data
-    }
-    p <- ggplot(df_plot, aes(x = date, y = air_temperature, color = day_night, text = round(air_temperature, 1))) +
+    df_plot <- filtered_data() %>% # Assign data for debugging
+      dplyr::mutate(tooltip = paste0("Date: ", format(date, "%Y-%m"), "\nTemp: ", round(air_temperature, 1), "°C")) 
+    
+    # Avoid plotting if no data
+    if (nrow(df_plot) == 0) {return(NULL)}
+    
+    p <- ggplot(df_plot, aes(x = date, y = air_temperature, color = day_night, text = tooltip)) +
       geom_point(alpha = 0.5) +
       geom_line(alpha = 0.5) +
       theme_minimal() +
       xlab('Date')
     ggplotly(p, tooltip = "text")  # Convert ggplot to interactive plotly
+  })
+  
+  output$humidity_plot <- renderPlotly({
+    req(filtered_data())
+    df_plot <- filtered_data() %>%
+     dplyr::mutate(tooltip = paste0("Date: ", format(date, "%Y-%m"), "\nRH: ", round(rltv_hum, 1), "%"))
+    
+    if (nrow(df_plot) == 0) return(NULL)
+    
+    p <- ggplot(df_plot, aes(x = date, y = rltv_hum, color = day_night, text = tooltip)) +
+      geom_point(alpha = 0.5) +
+      geom_line(alpha = 0.5) +
+      theme_minimal() +
+      xlab('Date') +
+      ylab('Relative humidity (%)')
+    
+    ggplotly(p, tooltip = "text")
   })
   
   
