@@ -3,6 +3,7 @@ library(shiny)
 library(leaflet)
 library(markdown)
 library(readr)
+library(sf)
 library(dplyr)
 library(ggplot2)  # Loaded in case you want to explore the ggplot output separately
 library(plotly) 
@@ -33,6 +34,10 @@ dat_stat <- readRDS(file = paste0(dir.raw, 'london_weather_obs_stat.RDS'))
 emr_file <- paste0(dir.raw, 'EMR_address_sample.rds')
 
 df.emr.geo <- readRDS(emr_file)
+
+# Shapefile boundary (must be an sf object)
+boundary <- st_read(paste0(dir.raw, 'London_Ward_aoi.shp')) %>%
+  st_transform(crs = 4326)
 
 # Compute ranges for first_year and last_year from the weather data
 first_year_range <- range(df$first_year, na.rm = TRUE)
@@ -99,7 +104,7 @@ server <- function(input, output, session) {
     leaflet() %>%
       addTiles() %>%
       addProviderTiles(providers$OpenStreetMap) %>%
-      
+      addPolygons(data = boundary, fill = F, weight = 5, color = "black") %>%
       # Add markers for weather stations based on filtered data
       addCircleMarkers(
         data = filtered_weather(),
