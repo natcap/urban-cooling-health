@@ -116,14 +116,11 @@ dat_ %>%
 
 ```{r - monthly data}
 
-## test 
-# station_name == 'KEW GARDENS'
-src_id_i <- "00723";
-
 dat_stat <- dat_ %>%
   select(date_time:rec_st_ind, air_temperature, rltv_hum) %>%
   mutate(year = year(date_time), 
          month = month(date_time),
+         week = week(date_time),
          hour = hour(date_time)) %>%
   mutate(
     day_night = case_when(
@@ -152,7 +149,12 @@ saveRDS(dat_stat, f)
 
 
 
-```{r - monthly data - plot}
+```{r - monthly data - plot T}
+
+## test 
+# station_name == 'KEW GARDENS'
+src_id_i <- "00723";
+
 
 ## plot by month
 dat_stat %>%
@@ -160,7 +162,7 @@ dat_stat %>%
   ggplot(aes(x = date, air_temperature, color = day_night, label = round(air_temperature, digits = 1))) +
   geom_point(alpha = 0.5) +
   geom_line(alpha = 0.5) +
-  geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5, show.legend = F) + 
+  # geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5, show.legend = F) + 
   theme_minimal() +
   xlab('Date')
 
@@ -202,7 +204,6 @@ saveRDS(df.emr.geo, file = f)
 
 
 
-### Plot
 ```{r plot}
 
 leaflet() %>%
