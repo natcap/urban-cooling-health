@@ -5,19 +5,22 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+# Set up
+
+```{r include=FALSE}
 
 library(dplyr)
 library(readr)
 library(ggplot2)
 library (leaflet)
+
 ```
 
-## raw data
+# Raw data
 
 
-### weather
+## Climate variables
 
 ```{r - weather stations}
 
@@ -48,15 +51,32 @@ saveRDS(df, file = f)
 
 
 
-```{r - bulk load data}
-
+```{r - variables}
 years <- c(2019:2023)
 
 getwd()
 fs <- list.files(path = paste0(dir.raw, 'uk-hourly-weather-obs/dataset-version-202407/'), 
                  pattern = paste0('_(', paste(years, collapse = '|'), ')\\.csv$'), full.names = T)
-fs
+basename(fs)
 
+
+
+## Use one csv file to see what variables are included 
+f0 <- tail(fs, n=1); basename(f0)
+
+d0 <- read_csv(f0, show_col_types = F, n_max = 281) %>%
+  filter(Conventions %in% c('long_name')) %>%
+  filter(!grepl(sprintf('(%s)$', 
+                paste0(c('_q', '_j'), collapse = '|')), G))
+
+
+# d1 <- read_csv(f0, show_col_types = F, skip = 281)
+# names(d1)
+```
+
+
+
+```{r - bulk load data}
 library(purrr)
 
 # Read all RDS files and combine them into one dataframe
@@ -67,6 +87,9 @@ unique(dat$met_domain_name)
 
 ```
 
+
+
+## Climate Data filtering 
 
 ```{r - selected data - air_temperature}
 
@@ -181,7 +204,8 @@ dat_summer %>%
 
 
 
-### EMR
+## EMR location data
+
 ```{r}
 
 f <- paste0(dir.raw, 'Geolocation Data/', 'EMR address.csv')
