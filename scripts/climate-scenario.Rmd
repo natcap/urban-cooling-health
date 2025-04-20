@@ -88,6 +88,8 @@ If the exposure to future climate is greater than the current safety margin for 
 
 f <- paste0(dir, "5_results_complete.csv")
 
+year_fut <- 2050
+
 spe <- readr::read_csv(f, show_col_types = F) 
 names(spe)
 
@@ -116,14 +118,14 @@ spe_at_risk <- spe %>%
   gather(key = 'var', value = 'value', 5:ncol(.)) %>%
   mutate(year = str_extract(var, "20(50|70)"),     # extract "2030", "2040", or "2050"
          year = as.numeric(year))  %>%
-  filter(year == 2050)
+  filter(year == year_fut)
 
 
 unique(spe_at_risk$var)
 names(spe_at_risk)
 
 spe_at_risk_unique <- spe_at_risk %>%
-  distinct(country, city, species, family)
+  distinct(country, city, species, family, year)
 
 ```
 
@@ -259,8 +261,8 @@ tree_com2_matched <- tree_com2 %>%
 ## final data
 tree_risk_london <- rbind(tree_com1_matched, tree_com2_matched)
 
-f <- paste0("./data/", "GiGL_GLATrees_Pre2023_at_risk.rds")
-f <- paste0("./data/", "GiGL_GLATrees_Pre2023_at_risk.csv")
+f <- paste0("./data/", "GiGL_GLATrees_Pre2023_at_risk_", year_fut, ".rds")
+f <- paste0("./data/", "GiGL_GLATrees_Pre2023_at_risk_", year_fut, ".csv")
 
 readr::write_csv(x = tree_risk_london, f)
 ```
