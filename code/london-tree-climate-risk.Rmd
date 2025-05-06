@@ -212,8 +212,8 @@ tree_com2_matched <- tree_com2 %>%
 ## final data
 tree_risk_london <- rbind(tree_com1_matched, tree_com2_matched)
 
-f <- paste0("./data/", "GiGL_GLATrees_Pre2023_at_risk_", year_fut, ".rds")
-f <- paste0("./data/", "GiGL_GLATrees_Pre2023_at_risk_", year_fut, ".csv")
+f <- paste0("./data/", "tree_list_GiGL_Pre2023_", year_fut, ".rds")
+f <- paste0("./data/", "tree_list_GiGL_Pre2023_", year_fut, ".csv")
 
 readr::write_csv(x = tree_risk_london, f)
 
