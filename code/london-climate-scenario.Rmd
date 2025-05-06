@@ -1,0 +1,148 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+
+---
+
+# Set up
+
+## Packages 
+
+```{r include=FALSE}
+
+## To clear your environment
+remove(list = ls())
+
+
+## Packages
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(sf)
+
+library(ggplot2)
+```
+
+
+## Set Working Directory
+
+> 🔧 **Tip:** Before running this R Markdown file, set the **Knit Directory** to ensure file paths work correctly.
+
+1.  Locate the **Knit** button at the top-left of this panel.
+2.  Click the dropdown arrow next to it.
+3.  Select **"Knit Directory" → "Project Directory"**.
+
+This ensures that all file paths are relative to your project folder.
+
+
+
+# Load data
+
+cur current/baseline climate 
+fut future climate (2050 or 2070) 
+MAT Mean annual temperature 
+MTWM Maximum temperature of the *warmest* month
+MTCM Minimum temperature of the *coldest* month 
+AP Annual precipitation
+PDQ Precipitation of the driest quarter
+
+
+## Global data
+
+### temp
+
+```{r}
+
+dir <- "G:/Shared drives/Wellcome Trust Project Data/0_source_data/Climate-urban-forests/"
+
+f <- paste0(dir, "2_cities_climate_exposure.csv")
+
+city_climate <- readr::read_csv(f, show_col_types = F)
+
+c_climate <- city_climate %>%
+  filter(city == "London") %>%
+  select(cur_MTWM, fut_MTWM_2050_45, fut_MTWM_2070_45) %>%
+  gather(key = "var", value = "value") %>%
+  mutate(var = gsub("_MTWM|_45|fut_MTWM_", "", var)) %>%
+  mutate(var = ifelse(var == "cur", "Baseline", var)) %>%
+  mutate(var = factor(x = var, levels = c("Baseline", "2050", "2070")))
+
+
+
+## plot
+c_climate %>%
+  ggplot(aes(x = var, y = value, fill = value)) +
+  geom_col(show.legend = F) +
+  labs(
+    x = NULL, y = expression("Temperature (" * ~ degree * C * ")"),
+    title = "Max temperature of the warmest month \nin London, UK"
+  ) +
+  # scale_fill_distiller(palette = "YlOrBr", direction = 1) +
+  scale_fill_gradient(low = "#fed98e", high = "#d95f0e") + # Lighter to moderate orange
+  coord_cartesian(ylim = c(20, 25)) +
+  geom_text(aes(label = round(value, 1)), vjust = -0.5, size = 4) + # Add value labels
+  theme_minimal(base_size = 18) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+f <- "./figures/temp_scenario.png"
+ggsave(f, plot = last_plot(), width = 6, height = 7, units = "in", dpi = 300)
+```
+
+
+### species at risk
+
+If the exposure to future climate is greater than the current safety margin for the focal species in a focal city (that is, *high risk*), then 
+  * R > 0 for MAT and MTWM and 
+  * R < 0 for MTCM, AP and PDQ.
+
+```{r}
+
+f <- paste0(dir, "5_results_complete.csv")
+
+year_fut <- 2050
+
+spe <- readr::read_csv(f, show_col_types = F) 
+names(spe)
+
+spe_climate <- spe %>%
+  filter(city == 'London') %>%
+  select(1:family, 
+         matches("MTWM|safety|risk", ignore.case = F) ) %>%
+  select(-matches("MAT_|PDQ|_AP|_MAT|_60"))
+
+names(spe_climate)
+
+
+## 
+spe_at_risk <- spe %>%
+  filter(city == 'London') %>%
+  select(1:family, 
+         matches("risk", ignore.case = F) ) %>%
+  select(-matches("_60")) %>%
+  
+  filter(
+    risk_MAT_95_2050_45 >0   | risk_MAT_95_2070_45 > 0 | 
+      risk_MTWM_95_2050_45>0 | risk_MTWM_95_2070_45>0 |
+      risk_AP_95_2050_45 < 0 | risk_AP_95_2070_45<0 |
+      risk_PDQ_95_2050_45<0  | risk_PDQ_95_2070_45<0
+  ) %>%
+  gather(key = 'var', value = 'value', 5:ncol(.)) %>%
+  mutate(year = str_extract(var, "20(50|70)"),     # extract "2030", "2040", or "2050"
+         year = as.numeric(year))  %>%
+  filter(year == year_fut)
+
+
+unique(spe_at_risk$var)
+names(spe_at_risk)
+
+spe_at_risk_unique <- spe_at_risk %>%
+  distinct(country, city, species, family, year)
+
+
+## save data
+f <- paste0('./data/', 'spe_at_risk_unique_london.rds')
+saveRDS(spe_at_risk_unique, f)
+```
+

@@ -1,0 +1,226 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+
+---
+
+# Set up
+
+## Packages 
+
+```{r include=FALSE}
+
+## To clear your environment
+remove(list = ls())
+
+
+## Packages
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(sf)
+
+library(ggplot2)
+```
+
+
+## Set Working Directory
+
+> 🔧 **Tip:** Before running this R Markdown file, set the **Knit Directory** to ensure file paths work correctly.
+
+1.  Locate the **Knit** button at the top-left of this panel.
+2.  Click the dropdown arrow next to it.
+3.  Select **"Knit Directory" → "Project Directory"**.
+
+This ensures that all file paths are relative to your project folder.
+
+
+
+# Load data
+
+```
+  cur   current/baseline climate 
+  fut   future climate (2050 or 2070) 
+  MAT   Mean annual temperature 
+  MTWM  Maximum temperature of the *warmest* month
+  MTCM  Minimum temperature of the *coldest* month 
+  AP    Annual precipitation
+  PDQ   Precipitation of the driest quarter
+```
+
+
+## Climate data
+
+```{r}
+
+## load data
+f <- paste0('./data/', 'spe_at_risk_unique_london.rds')
+
+data1_climate <- readRDS(f)
+
+unique(data1_climate$year)
+year_fut <- unique(data1_climate$year)
+
+```
+
+
+
+## London tree data
+
+```{r eval=FALSE, include=FALSE}
+
+dir_tree <- "G:/Shared drives/Wellcome Trust Project Data/0_source_data/GiGL land use data/GiGL_Trees_font_point/"
+
+f <- paste0(dir_tree, 'GiGL_GLATrees_Pre2023.shp')
+
+tree <- st_read(f, quiet = TRUE)
+
+tree_sub <- tree %>%
+  select(-c(SortOrder, RecMonSta:StatusLISI, SurveyName:SurveyRef, PrivateLoc, PrivateCod,
+            RecOccKey:VersionDt))
+
+
+f <- paste0('./data/', 'GiGL_GLATrees_Pre2023_sub.rds')
+saveRDS(object = tree_sub, file = f)
+```
+
+
+
+```{r load data subset}
+
+f <- paste0('./data/', 'GiGL_GLATrees_Pre2023_sub.rds')
+tree_sub <- readRDS(f)
+
+names(tree_sub)
+
+data2_tree_aoi <- tree_sub %>%
+  distinct(TaxonName, CommonName, TaxonRank, TaxonGroup, TaxonCat, CommonGrp, TaxonClass, TaxonOrder, TaxonFamil, GroupOrder) %>%
+  st_drop_geometry()
+```
+
+
+```{r  tree stats}
+
+## total number of trees in London 
+tree_sub %>%
+  nrow() %>%
+  cat('London has', ., 'trees.\n')
+
+## number of tree species in London 
+data2_tree_aoi %>%
+  distinct(TaxonName, CommonName, TaxonFamil) %>%
+  nrow() %>%
+  cat('London has', ., 'tree species in total.\n')
+
+
+## number of tree at risk 
+data1_climate %>%
+  distinct(species, family, year) %>%
+  nrow() %>%
+  cat('London has', ., 'tree species will be at risk.\n')
+```
+
+## Identify at-risk trees by name matching
+
+```{r taxize - name matching}
+# install.packages("remotes")
+# remotes::install_github("ropensci/taxize")
+
+
+library("taxize")
+# resolved <- gnr_resolve(names = c("Quercus robur", "Pinus sylvestris"))
+
+
+
+## Match the two dataset: 
+# --> data1_climate
+# --> data2_tree_aoi
+
+
+## merge two data - a test 
+tree_com1 <- left_join(
+  data2_tree_aoi, 
+  data1_climate,
+  by = c('TaxonName' = 'species')
+)
+
+
+
+## matched data 1
+tree_com1_matched <- tree_com1 %>%
+  filter(!is.na(city))
+
+
+nrow(tree_com1) - nrow(tree_com1_matched)
+
+
+
+## for unmatched ones -- find unified name for further matching 
+
+## for data 1 --- 
+tree1_0 <- data2_tree_aoi %>%
+  filter(!TaxonName %in% unique(tree_com1_matched$TaxonName) ) %>%
+  separate(col = TaxonName, into = c("TaxonName1", "TaxonName2"), sep = "=", remove = F) %>%
+  mutate(TaxonName1 = trimws(TaxonName1),
+         TaxonName2 = trimws(TaxonName2))
+
+tree1_1 <- gna_verifier(tree1_0$TaxonName1)
+
+tree1_1_matched <- tree1_1 %>%
+  filter(!is.na(matchedName))
+
+tree1_1_tbd <- tree1_0 %>%
+  filter(!TaxonName1 %in% unique(tree1_1_matched$submittedName)) %>%
+  mutate(TaxonName3 = paste0(TaxonName1, ' (', TaxonName2, ')'),
+         TaxonName3 = gsub('\\(NA\\)', '', TaxonName3)) %>%
+  select(1:TaxonName2, TaxonName3, everything())
+
+tree1_2 <- gna_verifier(tree1_1_tbd$TaxonName2)
+tree1_3 <- gna_verifier(tree1_1_tbd$CommonName)
+tree1_4 <- gna_verifier(tree1_1_tbd$TaxonName3)
+
+
+## for data 2 ---
+
+tree2_0 <- data1_climate %>%
+  filter(!species %in% unique(tree_com1$TaxonName) ) 
+
+tree2_1 <- gna_verifier(tree2_0$species)
+tree2_1_matched <- tree2_1 %>%
+  filter(!is.na(matchedName)) %>%
+  select(submittedName, matchedNameID, matchedName, currentNameId)
+
+
+## merge again 
+
+tree_com2 <- left_join(
+  tree1_1_matched, 
+  tree2_1_matched,
+  by = 'matchedNameID', ## 0 match
+)
+
+
+tree_com2_matched <- tree_com2 %>%
+  filter(!is.na(matchedName.y))
+```
+
+
+```{r final list}
+
+## final data
+tree_risk_london <- rbind(tree_com1_matched, tree_com2_matched)
+
+f <- paste0("./data/", "GiGL_GLATrees_Pre2023_at_risk_", year_fut, ".rds")
+f <- paste0("./data/", "GiGL_GLATrees_Pre2023_at_risk_", year_fut, ".csv")
+
+readr::write_csv(x = tree_risk_london, f)
+
+
+## stats
+tree_risk_london %>%
+  distinct(TaxonName, family, year) %>%
+  nrow() %>%
+  cat('London has', ., 'tree species will be at risk.\n')
+```
