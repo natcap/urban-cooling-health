@@ -69,11 +69,18 @@ year_fut <- unique(data1_climate$year)
 
 ## London tree data
 
-```{r eval=FALSE, include=FALSE}
+```{r}
 
 dir_tree <- "G:/Shared drives/Wellcome Trust Project Data/0_source_data/GiGL land use data/GiGL_Trees_font_point/"
 
-f <- paste0(dir_tree, 'GiGL_GLATrees_Pre2023.shp')
+f.raw <- paste0(dir_tree, 'GiGL_GLATrees_Pre2023.shp')
+f.raw <- paste0(dir_tree, 'GiGL_GLATrees_2023-24.shp')
+
+fsub <- paste0('./data/', gsub('.shp', '_sub.rds', basename(f.raw))); fsub
+```
+
+
+```{r eval=FALSE, include=FALSE}
 
 tree <- st_read(f, quiet = TRUE)
 
@@ -82,16 +89,14 @@ tree_sub <- tree %>%
             RecOccKey:VersionDt))
 
 
-f <- paste0('./data/', 'GiGL_GLATrees_Pre2023_sub.rds')
-saveRDS(object = tree_sub, file = f)
+saveRDS(object = tree_sub, file = fsub)
 ```
 
 
 
 ```{r load data subset}
 
-f <- paste0('./data/', 'GiGL_GLATrees_Pre2023_sub.rds')
-tree_sub <- readRDS(f)
+tree_sub <- readRDS(fsub)
 
 names(tree_sub)
 
@@ -153,42 +158,48 @@ tree_com1_matched <- tree_com1 %>%
   filter(!is.na(city))
 
 
-nrow(tree_com1) - nrow(tree_com1_matched)
+( nrow(tree_com1) - nrow(tree_com1_matched) ) %>%
+  cat('There are', ., 'rows are not matched.\n')
 
 
 
-## for unmatched ones -- find unified name for further matching 
+## for unmatched ones -- find unified name for further matching --------------------------
 
-## for data 1 --- 
-tree1_0 <- data2_tree_aoi %>%
+## for data 2 --- 
+data2_0 <- data2_tree_aoi %>%
+  ## filter un-matched rows
   filter(!TaxonName %in% unique(tree_com1_matched$TaxonName) ) %>%
   separate(col = TaxonName, into = c("TaxonName1", "TaxonName2"), sep = "=", remove = F) %>%
   mutate(TaxonName1 = trimws(TaxonName1),
          TaxonName2 = trimws(TaxonName2))
 
-tree1_1 <- gna_verifier(tree1_0$TaxonName1)
+## To get unified name for matching 
+data2_1 <- gna_verifier(data2_0$TaxonName1)
 
-tree1_1_matched <- tree1_1 %>%
+### matched rows
+data2_1_matched <- data2_1 %>%
   filter(!is.na(matchedName))
 
-tree1_1_tbd <- tree1_0 %>%
-  filter(!TaxonName1 %in% unique(tree1_1_matched$submittedName)) %>%
+### not matched rows
+data2_1_tbd <- data2_0 %>%
+  filter(!TaxonName1 %in% unique(data2_1_matched$submittedName)) %>%
   mutate(TaxonName3 = paste0(TaxonName1, ' (', TaxonName2, ')'),
          TaxonName3 = gsub('\\(NA\\)', '', TaxonName3)) %>%
   select(1:TaxonName2, TaxonName3, everything())
 
-tree1_2 <- gna_verifier(tree1_1_tbd$TaxonName2)
-tree1_3 <- gna_verifier(tree1_1_tbd$CommonName)
-tree1_4 <- gna_verifier(tree1_1_tbd$TaxonName3)
+### further match based on other columns
+data2_2 <- gna_verifier(data2_1_tbd$TaxonName2)
+data2_3 <- gna_verifier(data2_1_tbd$CommonName)
+data2_4 <- gna_verifier(data2_1_tbd$TaxonName3)
 
 
-## for data 2 ---
+## for data 1 ---
 
-tree2_0 <- data1_climate %>%
+data1_0 <- data1_climate %>%
   filter(!species %in% unique(tree_com1$TaxonName) ) 
 
-tree2_1 <- gna_verifier(tree2_0$species)
-tree2_1_matched <- tree2_1 %>%
+data1_1 <- gna_verifier(data1_0$species)
+data1_1_matched <- data1_1 %>%
   filter(!is.na(matchedName)) %>%
   select(submittedName, matchedNameID, matchedName, currentNameId)
 
@@ -196,8 +207,8 @@ tree2_1_matched <- tree2_1 %>%
 ## merge again 
 
 tree_com2 <- left_join(
-  tree1_1_matched, 
-  tree2_1_matched,
+  data2_1_matched, 
+  data1_1_matched,
   by = 'matchedNameID', ## 0 match
 )
 
@@ -208,19 +219,41 @@ tree_com2_matched <- tree_com2 %>%
 
 
 ```{r final list}
-
 ## final data
 tree_risk_london <- rbind(tree_com1_matched, tree_com2_matched)
 
-f <- paste0("./data/", "tree_list_GiGL_Pre2023_", year_fut, ".rds")
-f <- paste0("./data/", "tree_list_GiGL_Pre2023_", year_fut, ".csv")
+f <- gsub(".shp|GLATrees_", "", basename(f.raw)) %>%
+  paste0("./data/", "tree_list_", ., "_", year_fut, ".csv")
+f
 
 readr::write_csv(x = tree_risk_london, f)
-
 
 ## stats
 tree_risk_london %>%
   distinct(TaxonName, family, year) %>%
   nrow() %>%
-  cat('London has', ., 'tree species will be at risk.\n')
+  cat("London has", ., "tree species will be at risk.\n")
 ```
+
+
+```{r combine data}}
+
+## load pre-2023 data
+f <- paste0('./data/', 'tree_list_GiGL_pre2023_2050.csv')
+tree_risk_london_pre2023 <- readr::read_csv(f, show_col_types = FALSE)
+
+
+## load 2023-2024 data
+f <- paste0('./data/', 'tree_list_GiGL_2023-24_2050.csv')
+tree_risk_london_2023 <- readr::read_csv(f, show_col_types = FALSE)
+
+
+## combine the list
+tree_risk_london_combined <- rbind(tree_risk_london_pre2023, tree_risk_london_2023) %>%
+  distinct(TaxonName, family, year, country, city, .keep_all = TRUE) %>%
+  as.data.frame()
+
+f <- paste0('./data/', 'tree_list_GiGL_combined_2050.csv')
+readr::write_csv(x = tree_risk_london_combined, f)
+```
+
