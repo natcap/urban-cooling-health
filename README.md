@@ -1,4 +1,4 @@
-
+## This repository contains scripts pertaining to the Wellcome Trust Project (Extreme heat, green space and mental health).
 
 
 ## Directory Structure
