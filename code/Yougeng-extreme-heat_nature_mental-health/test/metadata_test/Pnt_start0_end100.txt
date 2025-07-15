@@ -1,0 +1,10 @@
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 0 panoID: lpqkB8z60fNtWGP89zkyvQ panoDate: 2024-01 longitude: -3.735863656054512 latitude: 40.38795474500751
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 1 panoID: vJJX_zUPf80qDj0kXhZ8jA panoDate: 2024-05 longitude: -3.713672449213664 latitude: 40.42705101164147
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 2 panoID: 6MQUnTZpaXkx-nP5VBL8iA panoDate: 2024-05 longitude: -3.731957463679926 latitude: 40.3883840837407
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 3 panoID: gSW81fn7PCdC6PB3w93Bew panoDate: 2023-12 longitude: -3.736657853565247 latitude: 40.38864192835491
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 4 panoID: amkGTa5Te4jMxnkKqUohVg panoDate: 2024-05 longitude: -3.716304879099751 latitude: 40.42634514731059
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 5 panoID: fo8M-OTcSubEjgNX3zsqBw panoDate: 2024-01 longitude: -3.734362764390666 latitude: 40.38677616859341
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 6 panoID: gSW81fn7PCdC6PB3w93Bew panoDate: 2023-12 longitude: -3.736657853565247 latitude: 40.38864192835491
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 7 panoID: lpqkB8z60fNtWGP89zkyvQ panoDate: 2024-01 longitude: -3.735863656054512 latitude: 40.38795474500751
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 8 panoID: gSW81fn7PCdC6PB3w93Bew panoDate: 2023-12 longitude: -3.736657853565247 latitude: 40.38864192835491
+userID: 022b9a0c50df67849e91d5897aabbf39 assessment: 9 panoID: ISktmwFdOqnpIgMdktrHJQ panoDate: 2024-04 longitude: -3.694953478621364 latitude: 40.39140971386484
