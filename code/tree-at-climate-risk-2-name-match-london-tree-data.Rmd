@@ -56,7 +56,7 @@ This ensures that all file paths are relative to your project folder.
 ```{r}
 
 ## load data
-f <- paste0('./data/', 'spe_at_risk_unique_london.rds')
+f <- paste0('./data/', 'spe_at_risk_unique_london_2050.rds')
 
 data1_climate <- readRDS(f)
 
@@ -101,7 +101,8 @@ tree_sub <- readRDS(fsub)
 names(tree_sub)
 
 data2_tree_aoi <- tree_sub %>%
-  distinct(TaxonName, CommonName, TaxonRank, TaxonGroup, TaxonCat, CommonGrp, TaxonClass, TaxonOrder, TaxonFamil, GroupOrder, .keep_all = T) %>%
+  distinct(TaxonName, CommonName, TaxonRank, TaxonGroup, TaxonCat, CommonGrp, TaxonClass, TaxonOrder, 
+           TaxonFamil, GroupOrder, .keep_all = T) %>%
   st_drop_geometry()
 ```
 

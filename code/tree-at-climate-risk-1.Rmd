@@ -51,7 +51,7 @@ PDQ Precipitation of the driest quarter
 
 ## Global data
 
-### temp
+### temp data for London
 
 ```{r}
 
@@ -102,9 +102,10 @@ If the exposure to future climate is greater than the current safety margin for 
 f <- paste0(dir, "5_results_complete.csv")
 
 year_fut <- 2050
+year_fut <- 2070
 
 spe <- readr::read_csv(f, show_col_types = F) 
-names(spe)
+# names(spe)
 
 spe_climate <- spe %>%
   filter(city == 'London') %>%
@@ -112,7 +113,7 @@ spe_climate <- spe %>%
          matches("MTWM|safety|risk", ignore.case = F) ) %>%
   select(-matches("MAT_|PDQ|_AP|_MAT|_60"))
 
-names(spe_climate)
+# names(spe_climate)
 
 
 ## 
@@ -134,15 +135,17 @@ spe_at_risk <- spe %>%
   filter(year == year_fut)
 
 
-unique(spe_at_risk$var)
-names(spe_at_risk)
+# unique(spe_at_risk$var)
+# names(spe_at_risk)
 
+
+## get a list of unique tree species that will be at risk
 spe_at_risk_unique <- spe_at_risk %>%
   distinct(country, city, species, family, year)
 
 
 ## save data
-f <- paste0('./data/', 'spe_at_risk_unique_london.rds')
+f <- paste0('./data/', 'spe_at_risk_unique_london_', year_fut, '.rds')
 saveRDS(spe_at_risk_unique, f)
 ```
 
