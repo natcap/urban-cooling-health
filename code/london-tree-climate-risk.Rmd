@@ -101,7 +101,7 @@ tree_sub <- readRDS(fsub)
 names(tree_sub)
 
 data2_tree_aoi <- tree_sub %>%
-  distinct(TaxonName, CommonName, TaxonRank, TaxonGroup, TaxonCat, CommonGrp, TaxonClass, TaxonOrder, TaxonFamil, GroupOrder) %>%
+  distinct(TaxonName, CommonName, TaxonRank, TaxonGroup, TaxonCat, CommonGrp, TaxonClass, TaxonOrder, TaxonFamil, GroupOrder, .keep_all = T) %>%
   st_drop_geometry()
 ```
 
@@ -120,11 +120,11 @@ data2_tree_aoi %>%
   cat('London has', ., 'tree species in total.\n')
 
 
-## number of tree at risk 
-data1_climate %>%
-  distinct(species, family, year) %>%
-  nrow() %>%
-  cat('London has', ., 'tree species will be at risk.\n')
+# ## number of tree at risk 
+# data1_climate %>%
+#   distinct(species, family, year) %>%
+#   nrow() %>%
+#   cat('London has', ., 'tree species will be at risk.\n')
 ```
 
 ## Identify at-risk trees by name matching
@@ -215,6 +215,10 @@ tree_com2 <- left_join(
 
 tree_com2_matched <- tree_com2 %>%
   filter(!is.na(matchedName.y))
+
+
+rm(data2_0, data2_1, data2_1_matched, data2_1_tbd, data2_2, data2_3, data2_4,
+   data1_0, data1_1, data1_1_matched)
 ```
 
 
@@ -228,15 +232,10 @@ f
 
 readr::write_csv(x = tree_risk_london, f)
 
-## stats
-tree_risk_london %>%
-  distinct(TaxonName, family, year) %>%
-  nrow() %>%
-  cat("London has", ., "tree species will be at risk.\n")
 ```
 
 
-```{r combine data}}
+```{r combine data}
 
 ## load pre-2023 data
 f <- paste0('./data/', 'tree_list_GiGL_pre2023_2050.csv')
@@ -255,5 +254,11 @@ tree_risk_london_combined <- rbind(tree_risk_london_pre2023, tree_risk_london_20
 
 f <- paste0('./data/', 'tree_list_GiGL_combined_2050.csv')
 readr::write_csv(x = tree_risk_london_combined, f)
+
+## stats
+tree_risk_london_combined %>%
+  distinct(TaxonName, family, year) %>%
+  nrow() %>%
+  cat("London has", ., "tree species will be at risk.\n")
 ```
 
