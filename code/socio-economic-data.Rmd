@@ -1,0 +1,64 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-08-20"
+---
+
+
+**Material Deprivation** is a direct measure of *poverty* derived from the lack of items deemed to be necessary for a minimum acceptable standard of living.
+  - [Source](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2024/technical-report-update-to-measures-using-material-deprivation-for-households-below-average-income-fye-2024#glossary)
+  
+  Based on `5828_hbai_2324_harmonised_dataset_variables_guide.xlsx`
+
+ABS1011AHC	    £ amount	Net 2010/11 absolute household median household income (AHC)
+ABS1011AHC_INYR	£ amount	Net 2010/11 absolute median household income (AHC) in survey year prices
+ABS1011BHC	    £ amount	Net 2010/11 absolute median household income (BHC)
+ABS1011BHC_INYR	£ amount	Net 2010/11 absolute median household income (BHC) in survey year prices
+
+
+
+```{r main data}
+
+library(readr)
+dir <- "E:/UK DATA ARCHIVE/UKDA-5828-tab/"
+
+f <- paste0(dir, "main/main/i0003e_2324prices.tab")
+
+df.main <- read_tsv(f, show_col_types = F)
+
+```
+
+
+main data                                   resample data
+---------------------------------------------------------------
+i2124e_2324prices	(2021/22 to 2023/24)			i1415e_res
+
+
+
+
+```{r resampled data}
+
+f <- paste0(dir, "resamples/resamples/i1415e_res.tab")
+
+df.res <- read_tsv(f, show_col_types = F)
+```
+
+
+
+
+
+
+
+
+
+```{r}
+
+library(readxl)
+
+# Read the first sheet
+f <- 'D:/5828-tab_cc5b4fd8d0df7577a111d9b8050973f5/UKDA-5828-tab/mrdoc/excel/5828_hbai_2324_harmonised_dataset_net_2010-11_absolute_median_household_income_over_time.xlsx'
+df <- read_excel(f)
+
+
+```
+
