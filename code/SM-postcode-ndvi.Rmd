@@ -5,11 +5,24 @@ date: "2025-09-05"
 ---
 
 
+  This script prepares average NDVI by postcode region.
+
+  - Postcodes are used as keys to join with spatial data and obtain coordinates.
+  
+  - Because only postcode points are available, 300 m buffer zones are created as proxies for postcode areas.
+  
+  - These buffered polygons are then uploaded to GEE to extract NDVI values.
+  
+
 ```{r include=FALSE}
 
 library(readr)
 library(dplyr)
 library(sf)
+
+library(purrr)
+library(tidyr)
+library(stringr)
 
 ```
 
@@ -208,14 +221,14 @@ The GEE script name is `london_urban_cooling/SocialMind_postcodeNDVI`
 
 ## 1. load NDVI data from GEE
 dir.ndvi <- 'G:/My Drive/SocialMind'
-ndvi <- read_csv(file = file.path(dir.ndvi, 'sm_postcode_ndvi_2019_Fall.csv'), show_col_types = F) %>%
-  select(Postcode, ndvi_mean, season, date_ini, date_end)
+
+## test
+# ndvi <- read_csv(file = file.path(dir.ndvi, 'sm_postcode_ndvi_2019_Fall.csv'), show_col_types = F) %>%
+#   select(Postcode, ndvi_mean, season, date_ini, date_end)
 
 
 
 ## 1.2 load all
-library(purrr)
-library(tidyr)
 
 files <- list.files(
   path   = dir.ndvi,
@@ -229,7 +242,7 @@ ndvi <- files %>%
             select(Postcode, ndvi_mean, season, date_ini, date_end))  
 
 
-library(stringr)
+
 yr <- str_extract(files[1], "\\d{4}"); yr
 
 
@@ -238,7 +251,8 @@ ndvi_season <- ndvi %>%
   tidyr::pivot_wider(names_from = season, values_from = ndvi_mean) %>%
   mutate(buffer_m = 300,
          ndvi_type = 'mean',
-         year = yr)
+         year = yr) %>%
+  select(Postcode, Winter, Spring, Summer, Fall, everything())
   
 
 
