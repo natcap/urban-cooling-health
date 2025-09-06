@@ -1,0 +1,258 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-05"
+---
+
+
+```{r include=FALSE}
+
+library(readr)
+library(dplyr)
+library(sf)
+
+```
+
+
+
+## Load data and pre-cleaning
+
+```{r social mind data}
+
+dir <- "G:/Shared drives/Wellcome Trust Project Data/0_source_data/"
+
+dir.sm <- file.path(dir, 'SocialMind', 'Participant Postcodes.csv')
+dir.postcode <- file.path(dir, 'Geolocation Data', 'london_postcode.csv')
+
+sm <- read_csv(dir.sm, show_col_types = FALSE) %>%
+  ## remove space in `Postcode`
+  mutate(Postcode = gsub(" ", "", Postcode)) %>%
+  arrange(!is.na(Postcode))
+
+sm_code <- sm %>%
+  distinct(Postcode)
+```
+
+
+```{r postcode data}
+
+## data 1: by Yougeng - not complete 
+code <- read_csv(dir.postcode, show_col_types = FALSE) %>%
+  select(Postcode, Latitude, Longitude)
+
+names(sm)
+names(code)
+
+
+## data 2: uk, 2025
+##' source: https://docs.google.com/document/d/1ol-RXiUA7Yn24qyoo2PtWeQZvxUTVQwLw61KzqToc1k/edit?usp=sharing
+
+
+# Use forward slashes or double backslashes in Windows paths
+gpkg_path <- "E:/London/UK_postcode_shp/codepo_gpkg_gb/Data/codepo_gb.gpkg"
+
+# # Read the GeoPackage (defaults to the first layer if none specified)
+# code_uk <- st_read(gpkg_path)
+# code_uk_sub <- code_uk %>%
+#   select(postcode, admin_district_code, admin_ward_code) %>%
+#   rename('Postcode' = 'postcode') %>%
+#   ## remove space in `Postcode`
+#   mutate(Postcode = gsub(" ", "", Postcode)) 
+# 
+# 
+# ## Make sure your data is in WGS84 (EPSG:4326) if you want real-world lon/lat
+# code_uk_coord <- st_transform(code_uk_sub, 4326) 
+# 
+# code_uk_coord <- code_uk_coord %>%
+#   mutate(
+#     lon = st_coordinates(.)[,1],
+#     lat = st_coordinates(.)[,2]
+#   )
+# 
+# names(code_uk)
+# 
+# f <- paste0(dirname(gpkg_path), '/', gsub('_gb.gpkg', '_gb_coordinates.rds', basename(gpkg_path))); f
+# saveRDS(code_uk_coord, f)
+
+
+## load data
+f <- paste0(dirname(gpkg_path), '/', gsub('_gb.gpkg', '_gb_coordinates.rds', basename(gpkg_path))); f
+code_uk_coord <- readRDS(f)
+ 
+```
+
+
+```{r join data}
+
+# ## data 1: a lot of missing postcode ... cannot be used ...
+# sm_code_xy <- sm_code %>%
+#   left_join(., code, by = "Postcode") %>%
+#   arrange(!is.na(Postcode), !is.na(Latitude))
+# 
+# sm_code_xy %>%
+#   summarise(
+#     na_count = sum(is.na(Latitude)),
+#     non_na_count = sum(!is.na(Latitude))
+#   )
+
+
+
+
+## data 2: better but still have 20 missing ones - need to check with KCL team later
+sm_code_xy2 <- sm_code %>%
+  # filter(!is.na(Postcode)) %>%
+  left_join(., 
+            code_uk_coord %>% st_drop_geometry(), 
+            by = "Postcode") %>%
+  arrange(!is.na(Postcode), !is.na(admin_ward_code))
+
+sm_code_xy2 %>%
+  summarise(
+    na_count = sum(is.na(admin_ward_code)),
+    non_na_count = sum(!is.na(admin_ward_code))
+  )
+```
+
+
+```{r join data - unmatched}
+
+## save the unmatched data and send to collaborator
+postcode_unmatched <- sm_code_xy2 %>%
+  filter(is.na(lon)) %>%
+  select(-admin_ward_code, -admin_district_code)
+
+sm_unmatched <- sm %>% 
+  # filter(!is.na(Postcode)) %>%
+  filter(Postcode %in% unique(postcode_unmatched$Postcode)) %>%
+  # distinct(Postcode, .keep_all = T) %>%
+  arrange(!is.na(Postcode), Postcode)
+
+## 
+library(writexl)
+f <- file.path(dir, 'SocialMind', 'output', 'postcode_unmatched.xlsx'); f
+writexl::write_xlsx(x = postcode_unmatched, path = f)
+
+f <- file.path(dir, 'SocialMind', 'output', 'postcode_unmatched_Participant.xlsx'); f
+writexl::write_xlsx(x = sm_unmatched, path = f)
+```
+
+
+
+```{r sf with buffer}
+
+# Convert to sf
+sm_postcode_shp <- sm_code_xy2 %>%
+  filter(!is.na(lon)) %>%
+  select(-admin_ward_code, -admin_district_code) %>%
+  st_as_sf(., coords = c("lon", "lat"), crs = 4326, remove = FALSE)  # WGS84
+
+# plot(sm_postcode_shp[1])
+
+
+
+# 1. Reproject to a CRS in meters (here: British National Grid, EPSG:27700)
+pts_m <- st_transform(sm_postcode_shp, 27700)
+
+# 2. Create 300 m buffer
+buffers <- st_buffer(pts_m, dist = 300) %>%
+  mutate(buffer_m = 300)
+
+# 3. (Optional) Transform back to WGS84 for mapping
+##'   Warning: All vector data in Earth Engine is stored in a spherical coordinate system (specifically, EPSG:4326).To minimize the possibility of unintended changes, first reproject vector data to EPSG:4326 before uploading.
+buffers_wgs84 <- st_transform(buffers, 4326)
+
+
+
+## save data
+
+f <- file.path(dir, 'SocialMind', 'output', 'sm_postcode_pt_300m.rds'); f
+saveRDS(buffers_wgs84, f)
+
+
+f <- file.path(dir, 'SocialMind', 'output', 'sm_postcode_pt_300m.gpkg'); f
+st_write(buffers_wgs84, f, delete_layer = TRUE)
+
+f <- file.path(dir, 'SocialMind', 'output', 'sm_postcode_pt_300m.shp'); f
+st_write(buffers_wgs84, f, delete_layer = TRUE)
+
+```
+
+
+
+
+The seasonal division is consistent with Yougeng’s earlier approach
+
+  Spring: 3/1 - 6/1
+  Summer: 6/1 - 9/1
+  Fall:   9/1 - 12/1
+  Winter: 12/1 - 3/1
+  
+  
+## For GEE
+
+Then upload the shapefile data to GEE, and use GEE to calculate NDVI by postcode region 
+
+The GEE script name is `london_urban_cooling/SocialMind_postcodeNDVI`
+
+```{r}
+
+```
+
+
+
+
+
+## Merge NDVI back to the original data
+
+```{r}
+
+## 1. load NDVI data from GEE
+dir.ndvi <- 'G:/My Drive/SocialMind'
+ndvi <- read_csv(file = file.path(dir.ndvi, 'sm_postcode_ndvi_2019_Fall.csv'), show_col_types = F) %>%
+  select(Postcode, ndvi_mean, season, date_ini, date_end)
+
+
+
+## 1.2 load all
+library(purrr)
+library(tidyr)
+
+files <- list.files(
+  path   = dir.ndvi,
+  pattern = "^sm_postcode_ndvi.*\\.csv$",
+  full.names = TRUE
+) 
+
+
+ndvi <- files %>%
+  map_dfr(~ read_csv(.x, show_col_types = FALSE) %>%
+            select(Postcode, ndvi_mean, season, date_ini, date_end))  
+
+
+library(stringr)
+yr <- str_extract(files[1], "\\d{4}"); yr
+
+
+ndvi_season <- ndvi %>%
+  select(-date_ini, -date_end) %>%
+  tidyr::pivot_wider(names_from = season, values_from = ndvi_mean) %>%
+  mutate(buffer_m = 300,
+         ndvi_type = 'mean',
+         year = yr)
+  
+
+
+
+## 2. merge NDVI to the original SM data
+sm_ndvi <- sm %>%
+  left_join(., ndvi_season, by = 'Postcode') %>%
+  arrange(Subject_ID) %>%
+  as.data.frame()
+
+## 3. save and share with collaborator 
+f <- file.path(dir, 'SocialMind', 'output', paste0('sm_postcode_300m_NDVI_season_', yr, '.xlsx')); f
+writexl::write_xlsx(x = sm_ndvi, path = f)
+```
+
+
+
