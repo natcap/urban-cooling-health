@@ -19,11 +19,15 @@ date: "2025-09-05"
 library(readr)
 library(dplyr)
 library(sf)
+library(lubridate)
+library(writexl)
+library(ggplot2)
 
 library(purrr)
 library(tidyr)
 library(stringr)
 
+ymd <- format(Sys.time(), "%Y%m%d"); ymd
 ```
 
 
@@ -34,13 +38,18 @@ library(stringr)
 
 dir <- "G:/Shared drives/Wellcome Trust Project Data/0_source_data/"
 
-dir.sm <- file.path(dir, 'SocialMind', 'Participant Postcodes.csv')
+dir.sm <- file.path(dir, 'SocialMind', 'Participant Postcodes Updated.xlsx')
 dir.postcode <- file.path(dir, 'Geolocation Data', 'london_postcode.csv')
 
-sm <- read_csv(dir.sm, show_col_types = FALSE) %>%
+sm <- readxl::read_excel(dir.sm) %>%
   ## remove space in `Postcode`
   mutate(Postcode = gsub(" ", "", Postcode)) %>%
-  arrange(!is.na(Postcode))
+  rename('Baseline_Date' = 'Baseline Date') %>%
+  mutate(Baseline_Date = as.Date(Baseline_Date)) %>%
+  # filter(!is.na(Baseline_Date)) %>%
+  filter(!is.na(Postcode)) %>%
+  # arrange(!is.na(Postcode)) %>%
+  as.data.frame()
 
 sm_code <- sm %>%
   distinct(Postcode)
@@ -112,14 +121,14 @@ code_uk_coord <- readRDS(f)
 
 
 ## data 2: better but still have 20 missing ones - need to check with KCL team later
-sm_code_xy2 <- sm_code %>%
+sm_code_xy <- sm_code %>%
   # filter(!is.na(Postcode)) %>%
   left_join(., 
             code_uk_coord %>% st_drop_geometry(), 
             by = "Postcode") %>%
   arrange(!is.na(Postcode), !is.na(admin_ward_code))
 
-sm_code_xy2 %>%
+sm_code_xy %>%
   summarise(
     na_count = sum(is.na(admin_ward_code)),
     non_na_count = sum(!is.na(admin_ward_code))
@@ -130,7 +139,7 @@ sm_code_xy2 %>%
 ```{r join data - unmatched}
 
 ## save the unmatched data and send to collaborator
-postcode_unmatched <- sm_code_xy2 %>%
+postcode_unmatched <- sm_code_xy %>%
   filter(is.na(lon)) %>%
   select(-admin_ward_code, -admin_district_code)
 
@@ -141,11 +150,10 @@ sm_unmatched <- sm %>%
   arrange(!is.na(Postcode), Postcode)
 
 ## 
-library(writexl)
-f <- file.path(dir, 'SocialMind', 'output', 'postcode_unmatched.xlsx'); f
+f <- file.path(dir, 'SocialMind', 'output', paste0('postcode_unmatched_', ymd, '.xlsx')); f
 writexl::write_xlsx(x = postcode_unmatched, path = f)
 
-f <- file.path(dir, 'SocialMind', 'output', 'postcode_unmatched_Participant.xlsx'); f
+f <- file.path(dir, 'SocialMind', 'output', paste0('postcode_unmatched_Participant_', ymd, '.xlsx')); f
 writexl::write_xlsx(x = sm_unmatched, path = f)
 ```
 
@@ -154,7 +162,7 @@ writexl::write_xlsx(x = sm_unmatched, path = f)
 ```{r sf with buffer}
 
 # Convert to sf
-sm_postcode_shp <- sm_code_xy2 %>%
+sm_postcode_shp <- sm_code_xy %>%
   filter(!is.na(lon)) %>%
   select(-admin_ward_code, -admin_district_code) %>%
   st_as_sf(., coords = c("lon", "lat"), crs = 4326, remove = FALSE)  # WGS84
@@ -185,6 +193,8 @@ saveRDS(buffers_wgs84, f)
 f <- file.path(dir, 'SocialMind', 'output', 'sm_postcode_pt_300m.gpkg'); f
 st_write(buffers_wgs84, f, delete_layer = TRUE)
 
+
+## --> only shp format can be uploaded to GEE
 f <- file.path(dir, 'SocialMind', 'output', 'sm_postcode_pt_300m.shp'); f
 st_write(buffers_wgs84, f, delete_layer = TRUE)
 
@@ -217,6 +227,26 @@ The GEE script name is `london_urban_cooling/SocialMind_postcodeNDVI`
 
 ## Merge NDVI back to the original data
 
+```{r - code with date}
+
+sm_date <- sm %>%
+  filter(!is.na(Baseline_Date)) %>%
+  as.data.frame()
+
+
+sm_date_summary <- sm_date %>%
+  group_by(Baseline_Date) %>%
+  count() %>%
+  ungroup() %>%
+  as.data.frame() 
+
+sm_date_summary %>%
+  ggplot() + 
+  geom_point(aes(x = Baseline_Date, y = n)) +
+  theme_minimal()
+```
+
+
 ```{r}
 
 ## 1. load NDVI data from GEE
@@ -237,34 +267,62 @@ files <- list.files(
 ) 
 
 
+
 ndvi <- files %>%
   map_dfr(~ read_csv(.x, show_col_types = FALSE) %>%
-            select(Postcode, ndvi_mean, season, date_ini, date_end))  
+            select(Postcode, ndvi_mean, season, date_ini, date_end)) %>%
+  mutate(year = lubridate::year(date_end))
 
 
 
-yr <- str_extract(files[1], "\\d{4}"); yr
+# yr <- str_extract(files[1], "\\d{4}"); yr
+yrs <- paste(sort(unique(ndvi$year)), collapse = '_')
 
 
 ndvi_season <- ndvi %>%
-  select(-date_ini, -date_end) %>%
-  tidyr::pivot_wider(names_from = season, values_from = ndvi_mean) %>%
+  mutate(year_season = paste0(year, '_', season)) %>%
+  select(-date_ini, -date_end, -year, -season) %>%
+  tidyr::pivot_wider(names_from = year_season, values_from = ndvi_mean) %>%
   mutate(buffer_m = 300,
-         ndvi_type = 'mean',
-         year = yr) %>%
-  select(Postcode, Winter, Spring, Summer, Fall, everything())
+         ndvi_type = 'mean') %>%
+  select(Postcode, 
+         buffer_m, ndvi_type,
+         # Winter, Spring, Summer, Fall, 
+         everything())
   
 
 
 
 ## 2. merge NDVI to the original SM data
 sm_ndvi <- sm %>%
+  mutate(
+    # year_baseline = year(Baseline_Date),
+    year_season_baseline = case_when(
+      !is.na(Baseline_Date) ~ paste(
+        year(Baseline_Date),
+        case_when(
+          month(Baseline_Date) %in% 3:5  ~ "Spring",
+          month(Baseline_Date) %in% 6:8  ~ "Summer",
+          month(Baseline_Date) %in% 9:11 ~ "Fall",
+          month(Baseline_Date) %in% c(12,1,2) ~ "Winter"
+        ),
+        sep = "_"
+      ),
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  
   left_join(., ndvi_season, by = 'Postcode') %>%
-  arrange(Subject_ID) %>%
+  pivot_longer(names_to = 'year_season_ndvi', values_to = 'ndvi_mean', cols = `2021_Fall`:last_col()) %>%
+  # arrange(Subject_ID) %>%
+  
+  ##' if `year_season_baseline` is available, keep ndvi for that `season` only; 
+  ##' if `year_season_baseline` is NA, then keep the ndvi for that `year`
+  filter(year_season_baseline == year_season_ndvi) %>%
   as.data.frame()
 
 ## 3. save and share with collaborator 
-f <- file.path(dir, 'SocialMind', 'output', paste0('sm_postcode_300m_NDVI_season_', yr, '.xlsx')); f
+f <- file.path(dir, 'SocialMind', 'output', paste0('sm_postcode_300m_NDVI_season_', yrs, '_', ymd, '.xlsx')); f
 writexl::write_xlsx(x = sm_ndvi, path = f)
 ```
 
