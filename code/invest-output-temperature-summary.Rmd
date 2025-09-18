@@ -1,0 +1,99 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(dplyr)
+library(stringr)
+
+```
+
+## R Markdown
+
+```{r}
+dir <- 'G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures'
+
+df <- read_csv(file.path(dir, 'T_air_london_8_zonal_stats_long.csv'), show_col_types = F) %>%
+  mutate(climate = str_extract(raster, "\\d+deg_\\d+uhi")) %>%
+  mutate(
+    year = case_when(
+      str_detect(raster, "current") ~ 2021,
+      str_detect(raster, "future")  ~ 2050,
+      TRUE ~ NA_real_
+    )
+  ) %>%
+  rename('T_mean' = 'mean')
+```
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+
+str(df)
+
+# Example summarisation (if df has replicates per group)
+df_summary <- df %>%
+  select(-raster) %>%
+  as.data.frame() %>%
+  group_by(lc_scenario, climate, year) %>%
+  # dplyr::group_by(lc_scenario, climate) %>%
+  dplyr::summarise(
+    mean = mean(T_mean, na.rm = TRUE),          # group mean
+    sd   = sd(T_mean, na.rm = TRUE),            # standard deviation
+    n    = n(),                               # sample size
+    se   = sd / sqrt(n)                       # standard error
+  )
+
+
+# df_summary <- df %>%
+#   group_by(lc_scenario, climate, year) %>%
+#   summarise(
+#     mean = mean(mean, na.rm = TRUE),
+#     sd   = sd(mean, na.rm = TRUE),
+#     n    = sum(!is.na(mean)),
+#     se   = ifelse(n > 1, sd / sqrt(n), NA_real_)
+#   )
+
+
+# Bar plot with error bars
+ggplot(df_summary, aes(x = lc_scenario, y = mean, fill = climate)) +
+  geom_col(position = position_dodge(width = 0.9)) +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    width = 0.2,
+    position = position_dodge(width = 0.9)
+  ) +
+  facet_wrap(~ year) +
+  labs(
+    x = "Land Cover Scenario",
+    y = "Mean Value ± SD",
+    fill = "Climate"
+  ) +
+  scale_fill_brewer(palette = "Set2", direction = 1) +  # reverse order
+  theme_minimal() +
+  coord_cartesian(ylim = c(20, NA)) +   # start at 20, let top auto-scale
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+
+# Save your last ggplot as PNG
+ggsave(
+  filename = file.path(dir, "ndvi_barplot.png"),   # file name
+  width    = 8,                    # width in inches
+  height   = 6,                    # height in inches
+  units = 'in',
+  dpi      = 300                   # resolution (good for PPT/publications)
+)
+
+
+```
+
