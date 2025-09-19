@@ -12,17 +12,17 @@
 cd ~/code/Urban_Cooling_Modeling_Runs/
 
 # runs all temp and uhi combos for current and future conditions
-# for the current lulc with tcc
-python execute_invest_urban_cooling_model_current_lulc.py
+# for the current lulc with tcc (--eap flag will run work productivity and energy)
+python execute_invest_urban_cooling_model_current_lulc.py --eap
 
 # runs all temp and uhi combos for current and future conditions
-# for scenario 1
-python execute_invest_urban_cooling_model_scenario1.py
+# for scenario 1 (--eap flag will run work productivity and energy)
+python execute_invest_urban_cooling_model_scenario1.py --eap
 
 # runs all temp and uhi combos for current and future conditions
-# for scenario 2
-python execute_invest_urban_cooling_model_scenario2.py
+# for scenario 2 (--eap flag will run work productivity and energy)
+python execute_invest_urban_cooling_model_scenario2.py --eap
 
 # runs all temp and uhi combos for current and future conditions
-# for scenario 3
-python execute_invest_urban_cooling_model_scenario3.py
+# for scenario 3 (--eap flag will run work productivity and energy)
+python execute_invest_urban_cooling_model_scenario3.py --eap

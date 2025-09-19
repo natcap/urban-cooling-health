@@ -26,17 +26,17 @@ args = {
     'avg_rel_humidity': '',
     'biophysical_table_path': 'G:\\Shared drives\\Wellcome Trust Project '
                               'Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\LULC\\Biophysical_table_ukech_2021_london_with_TCC.csv',
-    'building_vector_path': 'G:\\Shared drives\\Wellcome Trust Project Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\energy_buildings\\bld_with_attr_compact_ucm.gpkg',
+    'building_vector_path': '',
     'cc_method': 'factors',
     'cc_weight_albedo': '',
     'cc_weight_eti': '',
     'cc_weight_shade': '',
     'do_energy_valuation': False,
     'do_productivity_valuation': False,
-    'energy_consumption_table_path': 'G:\\Shared drives\\Wellcome Trust Project Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\energy_buildings\\_UCM_Energy Consumption Table.csv',
+    'energy_consumption_table_path': '',
     'green_area_cooling_distance': '450',
     'lulc_raster_path': 'G:\\Shared drives\\Wellcome Trust Project '
-                        'Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\LULC\\LCM2023_London_10m_clip2aoi_tcc24.tif',
+                        'Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\LULC\\LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_30prc_canopy_increase.tif',
     'ref_eto_raster_path': 'G:\\Shared drives\\Wellcome Trust Project '
                            'Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\evapotranspiration\\et0_V3_07_clipped_reprojected.tif',
     'results_suffix': '',
@@ -46,35 +46,24 @@ args = {
     'workspace_dir': '',
 }
 
+
 if __name__ == '__main__':
-    # create an array with groups of temps, UHI values and humidity
-    variables = np.array([[20, 2, 66.9], [20, 5, 66.9], [22, 2, 55],
-                          [22, 5, 55], [25, 2, 45], [25, 5, 45]])
+    # create an array with pairs of temps and UHI values
+    variables = np.array([[20, 2], [20, 5], [22, 2], [22, 5], [25, 2], [25, 5]])
     climate = ('current', 'future')
+    # Loop through current and future scenarios
     for c in climate:
-        args['workspace_dir'] = f'G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs\\current_lulc\\{c}_climate'
+        args['workspace_dir'] = f'G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs\\scenario4\\{c}_climate\\tcc_30prc'
         print(args['workspace_dir'])
         if c == 'future':
             args['ref_eto_raster_path'] = "G:\\Shared drives\\Wellcome Trust Project Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\evapotranspiration\\pet_all_modal_2041_2060_07_245_london_clipped.tif"
         else:
             None
         # Loops through the different temperatures and degrees:
-        for temp, uhi, hum in variables:
+        for temp, uhi in variables:
             # set the temperatures and UHI values
             args['t_ref'] = temp
             args['uhi_max'] = uhi
-            # determine variables depending on if we are running
-            # work productivity or not
-            if sys.argv[1] == '--eap':
-                args['do_energy_valuation'] = True
-                args['do_productivity_valuation'] = True
-                args['avg_rel_humidity'] = hum
-                # Loop through current and future scenarios
-                # set the suffix to have correct temp and uhi
-                args['results_suffix'] = f'london_{c}_scenario_{temp}deg_{uhi}uhi_{hum}hum_energy_productivity'
-                natcap.invest.urban_cooling_model.execute(args)
-            else:
-            # Loop through current and future scenarios
-                # set the suffix to have correct temp and uhi
-                args['results_suffix'] = f'london_{c}_scenario_{temp}deg_{uhi}uhi'
-                natcap.invest.urban_cooling_model.execute(args)
+            # set the suffix to have correct temp and uhi
+            args['results_suffix'] = f'london_{c}_scenario4_30prc_{temp}deg_{uhi}uhi'
+            natcap.invest.urban_cooling_model.execute(args)
