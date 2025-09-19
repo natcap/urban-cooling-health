@@ -52,7 +52,6 @@ if __name__ == '__main__':
                           [22, 5, 55], [25, 2, 45], [25, 5, 45]])
     climate = ('current', 'future')
     for c in climate:
-        args['workspace_dir'] = f'G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs\\current_lulc\\{c}_climate'
         print(args['workspace_dir'])
         if c == 'future':
             args['ref_eto_raster_path'] = "G:\\Shared drives\\Wellcome Trust Project Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\evapotranspiration\\pet_all_modal_2041_2060_07_245_london_clipped.tif"
@@ -71,10 +70,12 @@ if __name__ == '__main__':
                 args['avg_rel_humidity'] = hum
                 # Loop through current and future scenarios
                 # set the suffix to have correct temp and uhi
+                args['workspace_dir'] = f'G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs\\current_lulc\\{c}_climate\\work_and_energy'
                 args['results_suffix'] = f'london_{c}_scenario_{temp}deg_{uhi}uhi_{hum}hum_energy_productivity'
                 natcap.invest.urban_cooling_model.execute(args)
             else:
             # Loop through current and future scenarios
                 # set the suffix to have correct temp and uhi
+                args['workspace_dir'] = f'G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs\\current_lulc\\{c}_climate'
                 args['results_suffix'] = f'london_{c}_scenario_{temp}deg_{uhi}uhi'
                 natcap.invest.urban_cooling_model.execute(args)
