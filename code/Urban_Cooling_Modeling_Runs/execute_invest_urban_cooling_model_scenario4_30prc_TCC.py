@@ -42,11 +42,12 @@ args = {
     'workspace_dir': '',
 }
 
+
 if __name__ == '__main__':
     path_prefix = sys.argv[1]
     # set variables with correct prefixes
     args['aoi_vector_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.shp')
-    args['lulc_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario2_opp2treecover.tif')
+    args['lulc_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_30prc_canopy_increase.tif')
     args['ref_eto_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/evapotranspiration/et0_V3_07_clipped_reprojected.tif')
     # create an array with groups of temps, UHI values and humidity
     variables = np.array([[20, 2, 66.9],[20, 5, 66.9], [22, 2, 55],
@@ -75,13 +76,12 @@ if __name__ == '__main__':
                 args['energy_consumption_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/_UCM_Energy Consumption Table.csv')
                 # Loop through current and future scenarios
                 # set the suffix to have correct temp and uhi
-                args['workspace_dir'] = os.path.join(path_prefix, '2_postprocess_intermediate/UCM_official_runs/scenario2/work_and_energy_runs')
-                args['results_suffix'] = f'london_scenario_{temp}deg_{uhi}uhi_{hum}hum_energy_productivity'
+                args['workspace_dir'] = os.path.join(path_prefix, '2_postprocess_intermediate/UCM_official_runs/current_lulc/work_and_energy_runs/tcc_20prc')
+                args['results_suffix'] = f'london_scenario4_300prc_{temp}deg_{uhi}uhi_{hum}hum_energy_productivity'
                 natcap.invest.urban_cooling_model.execute(args)
             else:
             # Loop through current and future scenarios
                 # set the suffix to have correct temp and uhi
-                args['workspace_dir'] = f'{path_prefix}/2_postprocess_intermediate/UCM_official_runs/scenario2/{c}_climate'
+                args['workspace_dir'] = f'{path_prefix}/2_postprocess_intermediate/UCM_official_runs/current_lulc/{c}_climate'
                 args['results_suffix'] = f'london_{c}_scenario_{temp}deg_{uhi}uhi'
                 natcap.invest.urban_cooling_model.execute(args)
-    
