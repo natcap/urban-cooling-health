@@ -1,0 +1,300 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+library(tmap)
+```
+
+## R Markdown
+
+  Download data from [UK's Office for National Statistics](https://www.nomisweb.co.uk/datasets/mortsa)
+  
+  Be sure to download data using "Database - Tab separated values (.tsv)"
+
+
+## Load data
+
+```{r - df}
+# read TSV
+f <- file.path('./data/health-data', '387056911188607_data.tsv')
+df <- read_tsv(f, show_col_types = FALSE)
+
+df_dup <- df %>%
+  group_by(geogcode) %>%
+  filter(n() > 1) %>%
+  ungroup()
+
+df_sub <- df %>%
+  as.data.frame() %>%
+  dplyr::filter(date == 2023) %>%
+  dplyr::filter(str_starts(geogcode, "E09"))
+
+
+df_uni <- df %>%
+  distinct_all() %>%
+  as.data.frame()
+```
+
+
+
+
+```{r - geo}
+f <- file.path('./data/health-data', '387056911188607_geog.tsv')
+df_geo <- read_tsv(f, show_col_types = FALSE) %>%
+  separate_wider_delim(description, delim = ":", 
+                       names = c("area_code", "area_name"), 
+                       too_few = "align_start", cols_remove = F) %>%
+  distinct(geogcode, description, .keep_all = T) %>%
+  as.data.frame()
+
+df_geo_dup <- df_geo %>%
+  group_by(geogcode) %>%
+  filter(n() > 1) %>%
+  ungroup()
+
+
+df_geo_unique <- df_geo %>%
+  distinct(geogcode, .keep_all = T) %>%
+  as.data.frame()
+
+
+unique(df_geo_unique$area_code)
+
+geo_lacu <- df_geo_unique %>%
+  filter(area_code == 'lacu2023') %>%
+  select(-description) %>%
+  as.data.frame()
+```
+
+
+```{r - geo - shp}
+
+library(sf)
+f <- file.path('./data/01_raw/statistical-gis-boundaries-london/ESRI', 'London_Borough_Excluding_MHW.shp')
+gla_bor <- st_read(f) %>%
+  select(-any_of(c("SUB_2009", "SUB_2006" )))
+names(gla_bor)
+plot(gla_bor[1])
+
+
+
+## merge lacu code with sf data -- perfect match
+geo_bor_sf <- gla_bor %>%
+  left_join(., geo_lacu, by = c('GSS_CODE' = 'geogcode'))
+```
+
+
+```{r - merge}
+
+unique(df_uni$flag)
+
+df_uni_geo_comb <- df_uni %>%
+  left_join(., df_geo_unique, by = 'geogcode') %>%
+  select(-flag, -description) %>%
+  as.data.frame()
+
+unique(df_uni_geo_comb$area_code)
+
+
+
+## filter borough data
+dat_bor <- df_uni_geo_comb %>%
+  filter(area_code == 'lacu2023') %>%
+  pivot_wider(names_from = 'cause of deat', values_from = 'value')
+
+
+
+dat_london <- df_uni_geo_comb %>%
+  filter(area_code == 'gor') %>%
+  as.data.frame()
+
+  
+```
+
+
+
+  use `c4a_gui()` to find proper colors
+  
+```{r - viz - loop plot by yr}
+
+# yr = 2023
+
+yr_list <- unique(dat_bor$date)
+
+
+for (yr in yr_list) {
+  dat <- dat_bor %>%
+    filter(date == yr) %>%
+    left_join(gla_bor, ., by = c('GSS_CODE' = 'geogcode'))
+  
+
+  # Example: pivot columns into long format
+  dat_long <- dat %>%
+    pivot_longer(cols = matches("00|10"),
+                 names_to = "ind",
+                 values_to = "number")
+  
+  # Plot faceted maps
+  map <- 
+    tm_shape(dat_long) +
+    tm_polygons("number", 
+                # palette = "Reds", 
+                fill.scale = tm_scale(values = "brewer.oranges"),
+                fill.free = T) +
+    tm_facets(by = "ind") +
+    tm_layout(legend.show = TRUE,
+              legend.outside = FALSE, component.autoscale = F, 
+              # shrink legend
+              legend.text.size  = .7,   # shrink legend labels
+              # legend.title.size = 1,   # shrink legend title
+              
+              ## continuous legends are treated as histograms/colorbars
+              legend.hist.height = 0.4,  # for continuous color scales
+              legend.hist.width  = 0.5,
+              # legend.width      = 2,   # shrink legend box width
+              # legend.height     = 3,   # shrink legend box height
+              
+              # inner.margins = c(top, left, bottom, right)
+              inner.margins = c(0.01, 0.01, 0.01, 0.1),  # extra space on right
+              legend.frame = F, 
+  
+              legend.position = c("right", "bottom"))
+  
+  # Save as PNG
+  tmap_save(tm = map, filename = paste0("./figures/health_", yr, ".png"), width = 16, height = 9, units = "in", dpi = 300)
+
+}
+```
+
+
+
+```{r - model input -> raster}
+
+yr <- 2021
+
+dat <- dat_bor %>%
+  filter(date == yr) %>%
+  left_join(gla_bor, ., by = c('GSS_CODE' = 'geogcode'))
+
+# Check structure to verify column positions
+str(dat)
+message("Columns 13-18: ", paste(names(dat)[13:18], collapse = ", "))
+
+## Convert to raster at 100m resolution
+# Load packages
+library(sf)
+library(terra)
+
+
+# --- Data preparation ---
+# Ensure sf and project to British National Grid
+dat_bng <- st_transform(dat, 27700)  # EPSG:27700
+
+# ======== Columns to rasterize (13-18) ========
+vars <- names(dat)[13:18]
+message("Rasterizing these columns:\n  - ", paste(vars, collapse = "\n  - "))
+
+# ---- Data cleaning ----
+clean_to_numeric <- function(x) {
+  # Handle units
+  if (inherits(x, "units")) x <- units::drop_units(x)
+  # Handle list columns
+  if (is.list(x)) x <- unlist(x, use.names = FALSE)
+  # Convert to character first for consistent processing
+  x_char <- as.character(x)
+  # Remove commas (thousands separators) and trim whitespace
+  x_char <- gsub(",", "", trimws(x_char))
+  # Convert to numeric, handling NA conversions
+  suppressWarnings(as.numeric(x_char))
+}
+
+# Apply cleaning only to the target variables
+dat_bng <- dat_bng %>%
+  mutate(across(all_of(vars), clean_to_numeric))
+
+# Check for excessive NAs after conversion
+na_counts <- sapply(vars, function(col) sum(is.na(dat_bng[[col]])))
+message("NA counts after conversion:\n", 
+        paste(paste0("  - ", vars, ": ", na_counts), collapse = "\n"))
+
+# Convert to SpatVector
+v_bng <- terra::vect(dat_bng)
+
+# ======== Template Raster ========
+r_tmpl <- terra::rast(v_bng, resolution = 100)
+
+# Output folder
+out_dir <- "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_100m_bng"  
+# Fixed leading dot
+if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
+
+# ======== Safe naming function ========
+safe_name <- function(x) {
+  # Remove special characters, replace spaces with underscores
+  nm <- gsub("[^a-zA-Z0-9._]", "_", x)
+  nm <- gsub("_+", "_", nm)  # Collapse multiple underscores
+  nm <- gsub("^_|_$", "", nm)  # Remove leading/trailing underscores
+  tolower(nm)  # Optional: convert to lowercase for consistency
+}
+
+
+# Set PROJ library path (add this before any spatial operations)
+if (Sys.getenv("PROJ_LIB") == "") {
+  Sys.setenv(PROJ_LIB = system.file("proj", package = "terra"))
+}
+if (Sys.getenv("GDAL_DATA") == "") {
+  Sys.setenv(GDAL_DATA = system.file("gdal", package = "terra"))
+}
+
+
+# ======== Rasterize each variable ========
+rasters <- list()
+
+for (col in vars) {
+  message("Processing: ", col)
+  
+  # Ensure the column is numeric
+  if (!is.numeric(v_bng[[col]])) {
+    v_bng[[col]] <- clean_to_numeric(v_bng[[col]])
+  }
+  
+  # Rasterize
+  r <- terra::rasterize(
+    v_bng,         # Source vector data (polygons with attributes)
+    r_tmpl,        # Target raster template (empty grid)
+    field = col,   # Which attribute column to use
+    # How to handle multiple polygons overlapping one raster cell
+    fun = "mean",  # How to aggregate values
+    na.rm = TRUE,  # Handle missing values
+    touches = TRUE # How to treat edge cells
+  )
+  
+  # Create safe filename
+  safe_col <- safe_name(col)
+  filename <- paste0(safe_col, "_bng100m_", yr, ".tif")
+  output_path <- file.path(out_dir, filename)
+  
+  # Write raster
+  terra::writeRaster(r, output_path, overwrite = TRUE)
+  
+  # Store in list
+  rasters[[safe_col]] <- r
+  
+  message("Saved: ", filename)
+}
+
+# ======== Completion message ========
+message("All ", length(vars), " rasters written to: ", normalizePath(out_dir))
+message("Rasters created: \n", paste(names(rasters), collapse = ", \n"))
+```
+
