@@ -125,7 +125,7 @@ dat_london <- df_uni_geo_comb %>%
 
   use `c4a_gui()` to find proper colors
   
-```{r - viz - loop plot by yr}
+```{r - viz - loop plot by yr, eval=FALSE, include=FALSE}
 
 # yr = 2023
 
@@ -182,13 +182,27 @@ for (yr in yr_list) {
 
 yr <- 2021
 
+
+resolution_target = 10 # meters
+
+
 dat <- dat_bor %>%
   filter(date == yr) %>%
-  left_join(gla_bor, ., by = c('GSS_CODE' = 'geogcode'))
+  left_join(gla_bor, ., by = c('GSS_CODE' = 'geogcode')) %>%
+  pivot_longer(cols = 13:18, names_to = 'ind', values_to = 'death_case') %>%
+  mutate(
+    # 1 hectare = 10,000 m²
+    cases_per_m2 = death_case / (HECTARES * 10000),
+    cases_per_px = cases_per_m2 * (resolution_target^2) 
+  ) 
+
+dat_w <- dat %>%
+  select(-death_case, -cases_per_m2) %>%
+  pivot_wider(names_from = 'ind', values_from = 'cases_per_px')
 
 # Check structure to verify column positions
-str(dat)
-message("Columns 13-18: ", paste(names(dat)[13:18], collapse = ", "))
+str(dat_w)
+message("Columns 13-18: ", paste(names(dat_w)[13:18], collapse = ", "))
 
 ## Convert to raster at 100m resolution
 # Load packages
@@ -198,10 +212,10 @@ library(terra)
 
 # --- Data preparation ---
 # Ensure sf and project to British National Grid
-dat_bng <- st_transform(dat, 27700)  # EPSG:27700
+dat_bng <- st_transform(dat_w, 27700)  # EPSG:27700
 
 # ======== Columns to rasterize (13-18) ========
-vars <- names(dat)[13:18]
+vars <- names(dat_w)[14:19]
 message("Rasterizing these columns:\n  - ", paste(vars, collapse = "\n  - "))
 
 # ---- Data cleaning ----
@@ -231,10 +245,10 @@ message("NA counts after conversion:\n",
 v_bng <- terra::vect(dat_bng)
 
 # ======== Template Raster ========
-r_tmpl <- terra::rast(v_bng, resolution = 100)
+r_tmpl <- terra::rast(v_bng, resolution = resolution_target)
 
 # Output folder
-out_dir <- "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_100m_bng"  
+out_dir <- "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_10m_bng"  
 # Fixed leading dot
 if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
 
@@ -252,6 +266,7 @@ safe_name <- function(x) {
 if (Sys.getenv("PROJ_LIB") == "") {
   Sys.setenv(PROJ_LIB = system.file("proj", package = "terra"))
 }
+
 if (Sys.getenv("GDAL_DATA") == "") {
   Sys.setenv(GDAL_DATA = system.file("gdal", package = "terra"))
 }
@@ -281,7 +296,7 @@ for (col in vars) {
   
   # Create safe filename
   safe_col <- safe_name(col)
-  filename <- paste0(safe_col, "_bng100m_", yr, ".tif")
+  filename <- paste0(safe_col, "_bng10m_", yr, ".tif")
   output_path <- file.path(out_dir, filename)
   
   # Write raster
