@@ -6,6 +6,7 @@
 import logging
 import sys
 import numpy as np
+import os
 
 import natcap.invest.urban_cooling_model
 import natcap.invest.utils
@@ -21,11 +22,8 @@ handler.setFormatter(formatter)
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 
 args = {
-    'aoi_vector_path': 'G:\\Shared drives\\Wellcome Trust Project '
-                       'Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\AOIs\\London_Borough_aoi.shp',
-    'avg_rel_humidity': '',
-    'biophysical_table_path': 'G:\\Shared drives\\Wellcome Trust Project '
-                              'Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\LULC\\Biophysical_table_ukech_2021_london_with_TCC.csv',
+    'aoi_vector_path': '',
+    'biophysical_table_path': '',
     'building_vector_path': '',
     'cc_method': 'factors',
     'cc_weight_albedo': '',
@@ -35,10 +33,8 @@ args = {
     'do_productivity_valuation': False,
     'energy_consumption_table_path': '',
     'green_area_cooling_distance': '450',
-    'lulc_raster_path': 'G:\\Shared drives\\Wellcome Trust Project '
-                        'Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\LULC\\LCM2023_London_10m_clip2aoi_tcc24_scenario2_opp2treecover.tif',
-    'ref_eto_raster_path': 'G:\\Shared drives\\Wellcome Trust Project '
-                           'Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\evapotranspiration\\et0_V3_07_clipped_reprojected.tif',
+    'lulc_raster_path': '',
+    'ref_eto_raster_path': '',
     'results_suffix': '',
     't_air_average_radius': '500',
     't_ref': '20',
@@ -47,23 +43,45 @@ args = {
 }
 
 if __name__ == '__main__':
-    # create an array with pairs of temps and UHI values
-    variables = np.array([[20, 2], [20, 5], [22, 2], [22, 5], [25, 2], [25, 5]])
-    climate = ('current', 'future')
-    # Loop through current and future scenarios
+    path_prefix = sys.argv[1]
+    # set variables with correct prefixes
+    args['aoi_vector_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.shp')
+    args['lulc_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario2_opp2treecover.tif')
+    args['ref_eto_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/evapotranspiration/et0_V3_07_clipped_reprojected.tif')
+    # create an array with groups of temps, UHI values and humidity
+    variables = np.array([[20, 2, 66.9],[20, 5, 66.9], [22, 2, 55],
+                          [22, 5, 55], [25, 2, 45], [25, 5, 45]])
+    climate = ('current')
+    #climate = ('current', 'future')
     for c in climate:
-        args['workspace_dir'] = f'G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs\\scenario2\\{c}_climate'
         print(args['workspace_dir'])
         if c == 'future':
-            args['ref_eto_raster_path'] = "G:\\Shared drives\\Wellcome Trust Project Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs\\evapotranspiration\\pet_all_modal_2041_2060_07_245_london_clipped.tif"
+            args['ref_eto_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/evapotranspiration/pet_all_modal_2041_2060_07_245_london_clipped.tif')
         else:
             None
         # Loops through the different temperatures and degrees:
-        for temp, uhi in variables:
+        for temp, uhi, hum in variables:
             # set the temperatures and UHI values
             args['t_ref'] = temp
             args['uhi_max'] = uhi
-            # set the suffix to have correct temp and uhi
-            args['results_suffix'] = f'london_{c}_scenario_{temp}deg_{uhi}uhi'
-            natcap.invest.urban_cooling_model.execute(args)
+            # determine variables depending on if we are running
+            # work productivity or not
+            if sys.argv[2] == '--eap':
+                args['do_energy_valuation'] = True
+                args['do_productivity_valuation'] = True
+                args['avg_rel_humidity'] = hum
+                args['biophysical_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/Biophysical_table_ukech_2021_london_with_TCC.csv')
+                args['building_vector_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/bld_with_attr_compact_ucm.gpkg')
+                args['energy_consumption_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/_UCM_Energy Consumption Table.csv')
+                # Loop through current and future scenarios
+                # set the suffix to have correct temp and uhi
+                args['workspace_dir'] = os.path.join(path_prefix, '2_postprocess_intermediate/UCM_official_runs/scenario2/work_and_energy_runs')
+                args['results_suffix'] = f'london_scenario_{temp}deg_{uhi}uhi_{hum}hum_energy_productivity'
+                natcap.invest.urban_cooling_model.execute(args)
+            else:
+            # Loop through current and future scenarios
+                # set the suffix to have correct temp and uhi
+                args['workspace_dir'] = f'{path_prefix}/2_postprocess_intermediate/UCM_official_runs/scenario2/{c}_climate'
+                args['results_suffix'] = f'london_{c}_scenario_{temp}deg_{uhi}uhi'
+                natcap.invest.urban_cooling_model.execute(args)
     
