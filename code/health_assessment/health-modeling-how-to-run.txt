@@ -1,0 +1,7 @@
+
+
+In `VS Code` / Terminal
+
+cd D:\natcap\urban-cooling-health\code\health_assessment
+
+.\health-modeling.bat

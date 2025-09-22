@@ -768,12 +768,20 @@ def main(args):
     pd.DataFrame(results).to_csv(os.path.join(args.out_dir, "city_totals_deterministic_v2.csv"), index=False)
     print("✓ Analysis completed successfully!")
 
+
+    # -----------------------------------------------------------------
     # 3) Optional Monte Carlo uncertainty analysis
+    # -----------------------------------------------------------------
     if args.n_draws and args.n_draws > 0:
         print(f"\n\n Running Monte Carlo simulation with {args.n_draws} draws...")
         rng = np.random.default_rng(args.seed)
+        
+        # summary rows per cause
         mc_rows = []
         
+        # container to store all draws per cause 
+        cause_draws = {}  #  {cause_name: np.ndarray of shape (n_draws,)}
+
         for cause in DEFAULT_CAUSES:
             # Select appropriate baseline deaths raster
             if cause.name == "cardiovascular":
@@ -797,15 +805,20 @@ def main(args):
             # Generate random beta values from normal distribution
             betas = rng.normal(loc=beta_hat, scale=se, size=args.n_draws)
 
-            # Calculate excess deaths for each beta
-            totals = []
-            for b in betas:
+            # Calculate city total excess deaths for each draw (scalar per draw)
+            totals = np.empty(args.n_draws, dtype=np.float64)  # preallocate
+            for j, b in enumerate(betas):
                 rr = rr_from_deltaT(b, dT)
                 af = af_from_rr(rr)
-                exc = excess_deaths(af, adjusted_deaths)  # Use adjusted_deaths instead of mort_rate
-                totals.append(float(np.nansum(exc)))
+                exc = excess_deaths(af, adjusted_deaths)
+                totals[j] = float(np.nansum(exc))
 
-            # Calculate summary statistics
+
+            # 1/2. Stash full draw vector
+            cause_draws[cause.name] = totals 
+
+
+            # 2/2. Calculate summary statistics
             totals = np.array(totals, dtype=float)
             low, med, high = np.percentile(totals, [2.5, 50, 97.5])
             mc_rows.append({
@@ -823,11 +836,25 @@ def main(args):
             
             print(f"  {cause.name}: {np.mean(totals):.1f} ± {np.std(totals):.1f} excess deaths")
 
-        # Save Monte Carlo results
+
+        # ------------------------------------------------------
+        # Save outputs
+        # ------------------------------------------------------
+        # 1/2. Save Monte Carlo results
         mc_df = pd.DataFrame(mc_rows)
         mc_output_path = os.path.join(args.out_dir, "city_totals_monte_carlo.csv")
         mc_df.to_csv(mc_output_path, index=False)
         print(f"Monte Carlo results saved to: {mc_output_path}")
+
+        # 2/2. save full draws matrix (n_draws x causes)
+        # Columns are per cause; add a 1-based draw index column for readability.
+        draws_df = pd.DataFrame({name: vals for name, vals in cause_draws.items()}) 
+        draws_df.insert(0, "draw", np.arange(1, args.n_draws + 1))
+        draws_path = os.path.join(args.out_dir, "city_total_draws_by_cause.csv") 
+        draws_df.to_csv(draws_path, index=False) 
+        print(f"Full draw matrix saved to: {draws_path}")
+
+
         
         # Also save full distribution for advanced analysis
         if args.n_draws <= 1000:  # Only save if not too large
