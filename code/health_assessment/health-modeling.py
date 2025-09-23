@@ -765,7 +765,7 @@ def main(args):
         })
 
     # Save deterministic results
-    pd.DataFrame(results).to_csv(os.path.join(args.out_dir, "city_totals_deterministic_v2.csv"), index=False)
+    pd.DataFrame(results).to_csv(os.path.join(args.out_dir, "city_totals_deterministic.csv"), index=False)
     print("✓ Analysis completed successfully!")
 
 

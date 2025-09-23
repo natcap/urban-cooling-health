@@ -16,17 +16,27 @@ library(stringr)
 ## R Markdown
 
 ```{r}
-dir <- 'G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures'
+dir <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/ucm_output_postprocess'
 
-df <- read_csv(file.path(dir, 'T_air_london_8_zonal_stats_long.csv'), show_col_types = F) %>%
-  mutate(climate = str_extract(raster, "\\d+deg_\\d+uhi")) %>%
+df <- read_csv(file.path(dir, 'T_air_london_6_zonal_stats_long.csv'), show_col_types = F) %>%
+ 
+  
+  
   mutate(
     year = case_when(
-      str_detect(raster, "current") ~ 2021,
-      str_detect(raster, "future")  ~ 2050,
+      str_detect(raster, "20.0deg") ~ 2021,
+      str_detect(raster, "25.0deg") ~ 2050,
       TRUE ~ NA_real_
     )
   ) %>%
+  
+  # mutate(climate = str_extract(raster, "\\d+deg_\\d+uhi")) %>%
+  # mutate(
+  #    climate = case_when(
+  #      year < 2030 ~ 'current',
+  #      T ~ 'future'
+  #    )
+  #    ) %>%
   rename('T_mean' = 'mean')
 ```
 
@@ -43,7 +53,7 @@ str(df)
 df_summary <- df %>%
   select(-raster) %>%
   as.data.frame() %>%
-  group_by(lc_scenario, climate, year) %>%
+  group_by(lc_scenario, year) %>%
   # dplyr::group_by(lc_scenario, climate) %>%
   dplyr::summarise(
     mean = mean(T_mean, na.rm = TRUE),          # group mean
@@ -53,31 +63,22 @@ df_summary <- df %>%
   )
 
 
-# df_summary <- df %>%
-#   group_by(lc_scenario, climate, year) %>%
-#   summarise(
-#     mean = mean(mean, na.rm = TRUE),
-#     sd   = sd(mean, na.rm = TRUE),
-#     n    = sum(!is.na(mean)),
-#     se   = ifelse(n > 1, sd / sqrt(n), NA_real_)
-#   )
-
-
 # Bar plot with error bars
-ggplot(df_summary, aes(x = lc_scenario, y = mean, fill = climate)) +
-  geom_col(position = position_dodge(width = 0.9)) +
+ggplot(df_summary, aes(x = lc_scenario, y = mean)) +
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.5) +
   geom_errorbar(
     aes(ymin = mean - sd, ymax = mean + sd),
     width = 0.2,
     position = position_dodge(width = 0.9)
   ) +
-  facet_wrap(~ year) +
+  # facet_wrap(~ year) + # , scale = 'free_y'
+  facet_wrap(~ year, scale = 'free_y') + # 
   labs(
     x = "Land Cover Scenario",
     y = "Mean Value ± SD",
-    fill = "Climate"
+    # fill = "year"
   ) +
-  scale_fill_brewer(palette = "Set2", direction = 1) +  # reverse order
+  # scale_fill_brewer(palette = "Set2", direction = 1) +  # reverse order
   theme_minimal() +
   coord_cartesian(ylim = c(20, NA)) +   # start at 20, let top auto-scale
   theme(
@@ -87,7 +88,7 @@ ggplot(df_summary, aes(x = lc_scenario, y = mean, fill = climate)) +
 
 # Save your last ggplot as PNG
 ggsave(
-  filename = file.path(dir, "ndvi_barplot.png"),   # file name
+  filename = file.path(dir, "temp_scenarios.png"),   # file name
   width    = 8,                    # width in inches
   height   = 6,                    # height in inches
   units = 'in',
