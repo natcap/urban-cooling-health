@@ -50,3 +50,4 @@ rsconnect/
 
 # Environmental variables
 .env
+../slurm-*.out

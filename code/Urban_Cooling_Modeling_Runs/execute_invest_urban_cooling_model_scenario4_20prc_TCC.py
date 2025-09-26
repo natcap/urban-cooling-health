@@ -81,6 +81,6 @@ if __name__ == '__main__':
             else:
             # Loop through current and future scenarios
                 # set the suffix to have correct temp and uhi
-                args['workspace_dir'] = f'{path_prefix}/2_postprocess_intermediate/UCM_official_runs/current_lulc/{c}_climate'
+                args['workspace_dir'] = f'{path_prefix}/2_postprocess_intermediate/UCM_official_runs/scenario4/{c}_climate'
                 args['results_suffix'] = f'london_{c}_scenario_{temp}deg_{uhi}uhi'
                 natcap.invest.urban_cooling_model.execute(args)
