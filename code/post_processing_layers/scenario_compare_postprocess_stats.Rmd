@@ -1,0 +1,168 @@
+---
+title: "ucm_post_process_stats"
+author: "Emily Pavia"
+date: "2025-09-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r set paths and folders and library items}
+library(sf)
+library(tidyverse)
+
+base <- "G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs"
+
+scenario <- c('current_lulc', 'scenario1', 'scenario2','scenario3','scenario4')
+
+```
+
+## Compare the current and future scenarios to see if there is a significant difference.
+This comparison is between the current LULC scenario at 20deg and 2UHI
+```{r Read baseline current and future scenarios, echo=FALSE}
+current <- st_read(paste0(base, '\\current_lulc\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="current_lulc")
+
+future <- st_read(paste0(base, '\\current_lulc\\future_climate\\uhi_results_london_future_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.)
+
+
+```
+```{r Run ttests on current and future scenarios with 20 deg and 2uhi}
+
+# Perform a t-test on cc and temp
+t.test(current['avg_cc'], future['avg_cc'])
+t.test(current['avg_tmp_v'], future['avg_tmp_v'])
+
+# Results: not significantly different for 20deg and 2 uhi!
+```
+
+```{r compare current and future with 25deg and 5 uhi}
+current_maxtemp <- st_read(paste0(base, '\\current_lulc\\current_climate\\uhi_results_london_current_scenario_25deg_5uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="current_lulc")
+
+future_maxtemp <- st_read(paste0(base, '\\current_lulc\\future_climate\\uhi_results_london_future_scenario_25deg_5uhi.shp')) %>% st_drop_geometry(.)
+
+```
+
+```{r}
+t.test(current_maxtemp['avg_cc'], future_maxtemp['avg_cc'])
+t.test(current_maxtemp['avg_tmp_v'], future_maxtemp['avg_tmp_v'])
+```
+
+```{r Read all shapefiles for 20 degrees and 2 uhi for comparisons}
+#current <- st_read(paste0(base, '\\current_lulc\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.)
+
+scenario1 <- st_read(paste0(base, '\\scenario1\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario1")
+
+scenario2 <- st_read(paste0(base, '\\scenario2\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario2")
+
+scenario3 <- st_read(paste0(base, '\\scenario3\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario3")
+
+# combine to one dataframe
+ucm_20deg_2uhi <- bind_rows(current, scenario1, scenario2,scenario3)
+
+```
+
+```{r See if there is a statistical difference between the 3}
+# check first for normality
+#shapiro.test(current$avg_tmp_v)
+
+# perform ANOVA
+oneway.test(avg_cc ~ scenario, data = ucm_20deg_2uhi, var.equal = TRUE)
+oneway.test(avg_tmp_v ~ scenario, data = ucm_20deg_2uhi, var.equal = TRUE)
+
+# there is a signficant difference somewhere, so we want to know where
+
+# do ttests
+t.test(current['avg_cc'], scenario1['avg_cc']) # difference here
+t.test(current['avg_cc'], scenario2['avg_cc'])
+t.test(current['avg_cc'], scenario3['avg_cc'])
+t.test(scenario1['avg_cc'], scenario2['avg_cc'])
+t.test(scenario1['avg_cc'], scenario3['avg_cc'])
+t.test(scenario2['avg_cc'], scenario3['avg_cc'])
+
+# there appears to be differences between scenario 1 and all others
+# as well as between 2 and 3
+
+t.test(current['avg_tmp_v'], scenario1['avg_tmp_v']) # difference here
+t.test(current['avg_tmp_v'], scenario2['avg_tmp_v'])
+t.test(current['avg_tmp_v'], scenario3['avg_tmp_v'])
+t.test(scenario1['avg_tmp_v'], scenario2['avg_tmp_v'])
+t.test(scenario1['avg_tmp_v'], scenario3['avg_tmp_v'])
+```
+
+
+```{r See if there is a statistical difference between the 3}
+t.test(scenario2['avg_tmp_v'], scenario3['avg_tmp_v'])
+```
+
+```{r Read all shapefiles for 25 degrees and 5 uhi for comparisons}
+current_max <- st_read(paste0(base, '\\current_lulc\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.)%>% select(-c(2:7, 11:14)) %>% mutate(scenario="current_lulc")
+
+scenario1_max <- st_read(paste0(base, '\\scenario1\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario1")
+
+scenario2_max <- st_read(paste0(base, '\\scenario2\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario2")
+
+scenario3_max <- st_read(paste0(base, '\\scenario3\\current_climate\\uhi_results_london_current_scenario_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario3")
+
+# combine to one dataframe
+ucm_25deg_5uhi <- bind_rows(current, scenario1, scenario2,scenario3)
+```
+```{r See if there is a statistical difference between the 3}
+# check first for normality
+#shapiro.test(current$avg_tmp_v)
+
+# do ttests
+t.test(current_max['avg_cc'], scenario1_max['avg_cc']) # difference here
+t.test(current_max['avg_cc'], scenario2_max['avg_cc'])
+t.test(current_max['avg_cc'], scenario3_max['avg_cc'])
+t.test(scenario1_max['avg_cc'], scenario2_max['avg_cc'])
+t.test(scenario1_max['avg_cc'], scenario3_max['avg_cc'])
+t.test(scenario2_max['avg_cc'], scenario3_max['avg_cc'])
+
+# there appears to be differences between scenario 1 and all others
+# as well as between 2 and 3
+
+t.test(current_max['avg_tmp_v'], scenario1_max['avg_tmp_v']) # difference here
+t.test(current_max['avg_tmp_v'], scenario2_max['avg_tmp_v'])
+t.test(current_max['avg_tmp_v'], scenario3_max['avg_tmp_v'])
+t.test(scenario1_max['avg_tmp_v'], scenario2_max['avg_tmp_v'])
+t.test(scenario1_max['avg_tmp_v'], scenario3_max['avg_tmp_v'])
+
+```
+```{r Baseline to the % canopy increase scenarios}
+
+scenario4_10prc <- st_read(paste0(base, '\\scenario4\\current_climate\\tcc_10prc\\uhi_results_london_current_scenario4_10prc_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario4_10prc")
+
+scenario4_20prc <- st_read(paste0(base, '\\scenario4\\current_climate\\tcc_20prc\\uhi_results_london_current_scenario4_20prc_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario4_20prc")
+
+scenario4_30prc <- st_read(paste0(base, '\\scenario4\\current_climate\\tcc_30prc\\uhi_results_london_current_scenario4_30prc_20deg_2uhi.shp')) %>% st_drop_geometry(.) %>% select(-c(2:7, 11:14)) %>% mutate(scenario="scenario4_30prc")
+
+# combine to one dataframe
+ucm_20deg_2uhi_scenario4 <- bind_rows(current, scenario4_10prc, scenario4_20prc,scenario4_30prc)
+
+```
+```{r}
+# do ttests
+t.test(current['avg_cc'], scenario4_10prc['avg_cc']) # difference here
+t.test(current['avg_cc'], scenario4_20prc['avg_cc'])
+t.test(current['avg_cc'], scenario4_30prc['avg_cc'])
+t.test(scenario1['avg_cc'], scenario4_10prc['avg_cc'])
+t.test(scenario1['avg_cc'], scenario4_20prc['avg_cc'])
+t.test(scenario2['avg_cc'], scenario4_30prc['avg_cc'])
+
+# there appears to be differences between scenario 1 and all others
+# as well as between 2 and 3
+
+t.test(current['avg_tmp_v'], scenario4_10prc['avg_tmp_v']) # difference here
+t.test(current['avg_tmp_v'], scenario4_20prc['avg_tmp_v'])
+t.test(current['avg_tmp_v'], scenario4_30prc['avg_tmp_v'])
+t.test(scenario1['avg_tmp_v'], scenario4_10prc['avg_tmp_v'])
+t.test(scenario1['avg_tmp_v'], scenario4_20prc['avg_tmp_v'])
+t.test(scenario1['avg_tmp_v'], scenario4_30prc['avg_tmp_v'])
+
+```
+

@@ -1,0 +1,475 @@
+---
+title: "ucm_post_process_stats"
+author: "Emily Pavia"
+date: "2025-09-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r set paths and folders and library items, echo=FALSE}
+library(sf)
+library(tidyverse)
+library(ggplot2)
+library(raster)
+
+base <- "G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs"
+
+
+```
+
+
+```{r Read Shapefiles in from current climate scenarios 20 2, echo=FALSE}
+current <- st_read(paste0(base, '\\current_lulc\\work_and_energy_runs\\uhi_results_london_scenario_20.0deg_2.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(.,-c(2:7, 13:14)) %>% mutate(scenario="current_lulc")
+
+scenario1 <- st_read(paste0(base, '\\scenario1\\work_and_energy_runs\\uhi_results_london_scenario_20.0deg_2.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario1")
+
+scenario2 <- st_read(paste0(base, '\\scenario2\\work_and_energy_runs\\uhi_results_london_scenario_20.0deg_2.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario2")
+
+scenario3 <- st_read(paste0(base, '\\scenario3\\work_and_energy_runs\\uhi_results_london_scenario_20.0deg_2.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario3")
+
+scenario4_20prc <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_20prc\\uhi_results_london_scenario4_20prc_20.0deg_2.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_20prc")
+
+scenario4_30prc <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_30prc\\uhi_results_london_scenario4_30prc_20.0deg_2.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_30prc")
+
+# Combine into 1 dataframe
+ucm_20deg_2uhi <- bind_rows(current, scenario1, scenario2, scenario3, scenario4_20prc,scenario4_30prc) %>% st_drop_geometry()
+
+write.csv(ucm_20deg_2uhi, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_by_borough_20deg_2uhi_work_and_energy.csv"))
+
+# calculate average temps
+ucm_20deg_2uhi_avg <- ucm_20deg_2uhi %>% group_by(scenario) %>% 
+  summarise(avg_tmp_v_avg = mean(avg_tmp_v), avg_tmp_v_sd=sd(avg_tmp_v),
+            avg_tmp_an_avg = mean(avg_tmp_an), avg_tmp_an_sd=sd(avg_tmp_an))
+
+# write out table
+write.csv(ucm_20deg_2uhi_avg, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_summaries_20deg_2uhi_work_and_energy.csv"))
+
+ggplot(ucm_20deg_2uhi_avg, aes(x = scenario, y=avg_tmp_v_avg)) +
+  geom_col()
+
+```
+
+
+
+```{r Read Shapefiles in from current climate scenarios 20 5, echo=FALSE}
+current <- st_read(paste0(base, '\\current_lulc\\work_and_energy_runs\\uhi_results_london_scenario_20.0deg_5.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(.,-c(2:7, 13:14)) %>% mutate(scenario="current_lulc")
+
+scenario1 <- st_read(paste0(base, '\\scenario1\\work_and_energy_runs\\uhi_results_london_scenario_20.0deg_5.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario1")
+
+scenario2 <- st_read(paste0(base, '\\scenario2\\work_and_energy_runs\\uhi_results_london_scenario_20.0deg_5.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario2")
+
+scenario3 <- st_read(paste0(base, '\\scenario3\\work_and_energy_runs\\uhi_results_london_scenario_20.0deg_5.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario3")
+
+scenario4_20prc <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_20prc\\uhi_results_london_scenario4_20prc_20.0deg_5.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_20prc")
+
+scenario4_30prc <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_30prc\\uhi_results_london_scenario4_30prc_20.0deg_5.0uhi_66.9hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_30prc")
+
+# Combine into 1 dataframe
+ucm_20deg_5uhi <- bind_rows(current, scenario1, scenario2, scenario3, scenario4_20prc,scenario4_30prc) %>% st_drop_geometry()
+
+write.csv(ucm_20deg_5uhi, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_by_borough_20deg_5uhi_work_and_energy.csv"))
+
+# calculate average temps
+ucm_20deg_5uhi_avg <- ucm_20deg_5uhi %>% group_by(scenario) %>% 
+  summarise(avg_tmp_v_avg = mean(avg_tmp_v), avg_tmp_v_sd=sd(avg_tmp_v),
+            avg_tmp_an_avg = mean(avg_tmp_an), avg_tmp_an_sd=sd(avg_tmp_an))
+
+# write out table
+write.csv(ucm_20deg_5uhi_avg, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_summaries_20deg_5uhi_work_and_energy.csv"))
+
+ggplot(ucm_20deg_5uhi_avg, aes(x = scenario, y=avg_tmp_v_avg)) +
+  geom_col()
+
+```
+
+## Compare the current and future scenarios to see if there is a significant difference.
+This comparison is between the current LULC scenario at 22deg and 2UHI
+```{r Read Shapefiles in from current climate scenarios 22 2, echo=FALSE}
+current <- st_read(paste0(base, '\\current_lulc\\work_and_energy_runs\\uhi_results_london_scenario_22.0deg_2.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(.,-c(2:7, 13:14)) %>% mutate(scenario="current_lulc")
+
+scenario1 <- st_read(paste0(base, '\\scenario1\\work_and_energy_runs\\uhi_results_london_scenario_22.0deg_2.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario1")
+
+scenario2 <- st_read(paste0(base, '\\scenario2\\work_and_energy_runs\\uhi_results_london_scenario_22.0deg_2.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario2")
+
+scenario3 <- st_read(paste0(base, '\\scenario3\\work_and_energy_runs\\uhi_results_london_scenario3_22.0deg_2.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario3")
+
+scenario4_20prc <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_20prc\\uhi_results_london_scenario4_20prc_22.0deg_2.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_20prc")
+
+scenario4_30prc <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_30prc\\uhi_results_london_scenario4_30prc_22.0deg_2.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_30prc")
+
+# Combine into 1 dataframe
+ucm_22deg_2uhi <- bind_rows(current, scenario1, scenario2, scenario3, scenario4_20prc,scenario4_30prc) %>% st_drop_geometry()
+
+write.csv(ucm_22deg_2uhi, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_by_borough_22deg_2uhi_work_and_energy.csv"))
+
+# calculate average temps
+ucm_22deg_2uhi_avg <- ucm_22deg_2uhi %>% group_by(scenario) %>% 
+  summarise(avg_tmp_v_avg = mean(avg_tmp_v), avg_tmp_v_sd=sd(avg_tmp_v),
+            avg_tmp_an_avg = mean(avg_tmp_an), avg_tmp_an_sd=sd(avg_tmp_an))
+
+# write out table
+write.csv(ucm_22deg_2uhi_avg, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_summaries_22deg_2uhi_work_and_energy.csv"))
+
+
+ggplot(ucm_22deg_2uhi_avg, aes(x = scenario, y=avg_tmp_v_avg)) +
+  geom_col()
+
+```
+```{r t-tests for 22 temp and 2 uhi}
+#current <- current %>% st_drop_geometry()
+#scenario1 <- scenario1 %>% st_drop_geometry()
+#scenario1 <- scenario1 %>% st_drop_geometry()
+#scenario2 <- scenario2 %>% st_drop_geometry()
+#scenario3 <- scenario3 %>% st_drop_geometry()
+#scenario4_20prc <- scenario4_20prc %>% st_drop_geometry()
+#scenario4_30prc <- scenario4_30prc %>% st_drop_geometry()
+
+t.test(scenario3['avg_tmp_v'],scenario1['avg_tmp_v'], var.equal=TRUE)
+t.test(scenario3['avg_tmp_v'],scenario2['avg_tmp_v'], var.equal=TRUE)
+t.test(scenario3['avg_tmp_v'],scenario3['avg_tmp_v'])
+t.test(scenario2['avg_tmp_v'],scenario4_20prc['avg_tmp_v'])
+t.test(scenario2['avg_tmp_v'],scenario4_30prc['avg_tmp_v'])
+
+```
+
+
+```{r Read Shapefiles in from current climate scenarios 22 5, echo=FALSE}
+
+current <- st_read(paste0(base, '\\current_lulc\\work_and_energy_runs\\uhi_results_london_scenario_22.0deg_5.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(.,-c(2:7, 13:14)) %>% mutate(scenario="current_lulc")
+
+scenario1 <- st_read(paste0(base, '\\scenario1\\work_and_energy_runs\\uhi_results_london_scenario_22.0deg_5.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario1")
+
+scenario2 <- st_read(paste0(base, '\\scenario2\\work_and_energy_runs\\uhi_results_london_scenario_22.0deg_5.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario2")
+
+scenario3 <- st_read(paste0(base, '\\scenario3\\work_and_energy_runs\\uhi_results_london_scenario_22.0deg_5.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario3")
+
+scenario4_20prc <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_20prc\\uhi_results_london_scenario4_20prc_22.0deg_5.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_20prc")
+
+scenario4_30prc <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_30prc\\uhi_results_london_scenario4_30prc_22.0deg_5.0uhi_55.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_30prc")
+
+# Combine into 1 dataframe
+ucm_22deg_5uhi <- bind_rows(current, scenario1, scenario2, scenario3, scenario4_20prc,scenario4_30prc) %>% st_drop_geometry()
+
+write.csv(ucm_22deg_5uhi, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_by_borough_22deg_5uhi_work_and_energy.csv"))
+
+# calculate average temps
+ucm_22deg_5uhi_avg <- ucm_22deg_5uhi %>% group_by(scenario) %>% 
+  summarise(avg_tmp_v_avg = mean(avg_tmp_v), avg_tmp_v_sd=sd(avg_tmp_v),
+            avg_tmp_an_avg = mean(avg_tmp_an), avg_tmp_an_sd=sd(avg_tmp_an))
+
+# write out table
+write.csv(ucm_22deg_5uhi_avg, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_summaries_22deg_5uhi_work_and_energy.csv"))
+
+
+ggplot(ucm_22deg_5uhi_avg, aes(x = scenario, y=avg_tmp_v_avg)) +
+  geom_col()
+```
+```{r map anomaly locations = current scenario}
+ggplot(current, aes(fill = avg_tmp_an)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Temperature Anomaly\n(degrees C)",
+                       breaks = c(min(current$avg_tmp_an),
+                                  mean(current$avg_tmp_an),
+                                    max(current$avg_tmp_an)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Temperature Anomaly (degrees C over Reference Temp) with the Current LULC Scenario",
+       subtitle="Reference Temperature = 22 deg C, UHI = 2 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+ggplot(current, aes(fill = avg_tmp_v)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Average Temperature\n(degrees C)",
+                       breaks = c(min(current$avg_tmp_v),
+                                  mean(current$avg_tmp_v),
+                                    max(current$avg_tmp_v)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Average Temperature (degrees C) with the Current LULC Scenario",
+       subtitle="Reference Temperature = 22 deg C, UHI = 2 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+```
+```{r map anomaly locations = scenario 4 (20%)}
+ggplot(scenario4_20prc, aes(fill = avg_tmp_an)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Temperature Anomaly\n(degrees C)",
+                       breaks = c(min(scenario4_20prc$avg_tmp_an),
+                                  mean(scenario4_20prc$avg_tmp_an),
+                                    max(scenario4_20prc$avg_tmp_an)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Temperature Anomaly (degrees C over Reference Temp) with 20% TCC Increase",
+       subtitle="Reference Temperature = 22 deg C, UHI = 2 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+ggplot(scenario4_20prc, aes(fill = avg_tmp_v)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Average Temperature\n(degrees C)",
+                       breaks = c(min(scenario4_20prc$avg_tmp_v),
+                                  mean(scenario4_20prc$avg_tmp_v),
+                                    max(scenario4_20prc$avg_tmp_v)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Average Temperature (degrees C) with 20% TCC Increase",
+       subtitle="Reference Temperature = 22 deg C, UHI = 2 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+```
+```{r map anomaly locations = scenario 4 (20%)}
+ggplot(scenario4_30prc, aes(fill = avg_tmp_an)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Temperature Anomaly\n(degrees C)",
+                       breaks = c(min(scenario4_30prc$avg_tmp_an),
+                                  mean(scenario4_30prc$avg_tmp_an),
+                                    max(scenario4_30prc$avg_tmp_an)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Temperature Anomaly (degrees C over Reference Temp) with 30% TCC Increase",
+       subtitle="Reference Temperature = 22 deg C, UHI = 2 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+ggplot(scenario4_30prc, aes(fill = avg_tmp_v)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Average Temperature\n(degrees C)",
+                       breaks = c(min(scenario4_30prc$avg_tmp_v),
+                                  mean(scenario4_30prc$avg_tmp_v),
+                                    max(scenario4_30prc$avg_tmp_v)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Average Temperature (degrees C) with 30% TCC Increase",
+       subtitle="Reference Temperature = 22 deg C, UHI = 2 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+```
+
+
+
+```{r Read in temp files}
+current_temp <- raster(paste0(base, "\\current_lulc\\work_and_energy_runs\\intermediate\\T_air_london_scenario_22.0deg_2.0uhi_55.0hum_energy_productivity.tif"))
+plot(current_temp) +
+  theme_void()
+```
+```{r compare current and future with 25deg and 2 uhi, echo = FALSE}
+current_maxtemp <- st_read(paste0(base, '\\current_lulc\\work_and_energy_runs\\uhi_results_london_scenario_25.0deg_2.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(.,-c(2:7, 13:14)) %>% mutate(scenario="current_lulc")
+
+scenario1_maxtemp <- st_read(paste0(base, '\\scenario1\\work_and_energy_runs\\uhi_results_london_scenario_25.0deg_2.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario1")
+
+scenario2_maxtemp <- st_read(paste0(base, '\\scenario2\\work_and_energy_runs\\uhi_results_london_scenario_25.0deg_2.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario2")
+
+scenario3_maxtemp <- st_read(paste0(base, '\\scenario3\\work_and_energy_runs\\uhi_results_london_scenario_25.0deg_2.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario3")
+
+scenario4_20prc_maxtemp <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_20prc\\uhi_results_london_scenario4_20prc_25.0deg_2.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_20prc")
+
+scenario4_30prc_maxtemp <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_30prc\\uhi_results_london_scenario4_30prc_25.0deg_2.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_30prc")
+
+# Combine into 1 dataframe
+ucm_25deg_2uhi <- bind_rows(current_maxtemp, scenario1_maxtemp, scenario2_maxtemp, scenario3_maxtemp, scenario4_20prc_maxtemp,scenario4_30prc_maxtemp) %>% st_drop_geometry()
+
+write.csv(ucm_25deg_2uhi, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_by_borough_25deg_2uhi_work_and_energy.csv"))
+
+# calculate average temps
+ucm_25deg_2uhi_avg <- ucm_25deg_2uhi %>% group_by(scenario) %>% 
+  summarise(avg_tmp_v_avg = mean(avg_tmp_v), avg_tmp_v_sd=sd(avg_tmp_v),
+            avg_tmp_an_avg = mean(avg_tmp_an), avg_tmp_an_sd=sd(avg_tmp_an))
+
+# write out table
+write.csv(ucm_25deg_2uhi_avg, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_summaries_25deg_2uhi_work_and_energy.csv"))
+
+ggplot(ucm_25deg_2uhi_avg, aes(x = scenario, y=avg_tmp_v_avg)) +
+  geom_col()
+```
+
+```{r compare current and future with 25deg and 5 uhi, echo = FALSE}
+current_maxtemp <- st_read(paste0(base, '\\current_lulc\\work_and_energy_runs\\uhi_results_london_scenario_25.0deg_5.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(.,-c(2:7, 13:14)) %>% mutate(scenario="current_lulc")
+
+scenario1_maxtemp <- st_read(paste0(base, '\\scenario1\\work_and_energy_runs\\uhi_results_london_scenario_25.0deg_5.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario1")
+
+scenario2_maxtemp <- st_read(paste0(base, '\\scenario2\\work_and_energy_runs\\uhi_results_london_scenario_25.0deg_5.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario2")
+
+scenario3_maxtemp <- st_read(paste0(base, '\\scenario3\\work_and_energy_runs\\uhi_results_london_scenario3_25.0deg_5.0uhi_45hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario3")
+
+scenario4_20prc_maxtemp <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_20prc\\uhi_results_london_scenario4_20prc_25.0deg_5.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_20prc")
+
+scenario4_30prc_maxtemp <- st_read(paste0(base, '\\scenario4\\work_and_energy_runs\\tcc_30prc\\uhi_results_london_scenario4_30prc_25.0deg_5.0uhi_45.0hum_energy_productivity.shp')) %>% dplyr::select(-c(2:7, 13:14)) %>% mutate(scenario="scenario4_30prc")
+
+# Combine into 1 dataframe
+ucm_25deg_5uhi <- bind_rows(current_maxtemp, scenario1_maxtemp, scenario2_maxtemp, scenario3_maxtemp, scenario4_20prc_maxtemp,scenario4_30prc_maxtemp) %>% st_drop_geometry()
+
+write.csv(ucm_25deg_5uhi, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_by_borough_25deg_5uhi_work_and_energy.csv"))
+
+# calculate average temps
+ucm_25deg_5uhi_avg <- ucm_25deg_5uhi %>% group_by(scenario) %>% 
+  summarise(avg_tmp_v_avg = mean(avg_tmp_v), avg_tmp_v_sd=sd(avg_tmp_v),
+            avg_tmp_an_avg = mean(avg_tmp_an), avg_tmp_an_sd=sd(avg_tmp_an))
+
+# write out table
+write.csv(ucm_25deg_5uhi_avg, paste0(base, "\\ucm_output_postprocess\\ucm_uhi_summaries_25deg_5uhi_work_and_energy.csv"))
+
+ggplot(ucm_25deg_5uhi_avg, aes(x = scenario, y=avg_tmp_v_avg)) +
+  geom_col()
+```
+
+```{r}
+
+```
+
+```{r map anomaly locations = current scenario max temp}
+ggplot(current_maxtemp, aes(fill = avg_tmp_an)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Temperature Anomaly\n(degrees C)",
+                       breaks = c(min(current_maxtemp$avg_tmp_an),
+                                  mean(current_maxtemp$avg_tmp_an),
+                                    max(current_maxtemp$avg_tmp_an)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Temperature Anomaly (degrees C over Reference Temp) with the Current LULC Scenario",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+ggplot(current_maxtemp, aes(fill = avg_tmp_v)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Average Temperature\n(degrees C)",
+                       breaks = c(min(current_maxtemp$avg_tmp_v),
+                                  mean(current_maxtemp$avg_tmp_v),
+                                    max(current_maxtemp$avg_tmp_v)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Average Temperature (degrees C) with the Current LULC Scenario",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+```
+```{r map anomaly locations = scenario 1 max temp}
+ggplot(scenario1_maxtemp, aes(fill = avg_tmp_an)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Temperature Anomaly\n(degrees C)",
+                       breaks = c(min(scenario1_maxtemp$avg_tmp_an),
+                                  mean(scenario1_maxtemp$avg_tmp_an),
+                                    max(scenario1_maxtemp$avg_tmp_an)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Temperature Anomaly (degrees C over Reference Temp): Pavement Scenario",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+ggplot(scenario1_maxtemp, aes(fill = avg_tmp_v)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Average Temperature\n(degrees C)",
+                       breaks = c(min(scenario1_maxtemp$avg_tmp_v),
+                                  mean(scenario1_maxtemp$avg_tmp_v),
+                                    max(scenario1_maxtemp$avg_tmp_v)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Average Temperature (degrees C): Pavement Scenario",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+```
+```{r map anomaly locations = scenario 3 max temp}
+ggplot(scenario3_maxtemp, aes(fill = avg_tmp_an)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Temperature Anomaly\n(degrees C)",
+                       breaks = c(min(scenario3_maxtemp$avg_tmp_an),
+                                  mean(scenario3_maxtemp$avg_tmp_an),
+                                    max(scenario3_maxtemp$avg_tmp_an)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Temperature Anomaly (degrees C over Reference Temp): Tree Risk Scenario",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+ggplot(scenario3_maxtemp, aes(fill = avg_tmp_v)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Average Temperature\n(degrees C)",
+                       breaks = c(min(scenario3_maxtemp$avg_tmp_v),
+                                  mean(scenario3_maxtemp$avg_tmp_v),
+                                    max(scenario3_maxtemp$avg_tmp_v)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Average Temperature (degrees C): Tree Risk Scenario",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+```
+
+```{r map anomaly locations = scenario 4 20prc max temp}
+ggplot(scenario4_20prc_maxtemp, aes(fill = avg_tmp_an)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Temperature Anomaly\n(degrees C)",
+                       breaks = c(min(scenario4_20prc_maxtemp$avg_tmp_an),
+                                  mean(scenario4_20prc_maxtemp$avg_tmp_an),
+                                    max(scenario4_20prc_maxtemp$avg_tmp_an)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Temperature Anomaly (degrees C over Reference Temp) with 20% TCC Increase",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+ggplot(scenario4_20prc_maxtemp, aes(fill = avg_tmp_v)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Average Temperature\n(degrees C)",
+                       breaks = c(min(scenario4_20prc_maxtemp$avg_tmp_v),
+                                  mean(scenario4_20prc_maxtemp$avg_tmp_v),
+                                    max(scenario4_20prc_maxtemp$avg_tmp_v)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Average Temperature (degrees C) with 20% TCC Increase",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+```
+```{r map anomaly locations = scenario 4 30prc max temp}
+ggplot(scenario4_30prc_maxtemp, aes(fill = avg_tmp_an)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Temperature Anomaly\n(degrees C)",
+                       breaks = c(min(scenario4_30prc_maxtemp$avg_tmp_an),
+                                  mean(scenario4_30prc_maxtemp$avg_tmp_an),
+                                    max(scenario4_30prc_maxtemp$avg_tmp_an)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Temperature Anomaly (degrees C over Reference Temp) with 30% TCC Increase",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+ggplot(scenario4_30prc_maxtemp, aes(fill = avg_tmp_v)) +
+  geom_sf() +
+  scale_fill_gradientn(colors = c("pink","red", "darkred"),
+                           name = "Average Temperature\n(degrees C)",
+                       breaks = c(min(scenario4_30prc_maxtemp$avg_tmp_v),
+                                  mean(scenario4_30prc_maxtemp$avg_tmp_v),
+                                    max(scenario4_30prc_maxtemp$avg_tmp_v)),
+                       labels = scales::label_number(accuracy = 0.01)) +
+  ggtitle("Average Temperature (degrees C) with 30% TCC Increase",
+       subtitle="Reference Temperature = 25 deg C, UHI = 5 deg C") +
+  theme_void() +
+  theme(plot.title = element_text(size=12))
+
+```
+```{r ttest on scenario 4 increases}
+t.test(scenario4_20prc_maxtemp$avg_tmp_v, scenario4_30prc_maxtemp$avg_tmp_v)
+t.test(scenario4_20prc_maxtemp$avg_tmp_an, scenario4_30prc_maxtemp$avg_tmp_an)
+
+```
+
+
+
