@@ -72,7 +72,7 @@ if __name__ == '__main__':
                 args['do_productivity_valuation'] = True
                 args['avg_rel_humidity'] = hum
                 args['biophysical_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/Biophysical_table_ukech_2021_london_with_TCC.csv')
-                args['building_vector_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/bld_with_attr_compact_ucm.gpkg')
+                args['building_vector_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/bld_with_attr_compact_ucm2.gpkg')
                 args['energy_consumption_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/_UCM_Energy Consumption Table.csv')
                 # Loop through current and future scenarios
                 # set the suffix to have correct temp and uhi
