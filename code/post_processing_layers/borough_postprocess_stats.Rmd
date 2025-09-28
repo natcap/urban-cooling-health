@@ -1,0 +1,103 @@
+---
+title: "ucm_post_process_stats"
+author: "Emily Pavia"
+date: "2025-09-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r set paths and folders and library items, echo=FALSE}
+library(sf)
+library(tidyverse)
+library(ggplot2)
+library(raster)
+library(purrr)
+
+inbase <- "G:\\Shared drives\\Wellcome Trust Project Data\\1_preprocess\\UrbanCoolingModel\\OfficialWorkingInputs"
+outbase <- "G:\\Shared drives\\Wellcome Trust Project Data\\2_postprocess_intermediate\\UCM_official_runs"
+
+# read in main aoi
+borough_aoi <- st_read(paste0(outbase, "\\ucm_output_postprocess\\london_borough_aoi_with_study_boroughs.shp"))
+highrisk_borough_aoi <- st_read(paste0(outbase, "\\ucm_output_postprocess\\london_borough_aoi_with_at_risk_boroughs.shp"))
+
+boroughlist <- c("Lambeth", "Southwark", "Lewisham", "Crydon", "Camden", "Islington", "City of London", "Westminster")
+```
+
+
+```{r Read in lulc scenarios , echo=FALSE}
+rasters <- list.files(paste0(inbase, "\\LULC"), pattern = "LCM2023_London_10m_clip2aoi*", full.names = TRUE) %>% grep("*.aux.xml", ., invert = TRUE, value = TRUE)
+
+# read rasters into list
+lulcs <- map(rasters, raster)
+
+# clip to aoi
+lulcs_clipped <- lulcs %>% map(~.x %>% crop(.,borough_aoi)) %>% map(~.x %>% mask(.,borough_aoi))
+
+# export clipped rasters
+writeRaster(lulcs_clipped[[1]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_current_lulc.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[2]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario1.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[3]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario2.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[4]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario3.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[5]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario4_10prc.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[6]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario4_20prc.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[7]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario4_30prc.tif"), format="GTiff",overwrite=TRUE)
+
+```
+
+```{r Read in lulc scenarios for high risk boroughs, echo=FALSE}
+rasters <- list.files(paste0(inbase, "\\LULC"), pattern = "LCM2023_London_10m_clip2aoi*", full.names = TRUE) %>% grep("*.aux.xml", ., invert = TRUE, value = TRUE)
+
+# read rasters into list
+lulcs <- map(rasters, raster)
+
+# clip to aoi
+lulcs_clipped <- lulcs %>% map(~.x %>% crop(.,highrisk_borough_aoi)) %>% map(~.x %>% mask(.,highrisk_borough_aoi))
+
+# export clipped rasters
+writeRaster(lulcs_clipped[[1]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_current_lulc_highrisk.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[2]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario1_highrisk.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[3]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario2_highrisk.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[4]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario3_highrisk.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[5]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario4_10prc_highrisk.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[6]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario4_20prc_highrisk.tif"), format="GTiff",overwrite=TRUE)
+writeRaster(lulcs_clipped[[7]], paste0(outbase, "\\ucm_output_postprocess\\borough_clipped_rasters\\clipped_borough_lulc_scenario4_30prc_highrisk.tif"), format="GTiff",overwrite=TRUE)
+
+```
+
+
+
+
+```{r compare current and future with 22deg and 2 uhi, echo = FALSE}
+# Read in the csv with all data
+ucm_22deg_2uhi <- read.csv(paste0(outbase, "\\ucm_output_postprocess\\ucm_uhi_by_borough_22deg_2uhi_work_and_energy.csv")) %>% dplyr::select(c(2,4,5,8))
+
+ucm_22deg_2uhi_subset <- ucm_22deg_2uhi[ucm_22deg_2uhi$NAME %in% boroughlist, ]
+
+ucm_22deg_2uhi_subset_wide <- ucm_22deg_2uhi_subset %>% 
+  pivot_wider(., names_from=scenario, values_from = c(avg_tmp_v, avg_tmp_an))
+
+write.csv(ucm_22deg_2uhi_subset_wide, paste0(outbase, "\\ucm_output_postprocess\\boroughs_of_interest_summary_22deg_2uhi.csv"))
+
+```
+
+```{r compare current and future with 25deg and 5 uhi, echo = FALSE}
+# Read in the csv with all data
+ucm_25deg_5uhi <- read.csv(paste0(outbase, "\\ucm_output_postprocess\\ucm_uhi_by_borough_25deg_5uhi_work_and_energy.csv")) %>% dplyr::select(c(2,4,5,8))
+
+ucm_25deg_5uhi_subset <- ucm_25deg_5uhi[ucm_25deg_5uhi$NAME %in% boroughlist, ]
+
+ucm_25deg_5uhi_subset_wide <- ucm_25deg_5uhi_subset %>% pivot_wider(., names_from=scenario, values_from = c(avg_tmp_v, avg_tmp_an))
+
+write.csv(ucm_25deg_5uhi_subset_wide, paste0(outbase, "\\ucm_output_postprocess\\boroughs_of_interest_summary_25deg_5uhi.csv"))
+
+```
+
+
+
+
