@@ -32,7 +32,7 @@ NOTES:
  - Mortality rates must be deaths per person per YEAR.
  - Population is persons per pixel.
  - For city totals, the script sums per-pixel values, ignoring NaNs.
- - Causes: cardiovascular, respiratory, cerebrovascular (customizable).
+ - Causes: cardiovascular, respiratory, self_harm (customizable).
 
 Dependencies:
     rasterio, numpy, pandas, os
@@ -71,7 +71,7 @@ class CauseConfig:
 DEFAULT_CAUSES = [
     CauseConfig("cardiovascular", 1.0344, 1.0310, 1.0378),
     CauseConfig("respiratory",    1.0360, 1.0318, 1.0402),
-    CauseConfig("cerebrovascular",1.0140, 1.0006, 1.0275),
+    CauseConfig("self_harm",      1.0100, 1.0000, 1.0200),
 ]
 
 # -----------------------------
@@ -615,8 +615,8 @@ def excess_deaths(af: np.ndarray, baseline_deaths: np.ndarray) -> np.ndarray:
 
 
 def adjusted_baseline_deaths(baseline_deaths: np.ndarray, 
-                            pop_baseline: np.ndarray, 
-                            pop_scenario: np.ndarray) -> np.ndarray:
+                             pop_baseline: np.ndarray, 
+                             pop_scenario: np.ndarray) -> np.ndarray:
     """
     Adjust baseline deaths for scenario population changes.
     
@@ -731,7 +731,7 @@ def main(args):
             baseline_deaths = arrays["baseline_deaths_cardio"]
         elif cause.name == "respiratory":
             baseline_deaths = arrays["baseline_deaths_resp"]
-        elif cause.name == "cerebrovascular":
+        elif cause.name == "self_harm":
             baseline_deaths = arrays["baseline_deaths_cere"]
         else:
             print(f"Warning: Unknown cause '{cause.name}', skipping")
@@ -788,7 +788,7 @@ def main(args):
                 baseline_deaths = arrays["baseline_deaths_cardio"]
             elif cause.name == "respiratory":
                 baseline_deaths = arrays["baseline_deaths_resp"]
-            elif cause.name == "cerebrovascular":
+            elif cause.name == "self_harm":
                 baseline_deaths = arrays["baseline_deaths_cere"]
             else:
                 print(f"Warning: Unknown cause '{cause.name}', skipping Monte Carlo")
@@ -881,7 +881,7 @@ if __name__ == "__main__":
     parser.add_argument("--pop_scenario", required=True, help="Scenario population raster (persons/pixel)")
     parser.add_argument("--baseline_deaths_cardio", required=True, help="Baseline deaths raster, cardiovascular (deaths/pixel/year)")
     parser.add_argument("--baseline_deaths_resp", required=True, help="Baseline deaths raster, respiratory (deaths/pixel/year)")
-    parser.add_argument("--baseline_deaths_cere", required=True, help="Baseline deaths raster, cerebrovascular (deaths/pixel/year)")
+    parser.add_argument("--baseline_deaths_cere", required=True, help="Baseline deaths raster, self_harm (deaths/pixel/year)")
     parser.add_argument("--out_dir", required=True, help="Output directory")
     # Optional arguments
     parser.add_argument("--align_to", default=None, help="Optional path to raster used as alignment template")

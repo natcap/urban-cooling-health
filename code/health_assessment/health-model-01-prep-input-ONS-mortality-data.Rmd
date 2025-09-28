@@ -43,6 +43,9 @@ df_sub <- df %>%
 df_uni <- df %>%
   distinct_all() %>%
   as.data.frame()
+
+names(df_uni)
+unique(df_uni$`cause of deat`)
 ```
 
 
@@ -118,7 +121,14 @@ dat_london <- df_uni_geo_comb %>%
   filter(area_code == 'gor') %>%
   as.data.frame()
 
+
+## save data ------------------
+
+f <- file.path('./data/health-data/_processed', 'dat_mortality_london_borough.RDS')
+saveRDS(object = dat_bor, file = f)
   
+f <- file.path('./data/health-data/_processed', 'dat_mortality_london_city.RDS')
+saveRDS(object = dat_london, file = f)
 ```
 
 
@@ -132,6 +142,10 @@ dat_london <- df_uni_geo_comb %>%
 yr_list <- unique(dat_bor$date)
 
 
+icd10_selected <- "";            icd_postfix = ''
+icd10_selected <- "i00|j00|x60"; icd_postfix = 'selected'
+
+
 for (yr in yr_list) {
   dat <- dat_bor %>%
     filter(date == yr) %>%
@@ -139,10 +153,18 @@ for (yr in yr_list) {
   
 
   # Example: pivot columns into long format
-  dat_long <- dat %>%
-    pivot_longer(cols = matches("00|10"),
+  dat_ <- dat %>%
+    pivot_longer(cols = matches("00|10|60"),
                  names_to = "ind",
                  values_to = "number")
+  if (nchar(icd10_selected) > 1) {
+    dat_long <- dat_ %>%
+      filter(str_detect(ind, regex(paste0("^(", icd10_selected, ")"), ignore_case = TRUE)))
+    fig.height = 4.5
+  } else {
+    dat_long <- dat_
+    fig.height = 9
+  }
   
   # Plot faceted maps
   map <- 
@@ -171,7 +193,8 @@ for (yr in yr_list) {
               legend.position = c("right", "bottom"))
   
   # Save as PNG
-  tmap_save(tm = map, filename = paste0("./figures/health_", yr, ".png"), width = 16, height = 9, units = "in", dpi = 300)
+  tmap_save(tm = map, filename = paste0("./figures/health_", icd_postfix, '_', yr, ".png"), 
+            width = 16, height = fig.height, units = "in", dpi = 300)
 
 }
 ```
@@ -202,9 +225,11 @@ dat_w <- dat %>%
 
 # Check structure to verify column positions
 str(dat_w)
-message("Columns 13-18: ", paste(names(dat_w)[13:18], collapse = ", "))
+names(dat_w)
+message("Columns: \n", paste(names(dat_w)[14:19], collapse = "\n"))
 
-## Convert to raster at 100m resolution
+
+## Convert to raster at 10m resolution
 # Load packages
 library(sf)
 library(terra)

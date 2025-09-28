@@ -1,0 +1,118 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+theme_set(theme_bw(base_size = 16))
+
+ymd   <- format(Sys.time(), "%Y%m%d"); ymd
+
+
+dir.fig <- "G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures"
+```
+
+## Data
+
+### CVS data from zonal stats
+
+```{r}
+
+dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
+
+f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_6_zonal_stats_long.csv'); f
+
+df <- read_csv(f, show_col_types = F) %>%
+  mutate(
+    indicator = gsub('\\.tif|Excess_', '', raster),
+    lc_scenario = gsub('health_output_', '', lc_scenario),
+    indicator = ifelse(indicator == 'self_harm', "suicide", indicator),
+    indicator = str_to_title(indicator)
+  ) %>%
+  
+  # mutate(climate = str_extract(raster, "\\d+deg_\\d+uhi")) %>%
+  # mutate(
+  #    climate = case_when(
+  #      indicator < 2030 ~ 'current',
+  #      T ~ 'future'
+  #    )
+  #    ) %>%
+  rename('cases' = 'sum')
+```
+
+
+
+```{r - plot}
+
+str(df)
+
+# Example summarisation (if df has replicates per group)
+df_summary <- df %>%
+  select(-raster) %>%
+  as.data.frame() %>%
+  group_by(lc_scenario, indicator) %>%
+  # dplyr::group_by(lc_scenario, climate) %>%
+  dplyr::summarise(
+    mean = mean(cases, na.rm = TRUE),          # group mean
+    sd   = sd(cases, na.rm = TRUE),            # standard deviation
+    n    = n(),                               # sample size
+    se   = sd / sqrt(n)                       # standard error
+  )
+
+
+# Bar plot with error bars
+
+df_summary %>%
+  ggplot(., aes(x = lc_scenario, y = mean)) +
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.5) +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    width = 0.2, alpha = 0.5, 
+    position = position_dodge(width = 0.9)
+  ) +
+  
+  # add mean values as text labels
+  geom_text(
+    aes(label = round(mean, 1), y = mean),   # label from mean
+    vjust = -0.5,                            # push above bar
+    size = 4, color = 'red'                  # adjust font size
+  ) +
+  
+  facet_wrap(~ indicator) + # , scale = 'free_y'
+  # facet_wrap(~ indicator, scale = 'free_y') + #
+  labs(
+    x = "Land Cover Scenario",
+    y = "Mortality ± SD",
+    # fill = "indicator"
+  ) +
+  # scale_fill_brewer(palette = "Set2", direction = 1) +  # reverse order
+  theme_bw() +
+  # coord_cartesian(ylim = c(20, NA)) +   # start at 20, let top auto-scale
+  scale_y_continuous(expand = c(0, 1)) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+
+# Save your last ggplot as PNG
+f <- file.path(dir.fig, paste0("health_scenarios_fromRaster_", ymd, ".png"))
+ggsave(
+  filename = f, 
+  width    = 7,                    # width in inches
+  height   = 5,                    # height in inches
+  units = 'in',
+  dpi      = 300                   # resolution (good for PPT/publications)
+)
+
+
+```
+
+

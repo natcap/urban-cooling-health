@@ -1,0 +1,198 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-26"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+
+theme_set(theme_bw(base_size = 16))
+
+ymd   <- format(Sys.time(), "%Y%m%d"); ymd
+
+
+dir_main <- "G:/Shared drives/Wellcome Trust Project Data"
+dir_fig <- file.path(dir_main, "3_final/UCM_figures")
+
+```
+
+## R Markdown
+
+```{r}
+
+# --- paths ---
+dir_data = file.path(dir_main, "2_postprocess_intermediate/UCM_official_runs")
+
+
+
+# --- load & reshape ---
+
+# f_draws <- file.path(dir_data, "health_output_s0_s3", "city_total_draws_by_cause.csv")
+# # Scenario <- str_extract(f_draws, "s\\d+_s\\d+(?=/|$)"); Scenario
+# df <- read_csv(f_draws, show_col_types = FALSE)
+# causes <- setdiff(names(df), "draw")
+
+
+## - batch 
+fs <- list.files(path = dir_data, pattern = 'city_total_draws_by_cause.csv', full.names = T, recursive = T)
+fs
+
+df_all <- map_dfr(fs, ~ read_csv(.x, show_col_types = FALSE) %>%
+  mutate(Scenario = str_extract(.x, "s\\d+_s\\d+(?=/|$)")))
+causes <- setdiff(names(df_all), c("draw", "Scenario"))
+causes
+
+
+
+
+
+
+long <- df_all %>%
+  # select(-draw) %>%
+  pivot_longer(all_of(causes), names_to = "cause", values_to = "value") %>%
+  drop_na() %>%
+  mutate(cause = factor(cause, levels = causes))
+
+stats <- long %>%
+  group_by(cause, Scenario) %>%
+  summarise(
+    mean  = mean(value, na.rm = TRUE),
+    median= median(value, na.rm = TRUE),
+    p25   = quantile(value, 0.25, na.rm = TRUE),
+    p75   = quantile(value, 0.75, na.rm = TRUE),
+    p2    = quantile(value, 0.025, na.rm = TRUE),
+    p97   = quantile(value, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# --- plot ---
+p <- ggplot(long, aes(x = value, y = cause)) +
+  # geom_violin(aes(group = cause), draw_quantiles = 0.5, 
+  #             fill = 'lightblue', color = NA,
+  #             linewidth = 0, alpha=0.9, trim = FALSE) +
+  
+  geom_violin(aes(group = interaction(cause, Scenario)), fill="lightblue",
+              color = NA, linewidth = 0, alpha = 0.9, trim = FALSE) +
+  facet_wrap(~ Scenario) +
+  
+  
+  # 95% interval (thin bar)
+  geom_segment(data = stats, aes(x = p2, xend = p97, y = cause, yend = cause), linewidth = 0.6, alpha = 0.6) +
+  # IQR (thick bar)
+  # geom_segment(data = stats, aes(x = p25, xend = p75, y = cause, yend = cause), linewidth = 2, alpha = 0.6) +
+  geom_point(data = stats, aes(x = mean, y = cause),
+             shape = 18, size = 2.5, color = "red", alpha = 0.4) +
+  geom_text(data = stats, aes(x = mean, y = cause, label = sprintf("%.0f", mean)),
+            vjust = -0.5, size = 3, color = "red") +
+  labs(x = "Excess deaths (city total)", y = NULL,
+       title = "Monte Carlo distributions by cause") +
+  theme_bw(base_size = 11)
+p
+# --- save ---
+# dir.create(dir_fig, showWarnings = FALSE, recursive = TRUE)
+# ggsave(file.path(dir_fig, "health_monte_carlo_violins_by_cause.png"),
+#        p, width = 6, height = 4, dpi = 300)
+
+
+
+```
+
+
+```{r - 2 data}
+long <- map_dfr(fs, ~ read_csv(.x, show_col_types = FALSE) |>
+  mutate(Scenario = str_extract(.x, "s\\d+(?:_s\\d+)*")) |>
+  pivot_longer(-c(draw, Scenario), names_to = "cause", values_to = "value")) |>
+  drop_na(value) %>%
+  mutate(cause = str_to_title(cause))
+
+# keep original cause order as in the first file
+first_cols <- names(read_csv(fs[1], n_max = 0, show_col_types = FALSE)) %>%
+  str_to_title()
+
+cause_order <- setdiff(first_cols, "Draw")
+long <- long |>
+  mutate(
+    cause = factor(cause, levels = cause_order),
+    Scenario   = factor(Scenario)
+  )
+
+#-----------------------------
+# 2) Summary stats per cause × Scenario
+#-----------------------------
+stats <- long |>
+  group_by(cause, Scenario) |>
+  summarise(
+    mean  = mean(value, na.rm = TRUE),
+    median= median(value, na.rm = TRUE),
+    # 25th percentile (lower quartile, Q1) → lower bound of the IQR
+    p25   = quantile(value, 0.25, na.rm = TRUE),
+    # 75th percentile (upper quartile, Q3) → upper bound of the IQR
+    p75   = quantile(value, 0.75, na.rm = TRUE),
+    # 2.5th percentile → lower bound of ~95% central interval
+    p2    = quantile(value, 0.025, na.rm = TRUE),
+    # 97.5th percentile → upper bound of ~95% central interval
+    p97   = quantile(value, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+
+
+
+```{r - 4}
+
+#-----------------------------
+# 3) Plot (vertical, dodged by Scenario)
+#-----------------------------
+
+pd <- position_dodge2(width = 0.8, preserve = "single")
+
+p <- 
+  ggplot(long, aes(x = cause, y = value, fill = Scenario)) +
+  geom_violin(position = pd, color = NA, linewidth = 0, alpha = 0.5, trim = FALSE, width = 0.9, show.legend = F) +
+  
+  ## 95% interval
+  geom_linerange(data = stats, aes(ymin = p2, ymax = p97, x = cause, group = Scenario, color = Scenario),
+                 position = pd, linewidth = 0.6, alpha = 0.6, inherit.aes = FALSE) +
+  ## IQR (thicker)
+  # geom_linerange(data = stats, aes(ymin = p25, ymax = p75, x = cause, group = Scenario, color = Scenario),
+  #                position = pd, linewidth = 2,   alpha = 0.6, inherit.aes = FALSE) +
+  geom_point(data = stats, aes(x = cause, y = mean, group = Scenario, color = Scenario),
+             position = pd, shape = 18, size = 3, alpha = 1, inherit.aes = FALSE) +
+  # mean labels (aligned with dodged violins)
+  stat_summary(
+    aes(label = sprintf("%.0f", after_stat(y)), group = Scenario, color = Scenario),
+    fun = mean, geom = "text", position = pd, show.legend = F, vjust = -0.6, size = 4
+  ) +
+  labs(x = NULL, y = "Excess deaths (city total ± CI)") +
+  theme_bw(base_size = 16) +
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) +
+  
+  coord_flip() +
+  theme(
+    legend.position = c(.85, .85),
+    legend.background = element_rect(color = NA, fill = 'white'),
+    # legend.title = element_blank(),
+    # axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+p
+
+
+#-----------------------------
+# 4) Save
+#-----------------------------
+dir.create(dir_fig, showWarnings = FALSE, recursive = TRUE)
+ggsave(file.path(dir_fig, "health_monte_carlo_violins_by_cause_Scenario_dodged.png"),
+       p, width = 7, height = 5, dpi = 300)
+
+
+
+```
+
