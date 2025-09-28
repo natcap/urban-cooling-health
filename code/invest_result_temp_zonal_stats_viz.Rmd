@@ -9,7 +9,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(readr)
 library(dplyr)
+library(tidyr)
 library(stringr)
+library(ggplot2)
+
+theme_set(theme_bw(base_size = 16))
+
+ymd   <- format(Sys.time(), "%Y%m%d"); ymd
 
 
 dir.fig <- "G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures"
@@ -28,10 +34,10 @@ f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'T_air_london_12_zonal_sta
 df <- read_csv(f, show_col_types = F) %>%
   mutate(
     year = case_when(
-      str_detect(raster, "20.0deg") ~ 2021,
-      str_detect(raster, "22.0deg") ~ 2030,
-      str_detect(raster, "25.0deg") ~ 2050,
-      TRUE ~ NA_real_
+      str_detect(raster, "20.0deg_2.0uhi") ~ '2021 - 20_2',
+      str_detect(raster, "22.0deg_2.0uhi") ~ '2030 - 22_2',
+      str_detect(raster, "25.0deg_5.0uhi") ~ '2050 - 25_5',
+      TRUE ~ NA_character_
     )
   ) %>%
   
@@ -103,10 +109,11 @@ df_summary %>%
 
 
 # Save your last ggplot as PNG
+f <- file.path(dir.fig, paste0("temp_scenarios_fromRaster_", ymd, ".png"))
 ggsave(
-  filename = file.path(dir.fig, "temp_scenarios_fromRaster.png"),   # file name
-  width    = 8,                    # width in inches
-  height   = 6,                    # height in inches
+  filename = f, 
+  width    = 7,                    # width in inches
+  height   = 5,                    # height in inches
   units = 'in',
   dpi      = 300                   # resolution (good for PPT/publications)
 )
@@ -118,9 +125,12 @@ ggsave(
 ### Shp data from UCM output
 
 
-```{r - batch load}
+```{r - function}
 
 library(stringr)
+library(sf)
+library(purrr)
+library(dplyr)
 
 # --- helper function for clean IDs ---
 
@@ -149,10 +159,7 @@ extract_id <- function(path) {
 
 
 
-```{r}
-
-library(sf)
-library(purrr)
+```{r - batch load, message=FALSE}
 
 shp_files <- list.files(
   path = dir_ucm_out, 
@@ -170,12 +177,6 @@ cat('There are', length(shp_files), 'files.')
 # # optionally name the list by file
 # names(shp_list) <- basename(shp_files)
 
-
-
-library(sf)
-library(purrr)
-library(dplyr)
-library(stringr)
 
 
 
@@ -202,23 +203,31 @@ saveRDS(object = shp_all, file = f)
 f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'uhi_results_combined_sf.rds')
 shp_all <- readRDS(f)
 
-shp_all_df <- shp_all %>%
+shp_all_ <- shp_all %>%
   st_drop_geometry() %>%
   select(-any_of(c("HECTARES", 
                    "NONLD_AREA", "ONS_INNER",  "SUB_2009", "SUB_2006"))) %>%
   mutate(
     id = gsub('work_and_energy_runs_uhi_results_london_', '', id),
     year = case_when(
-      str_detect(id, "_20_") ~ 2021,
-      str_detect(id, "_22_") ~ 2030,
-      str_detect(id, "_25_") ~ 2050,
-      TRUE ~ NA_real_
+      str_detect(id, "_20_2") ~ '20_2',
+      str_detect(id, "_22_2") ~ '22_2',
+      str_detect(id, "_25_5") ~ '25_5', # 2050
+      TRUE ~ NA_character_
     )
   ) %>%
-  separate(id, into = c("lc_scenario", "rest"), sep = "_uhi_results", remove = FALSE) %>%
+  tidyr::separate(id, into = c("lc_scenario", "rest"), sep = "_uhi_results", remove = FALSE) %>%
   select(-rest) %>%
-  mutate(lc_scenario = gsub('_22_2', '', lc_scenario) ) %>%
+  mutate(lc_scenario = gsub('_20_2|_22_2|_25_5', '', lc_scenario) ) %>%
   as.data.frame()
+
+
+
+## filter out 20_5, and 22_5, 25_2 for now 
+
+shp_all_df <- shp_all_ %>%
+  filter(!is.na(year))
+  
 
 ```
 
@@ -226,10 +235,6 @@ shp_all_df <- shp_all %>%
 
 
 ```{r - plot}
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-
 
 # Example summarisation (if df has replicates per group)
 names(shp_all_df)
@@ -267,8 +272,8 @@ df_summary_fromshp %>%
     color = 'red',
     size = 4                                 # adjust font size
   ) +
-  
-  facet_wrap(~ year, scale = 'free') + 
+  # facet_wrap(~ year, scale = 'free_x') + 
+  facet_wrap(~ year, scale = 'free') +
   labs(
     x = "Land Cover Scenario",
     y = "Mean Value ± SD",
@@ -284,12 +289,36 @@ df_summary_fromshp %>%
 
 
 # Save your last ggplot as PNG
+f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", ymd, ".png"))
 ggsave(
-  filename = file.path(dir.fig, "temp_scenarios_fromshp.png"),   # file name
-  width    = 8,                    # width in inches
-  height   = 6,                    # height in inches
+  filename = f,   # file name
+  width    = 7,                    # width in inches
+  height   = 5,                    # height in inches
   units = 'in',
   dpi      = 300                   # resolution (good for PPT/publications)
 )
 
+```
+```{r - dunns test}
+
+source('./code/func_comparing_means_Dunns.R')
+source('./code/func_ggsave.R')
+
+
+text_size = 10
+
+## run 2 -- an updated function 
+which_test = 'dunn'
+which_test = 'wilcoxon'
+func_test_dif_dunn2(df = df_summary_fromshp, 
+                    value = 'mean', 
+                    group = 'lc_scenario', 
+                    which_test, ## "dunn" or "wilcoxon",
+                    out_dir = file.path(dir_ucm_out, 'ucm_output_postprocess'),
+                    facet_by = 'year',
+                    tag = "uhi_results_combined"
+                    )
+f <- file.path(dir.fig, paste("temp_scenarios_fromshp", ymd, which_test, ".png", sep = '_'))
+print(f)
+func_ggsave(f, w = 7, h = 5, save_png = T)
 ```
