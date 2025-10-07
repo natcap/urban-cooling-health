@@ -5,6 +5,9 @@ date: "2025-08-20"
 ---
 
 
+
+# Raw SES data
+
 **Material Deprivation** is a direct measure of *poverty* derived from the lack of items deemed to be necessary for a minimum acceptable standard of living.
   - [Source](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2024/technical-report-update-to-measures-using-material-deprivation-for-households-below-average-income-fye-2024#glossary)
   
@@ -61,4 +64,382 @@ df <- read_excel(f)
 
 
 ```
+
+
+
+
+
+
+
+# Social vulnerability
+
+
+https://cityhall.maps.arcgis.com/apps/instant/media/index.html?appid=59236d2e842c4a3ba6480d9dac585d1e
+
+## Load data
+
+```{r}
+library(sf)
+library(tmap)
+library(dplyr)
+library(stringr)
+
+dir.vul <- "E:/London/vulnerability/Climate Risk"
+
+gdb1 <- file.path(dir.vul, "GLA_ClimateRiskMaps.gdb")
+gdb2 <- file.path(dir.vul, "GLA_ClimateRiskVariables.gdb")
+
+# 1) List layers
+st_layers(gdb1)$name
+# st_layers(gdb2)$name
+```
+
+
+```{r}
+# 2) Read one layer
+lyr <- "VulnerabilityMetrics"
+v <- st_read(gdb1, lyr)
+names(v)
+
+# # 3) Read ALL vector layers
+# layers <- st_layers(gdb)$name
+# v_list <- lapply(layers, \(L) st_read(gdb, L, quiet = TRUE))
+# names(v_list) <- layers
+
+
+
+# ## the data in the layer below is the same as the above one
+# lyr <- "incomedeprived"
+# v2 <- st_read(gdb2, lyr)
+
+```
+
+
+
+
+
+## Data cleaning
+
+```{r }
+# Example: pivot columns into long format
+library(tidyr)
+names(v)
+dat_long <- v %>%
+  rename(Neighborhood_name = 'VulnMetrics_Project_Neighborhood') %>%
+  select(-Shape_Length, -Shape_Area, -Shape) %>%
+  pivot_longer(cols = matches("p_under5|VulnMetrics_Project|__csv_|OverallMeans"),
+               names_to = "ind",
+               values_to = "value") %>%
+  mutate(
+    ind = gsub('SWF', 'exp_Flood_Risk', ind), 
+    ind = gsub('pSocialRenters', 'pSocial_housing', ind), 
+    ind = gsub('IncomeDeprivation', 'pIncomeDeprivation', ind), 
+    ind = gsub('AOD_redef', 'exp_lack_access_OpenSpace', ind), 
+    ind = gsub('AMS_ARUP_UHeatSummers2018_2022_OverallMeans_LSOABFE_Ply_T2', 'exp_mean_T_air', ind), 
+    ind = gsub('VulnMetrics_Project_|p_under5_over75__csv_|pEnglishProficiency__csv_|__csv_pSocial|pBAME__csv_', '', ind)) %>%
+  mutate(
+    metric_category = case_when(
+      ind %in% c("p5under","p75over", "pSocial_housing", "pNotEnglishProficient",
+                 "pBAME", "pIncomeDeprivation") ~ 'Vulnerability',
+      ind %in% c("exp_mean_T_air", "exp_Flood_Risk", 
+                 "PM25", "NO2", 
+                 "TreeCanopy", "exp_lack_access_OpenSpace", "BlueGreenLC"
+                 ) ~ 'Exposure', 
+      T ~ NA_character_
+    )
+  )
+
+unique(dat_long$ind) %>% sort()
+metric_category_ls <- unique(dat_long$metric_category) %>% sort()
+metric_category_ls
+```
+
+
+## Plot each variable 
+
+```{r - facet - tmap}
+library(ggplot2)
+library(tmap)
+
+# Plot faceted maps
+
+
+tmap_style = "quantile"
+tmap_style = "equal"
+tmap_style = "pretty"
+
+for (c in metric_category_ls) {
+  
+  map <- dat_long %>%
+    filter(metric_category == c) %>%
+    mutate(value = round(value, digits = 1)) %>%
+    tm_shape(.) +
+    tm_polygons("value", 
+                col_alpha = 0,  # This completely hides the borders
+                # palette = "Reds", 
+                fill.scale = tm_scale(
+                  values = "brewer.oranges", 
+                  
+                  style = tmap_style,  # This applies quantile classification
+                  n = 5
+                  # labels = scales::label_number(accuracy = 0.1) # 数字格式
+                  ),
+                fill.chart = tm_chart_histogram(
+                  position = c("left", "bottom"), 
+                  # border.alpha = 0,  # This removes the frame border -- Not working
+                  # border.col = "transparent",  # 使用透明边框颜色    -- Not working
+                  # extra.ggplot2 = theme(
+                  #   panel.border = element_rect(color = 'transparent'),
+                  #   panel.grid.major.y = element_line(colour = "red")),
+                  height = 4),
+                fill.free = T) +
+
+    
+    tm_facets(by = "ind", ncol = 4) +
+    tm_layout(legend.show = TRUE,
+              # legend.format = list(continuous = TRUE),
+              legend.outside = FALSE, component.autoscale = F, 
+              # shrink legend
+              legend.text.size  = .7,   # shrink legend labels
+              # legend.title.size = 1,   # shrink legend title
+              
+              ## continuous legends are treated as histograms/colorbars
+              legend.hist.height = 0.3,  # for continuous color scales
+              legend.hist.width  = 0.4,
+              # legend.width      = 2,   # shrink legend box width
+              # legend.height     = 3,   # shrink legend box height
+              
+              # inner.margins = c(top, left, bottom, right)
+              inner.margins = c(0.01, 0.01, 0.01, 0.1),  # extra space on right
+              legend.frame = F, 
+              legend.position = c("right", "bottom"))
+  
+  # Save as PNG
+  f <- paste0("./figures/GLA_climate_risk_selected_vars_facet_", c, '_', tmap_style, ".png")
+  tmap_save(tm = map, filename = f, 
+            width = 16, height = 9, units = "in", dpi = 200)
+  
+}
+
+```
+
+
+## Overall score - SVI
+
+  Here, we refer to the [CDC Social Vulnerability Index (SVI)](https://www.atsdr.cdc.gov/place-health/php/svi/index.html) a comprehensive approach used in the United States that includes a wide range of variables grouped into four key themes. Due to limitations in data availability, our analysis incorporates at least one representative variable from each of these four themes to provide an approximate measure of social vulnerability.
+
+```{r - quintiles}
+
+dat_w <- dat_long %>%
+  filter(metric_category == 'Vulnerability') %>%
+  # select(-metric_category) %>%
+  pivot_wider(names_from = 'ind', values_from = 'value')
+
+names(dat_w)
+
+# --- metrics ---
+metrics <- c(
+  "pIncomeDeprivation",
+  "p5under",
+  "p75over",
+  "pNotEnglishProficient",
+  "pSocial_housing",
+  "pBAME"
+)
+
+
+# none are protective → no reversing
+reverse_metrics <- character(0)
+
+# (optional themes)
+themes <- list(
+  Social    = c("pIncomeDeprivation"),
+  Household = c("p5under","p75over", "pNotEnglishProficient"),
+  Racial    = c("pBAME"),
+  Housing   = c("pSocial_housing")
+)
+
+# ---- HELPERS ----
+# Safe quintile binning → integers 1..5. Falls back to rank-bins if quantile breaks collapse.
+score_quintile <- function(x, reverse = FALSE) {
+  x <- as.numeric(x)
+  xr <- if (reverse) -x else x
+  # try quantile-based bins
+  br <- unique(quantile(xr, probs = seq(0, 1, 0.2), na.rm = TRUE, type = 7))
+  if (length(br) < 6L) {
+    # fallback: rank-based equal-frequency bins
+    r <- dplyr::percent_rank(xr)  # 0..1 (NA preserved)
+    cut(r, breaks = c(-Inf, .2, .4, .6, .8, Inf), labels = 1:5, include.lowest = TRUE) |> as.integer()
+  } else {
+    cut(xr, breaks = br, labels = 1:5, include.lowest = TRUE, right = TRUE) |> as.integer()
+  }
+}
+
+
+
+# ---- PIPELINE ----
+dat_scored <- dat_w %>%
+  mutate(
+    across(
+      all_of(metrics),
+      ~ score_quintile(.x, reverse = cur_column() %in% reverse_metrics),
+      .names = "{.col}_q"
+    )
+  ) 
+
+# drop geometry if present
+if (inherits(dat_scored, "sf")) dat_scored <- st_drop_geometry(dat_scored)
+
+# Per-theme sums (optional)
+if (!is.null(themes)) {
+  for (nm in names(themes)) {
+    qcols <- paste0(themes[[nm]], "_q")
+    dat_scored[[paste0("sum_", nm)]] <- rowSums(dat_scored[qcols], na.rm = TRUE)
+  }
+}
+
+# Overall score = sum of all metric quintiles (or sum of theme sums if defined)
+overall_components <-
+  if (is.null(themes)) paste0(metrics, "_q") else paste0("sum_", names(themes))
+
+dat_ranked <- dat_scored %>%
+  mutate(
+    overall_score = rowSums(across(all_of(overall_components)), na.rm = TRUE),
+    overall_pct   = 100 * dplyr::percent_rank(overall_score),      # 0–100 percentile
+    overall_rank  = dplyr::dense_rank(dplyr::desc(overall_score))  # 1 = most vulnerable
+  ) %>%
+  arrange(desc(overall_score), desc(overall_pct))
+
+# ---- OUTPUT ----
+# dat_ranked contains:
+# - *_q columns: 1..5 (1=lowest vuln, 5=highest)
+# - optional: sum_Social, sum_Exposure, sum_Green
+# - overall_score: summed quintiles
+# - overall_pct: percentile (0–100)
+# - overall_rank: 1 = highest vulnerability
+
+
+
+# table(dat_ranked$overall_rank)
+# summary(dat_ranked$overall_score)
+```
+
+
+
+
+```{r - percentiles}
+# ---- HELPERS ----
+score_percentile <- function(x, reverse = FALSE) {                
+  x <- as.numeric(x)                                              
+  xr <- if (reverse) -x else x                                    
+  dplyr::percent_rank(xr)
+}                                                                 
+
+# ---- PIPELINE ----
+df_scored <- dat_w %>%
+  mutate(
+    across(
+      all_of(metrics),
+      ~ score_percentile(.x, reverse = cur_column() %in% reverse_metrics),  
+      .names = "{.col}_pct"                                                 
+    )
+  ) %>%
+  mutate(id = dplyr::row_number())
+
+names(df_scored)
+
+df_scored_copy <- df_scored %>%
+  select(id)
+
+# drop geometry if present
+if (inherits(df_scored, "sf")) df_scored <- st_drop_geometry(df_scored)
+
+
+# Per-theme aggregates (use mean of percentiles to keep 0..1 scale)          
+if (!is.null(themes)) {
+  for (nm in names(themes)) {
+    pcols <- paste0(themes[[nm]], "_pct")                                   
+    df_scored[[paste0("mean_", nm)]] <- rowMeans(df_scored[pcols],          
+                                                 na.rm = TRUE)          
+  }
+}
+
+# Overall score: mean of components (0..1), then overall percentile rank      
+overall_components <-
+  if (is.null(themes)) paste0(metrics, "_pct") else paste0("mean_", names(themes))  
+
+df_ranked <- df_scored %>%
+  mutate(
+    overall_score = rowMeans(across(all_of(overall_components)), na.rm = TRUE), 
+    overall_pct   = dplyr::percent_rank(overall_score),
+    overall_rank  = dplyr::dense_rank(dplyr::desc(overall_score))
+  ) %>%
+  arrange(desc(overall_score), desc(overall_pct))
+
+# Result:
+# - *_pct columns: per-metric percentiles in [0,1]
+# - mean_Social, mean_Age: theme means in [0,1]
+# - overall_score: mean percentile across components in [0,1]
+# - overall_pct: percentile rank of overall_score in [0,1]
+# - overall_rank: 1 = most vulnerable
+
+
+
+## join back to the sf and plot
+df_ranked_sf <- df_scored_copy %>%
+  left_join(., df_ranked, by = 'id')
+names(df_ranked_sf)
+
+
+
+## save data
+f <- './data/Social_Vulnerability_Index_london.gpkg'
+st_write(df_ranked_sf, f, delete_dsn = TRUE)
+
+```
+
+
+
+```{r - percentiles - map}
+## plot
+map <-
+  df_ranked_sf %>%
+  tm_shape(.) +
+  tm_polygons("overall_pct", 
+              title = 'Vulnerability',
+              col_alpha = 0,  # This completely hides the borders
+              palette = "brewer.oranges",    # Correct palette argument
+              style = "quantile",     # Quantile classification
+              n = 5,                  # Number of quantiles
+              fill_alpha = 1,              # 1 = opaque, 0 = transparent
+              legend.format = list(digits = 1), 
+              legend.is.portrait = TRUE,
+              legend.reverse = TRUE,  
+              fill.free = T) +
+
+  
+  tm_layout(legend.show = TRUE,
+            # legend.format = list(continuous = TRUE),
+            legend.outside = FALSE, component.autoscale = F,  
+            # shrink legend
+            legend.text.size  = .7,   # shrink legend labels
+            legend.format = list(digits = 1, decimal.mark = ".", big.mark = ""),
+
+            legend.hist.height = 0.3,  # for continuous color scales
+            legend.hist.width  = 0.4, 
+            # inner.margins = c(top, left, bottom, right)
+            inner.margins = c(0.01, 0.01, 0.01, 0.1),  # extra space on right
+            frame = FALSE,
+            legend.frame = F, 
+            legend.position = c("right", "bottom"))
+map
+
+
+# Save as PNG
+f <- paste0("./figures/", "Vulnerability_SVI_London.png")
+tmap_save(tm = map, filename = f, 
+          width = 7, height = 5, units = "in", dpi = 300)
+```
+
+
 
