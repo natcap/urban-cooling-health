@@ -2,6 +2,9 @@
 data/
 figures/
 
+*.docx
+*.xlsx
+*api_key.*
 
 ## code
 deploy_on_shinyapps.io.R
