@@ -1,0 +1,325 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-10-20"
+---
+
+
+
+## data
+
+https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land-monthly-means?tab=download
+
+```
+import cdsapi
+
+dataset = "reanalysis-era5-land-monthly-means"
+request = {
+    "product_type": ["monthly_averaged_reanalysis"],
+    "variable": ["2m_dewpoint_temperature"],
+    "year": [
+        "2018", "2019", "2020",
+        "2021", "2022", "2023",
+        "2024"
+    ],
+    "month": [
+        "06", "07", "08",
+        "09"
+    ],
+    "time": ["00:00"],
+    "data_format": "grib",
+    "download_format": "unarchived",
+    "area": [51.934011, -0.639294, 51.180815, 0.380524]
+}
+
+client = cdsapi.Client()
+client.retrieve(dataset, request).download()
+
+```
+
+```{r}
+# ============================================================
+# ERA5-Land monthly 2-m dew point  → vapor pressure (kPa)
+# London example (July 2023), with exports and summaries
+# Dependencies: terra (raster IO), lubridate (time handling)
+# ============================================================
+
+# ---- 0) Packages ------------------------------------------------------------
+if (!requireNamespace("terra", quietly = TRUE)) install.packages("terra")
+if (!requireNamespace("lubridate", quietly = TRUE)) install.packages("lubridate")
+
+library(terra)
+library(lubridate)
+
+# ---- 1) User inputs ---------------------------------------------------------
+# Path(s) to your ERA5-Land monthly NetCDF/GRIB files containing 'd2m'
+#   - You can point to a single multi-time NetCDF, or a folder of files.
+#   - Filenames should include d2m; terra will read the time dimension if present.
+data_dir <- "./data/era5_land_climate_data"     # <- CHANGE
+files_d2m <- list.files(data_dir, pattern = "(?i)c9800fd.*\\.(nc|grib|grb|grb2)$",
+                        full.names = TRUE)
+
+
+# Output directory (will be created if it doesn't exist)
+out_dir <- "./data/era5_land_climate_data/era5_outputs"
+if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
+
+
+
+# Month and year to extract
+target_year  <- 2023
+target_month <- 7   # July = 7
+
+# London bounding box (approx; adjust to your AOI)
+# lon: [-0.6, 0.4], lat: [51.2, 51.8]
+aoi_ext <- ext(-0.6, 0.4, 51.18, 51.93)
+
+
+
+# ---- 2) Read ERA5-Land d2m and check metadata ------------------------------
+stopifnot(length(files_d2m) > 0)  # fail early if no files found
+
+# terra will stack time if CF-compliant; otherwise it concatenates by bands
+rK <- rast(files_d2m)   # Kelvin, one layer per time step
+print(rK)
+
+# Time vector (terra stores time per layer if available)
+time_vec <- tryCatch({ as_date(time(rK)) }, error = function(e) NA)
+if (all(is.na(time_vec))) {
+  message("No time metadata found. You may have one layer per file without time coords.")
+  # If no time info, you can skip filtering by time and just use specific indices.
+} else {
+  print(head(time_vec))
+}
+
+# CRS sanity check (ERA5-Land monthly is usually EPSG:4326 lat/lon)
+print(crs(rK))
+
+# ---- 3) Convert from Kelvin → °C -------------------------------------------
+rC <- rK - 273.15
+names(rC) <- if (!all(is.na(time_vec))) {
+  # Name layers with ISO dates if available
+  paste0("d2mC_", format(time_vec, "%Y%m"))
+} else {
+  names(rK) # fallback
+}
+
+# ---- 4) Select the target month (e.g., July 2023) --------------------------
+if (!all(is.na(time_vec))) {
+  idx <- which(year(time_vec) == target_year & month(time_vec) == target_month)
+  stopifnot(length(idx) == 1)   # expect exactly one monthly layer
+  d2m_jul23_C <- rC[[idx]]
+} else {
+  # If no time info, pick a band index manually (e.g., 1)
+  idx <- 1
+  d2m_jul23_C <- rC[[idx]]
+  warning("Using band index ", idx, " due to missing time metadata.")
+}
+
+# ---- 5) Crop to London AOI -------------------------------------------------
+d2m_london_C <- crop(d2m_jul23_C, aoi_ext)
+
+# ---- 6) Convert dew point (°C) → vapor pressure (kPa) ----------------------
+# Magnus–Tetens over water:
+# e(Td) [kPa] = 0.6112 * exp(17.67 * Td / (Td + 243.5))
+magnus_kPa <- function(Tc) 0.6112 * exp(17.67 * Tc / (Tc + 243.5))
+
+e_kPa_london <- app(d2m_london_C, magnus_kPa)
+
+# ---- 7) Quick QA: stats and simple plot -----------------------------------
+cat("\n--- London box (July ", target_year, ") summaries ---\n", sep = "")
+print(global(d2m_london_C,  fun = "mean", na.rm = TRUE))  # mean dew point (°C)
+print(global(e_kPa_london,  fun = "mean", na.rm = TRUE))  # mean vapor pressure (kPa)
+print(global(e_kPa_london,  fun = "min",  na.rm = TRUE))
+print(global(e_kPa_london,  fun = "max",  na.rm = TRUE))
+
+plot(e_kPa_london, main = sprintf("ERA5-Land: Vapor Pressure (kPa)\nLondon, %s %d",
+                                  month.abb[target_month], target_year))
+```
+
+
+```{r}
+# ---- 8) Export GeoTIFF and CSV --------------------------------------------
+# GeoTIFFs
+tif_d2m  <- file.path(out_dir, sprintf("ERA5Land_d2mC_London_%d%02d.tif", target_year, target_month))
+tif_vkpa <- file.path(out_dir, sprintf("ERA5Land_vaporPressure_kPa_London_%d%02d.tif",
+                                       target_year, target_month))
+
+writeRaster(d2m_london_C,  tif_d2m,  overwrite = TRUE)
+writeRaster(e_kPa_london,  tif_vkpa, overwrite = TRUE)
+
+# Box summaries to CSV
+summ <- data.frame(
+  year  = target_year,
+  month = target_month,
+  mean_dewpoint_C   = as.numeric(global(d2m_london_C, fun = "mean", na.rm = TRUE)),
+  min_vapor_kPa     = as.numeric(global(e_kPa_london, fun = "min",  na.rm = TRUE)),
+  mean_vapor_kPa    = as.numeric(global(e_kPa_london, fun = "mean", na.rm = TRUE)),
+  max_vapor_kPa     = as.numeric(global(e_kPa_london, fun = "max",  na.rm = TRUE))
+)
+csv_path <- file.path(out_dir, sprintf("London_box_summary_%d%02d.csv", target_year, target_month))
+write.csv(summ, csv_path, row.names = FALSE)
+cat("Wrote:\n -", tif_d2m, "\n -", tif_vkpa, "\n -", csv_path, "\n")
+```
+
+
+```{r}
+# ===================================================================
+# OPTIONAL SECTIONS
+# ===================================================================
+
+# ---- 9) (Fixed) Extract a multi-year July time series ----------------------
+month = 8
+do_time_series <- TRUE
+if (do_time_series && !all(is.na(time_vec))) {
+  is_july <- month(time_vec) == month
+  rC_jul  <- rC[[which(is_july)]]          # dew point (°C), all Julys
+  years_j <- year(time_vec[is_july])
+
+  # Crop once (applies to all layers)
+  rC_jul_lon <- crop(rC_jul, aoi_ext)
+
+  # Convert each July layer to vapor pressure (kPa)
+  e_jul_kPa <- app(rC_jul_lon, magnus_kPa)
+
+  # global() -> data.frame with a 'mean' column (one row per layer)
+  gmean <- global(e_jul_kPa, fun = "mean", na.rm = TRUE)
+
+  # Safely coerce to numeric vector
+  # (column is usually named 'mean'; fallback handles odd column names)
+  mean_vkpa <- if ("mean" %in% names(gmean)) {
+    as.numeric(gmean$mean)
+  } else {
+    as.numeric(gmean[, 1])
+  }
+
+  stopifnot(length(mean_vkpa) == nlyr(e_jul_kPa),
+            nlyr(e_jul_kPa)   == length(years_j))
+
+  out_ts <- data.frame(year = years_j,
+                       month = 7,
+                       mean_vapor_kPa = mean_vkpa)
+
+  ts_csv <- file.path(out_dir, paste0("ERA5Land_London_AOI_month", month, "_vaporPressure_timeseries.csv"))
+  write.csv(out_ts, ts_csv, row.names = FALSE)
+  cat("Wrote July time series CSV: ", ts_csv, "\n", sep = "")
+}
+```
+```{r all months}
+
+# ============================================================
+# Export ALL months: summaries (CSV) + rasters (GeoTIFFs)
+# Requires:
+#   rC        : SpatRaster of d2m in °C (all months stacked)
+#   time_vec  : Date vector for rC layers (as_date(time(rC)))
+#   aoi_ext   : terra::ext(...) or a polygon AOI (vect) for cropping
+#   magnus_kPa: function(Tc) 0.6112 * exp(17.67 * Tc / (Tc + 243.5))
+#   out_dir   : output folder path
+# ============================================================
+
+stopifnot(inherits(rC, "SpatRaster"))
+
+# 1) Crop dew point stack to AOI (works for either bbox ext or polygon vect)
+rC_aoi <- crop(rC, aoi_ext)  # use mask=TRUE with a polygon if you want exact masking
+
+# 2) Convert ALL months to vapor pressure (kPa) in one go.
+#    Writing to disk keeps memory low for long time series.
+vkpa_all_path <- file.path(out_dir, "ERA5Land_vaporPressure_kPa_ALLmonths_London.tif")
+e_kPa_aoi <- app(
+  rC_aoi, magnus_kPa,
+  filename = vkpa_all_path,
+  overwrite = TRUE,
+  wopt = list(datatype = "FLT4S", gdal = "COMPRESS=LZW")
+)
+cat("Wrote multi-band GeoTIFF:", vkpa_all_path, "\n")
+
+# 3) Per-layer (per-month) summaries for the AOI
+#    global() returns a data.frame with one row per layer.
+dew_stats <- global(rC_aoi,  fun = c("min", "mean", "max"), na.rm = TRUE)
+vap_stats <- global(e_kPa_aoi, fun = c("min", "mean", "max"), na.rm = TRUE)
+
+# Handle time stamps (if missing, create an index)
+if (length(time_vec) != nlyr(rC_aoi) || any(is.na(time_vec))) {
+  dates <- seq_len(nlyr(rC_aoi))
+  year_col  <- NA_integer_
+  month_col <- NA_integer_
+  date_col  <- NA_character_
+} else {
+  dates     <- time_vec
+  year_col  <- lubridate::year(dates)
+  month_col <- lubridate::month(dates)
+  date_col  <- format(dates, "%Y-%m")
+}
+
+# Assemble summary table
+summ_all <- data.frame(
+  date  = date_col,
+  year  = year_col,
+  month = month_col,
+
+  dew_min_C   = as.numeric(dew_stats$min),
+  dew_mean_C  = as.numeric(dew_stats$mean),
+  dew_max_C   = as.numeric(dew_stats$max),
+
+  vapor_min_kPa  = as.numeric(vap_stats$min),
+  vapor_mean_kPa = as.numeric(vap_stats$mean),
+  vapor_max_kPa  = as.numeric(vap_stats$max)
+)
+
+csv_all <- file.path(out_dir, "ERA5Land_London_AOI_monthly_summaries.csv")
+write.csv(summ_all, csv_all, row.names = FALSE)
+cat("Wrote per-month summary CSV:", csv_all, "\n")
+
+# 4) (Optional) Write one GeoTIFF per month (more files, but handy)
+write_per_month <- FALSE  # set TRUE to enable
+if (write_per_month) {
+  for (i in 1:nlyr(e_kPa_aoi)) {
+    tag <- if (!any(is.na(date_col))) {
+      format(dates[i], "%Y%m")
+    } else {
+      sprintf("layer%03d", i)
+    }
+    of <- file.path(out_dir, sprintf("ERA5Land_vapor_kPa_London_%s.tif", tag))
+    writeRaster(e_kPa_aoi[[i]], of, overwrite = TRUE,
+                wopt = list(datatype = "FLT4S", gdal = "COMPRESS=LZW"))
+  }
+  cat("Wrote per-month vapor pressure GeoTIFFs to:", out_dir, "\n")
+}
+
+
+```
+
+
+```{r}
+# ---- 10) (Optional) Compute RH or VPD if you also have air temperature -----
+# RH/VPD require air temperature (t2m, Kelvin). If you have a matching t2m raster:
+# files_t2m <- list.files(data_dir, pattern="(?i)t2m.*\\.(nc|grib|grb|grb2)$", full.names=TRUE)
+# rT_K <- rast(files_t2m)
+# # Match time and crop to the same AOI & month index 'idx'
+# stopifnot(nlyr(rT_K) == nlyr(rK))   # ensure aligned time dimension
+# t2m_jul23_C <- crop((rT_K[[idx]] - 273.15), aoi_ext)
+#
+# # Saturation vapor pressure at air temperature (kPa)
+# es_kPa <- app(t2m_jul23_C, magnus_kPa)
+#
+# # RH (%) = 100 * (e / es)
+# RH_pct <- (e_kPa_london / es_kPa) * 100
+#
+# # VPD (kPa) = es - e
+# VPD_kPa <- es_kPa - e_kPa_london
+#
+# writeRaster(RH_pct,  file.path(out_dir, sprintf("ERA5Land_RHpct_London_%d%02d.tif", target_year, target_month)),
+#             overwrite = TRUE)
+# writeRaster(VPD_kPa, file.path(out_dir, sprintf("ERA5Land_VPDkPa_London_%d%02d.tif", target_year, target_month)),
+#             overwrite = TRUE)
+
+# ---- 11) (Optional) Reproject to a local CRS (e.g., British National Grid) -
+# bng <- "EPSG:27700"
+# e_kPa_bng <- project(e_kPa_london, bng, method = "bilinear")
+# writeRaster(e_kPa_bng, file.path(out_dir, sprintf("ERA5Land_vaporPressure_kPa_London_%d%02d_BNG27700.tif",
+#                                                  target_year, target_month)), overwrite = TRUE)
+
+# ---- Done ------------------------------------------------------------------
+
+```
+
