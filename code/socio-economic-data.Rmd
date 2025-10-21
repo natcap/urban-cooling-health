@@ -84,6 +84,16 @@ library(tmap)
 library(dplyr)
 library(stringr)
 
+sf::st_drivers()[sf::st_drivers()$name == "ESRI Shapefile", ]
+
+
+## AOI layer
+dir_g <- "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs"
+f_aoi <- file.path(dir_g, 'London_Borough_aoi.shp')
+aoi <- st_read(f_aoi, quiet = T)
+
+
+## Vulnerability data
 dir.vul <- "E:/London/vulnerability/Climate Risk"
 
 gdb1 <- file.path(dir.vul, "GLA_ClimateRiskMaps.gdb")
@@ -327,7 +337,7 @@ dat_ranked <- dat_scored %>%
 
 
 
-```{r - percentiles}
+```{r - percentiles at LSOA level}
 # ---- HELPERS ----
 score_percentile <- function(x, reverse = FALSE) {                
   x <- as.numeric(x)                                              
@@ -443,3 +453,91 @@ tmap_save(tm = map, filename = f,
 
 
 
+## SVI by borough
+
+```{r - data}
+
+f <- './data/Social_Vulnerability_Index_london.gpkg'
+df_ranked_sf <- st_read(f)
+
+unique(df_ranked_sf$Neighborhood_name)
+names(df_ranked_sf)
+
+
+cols <- c("mean_Social", "mean_Household", "mean_Racial",
+          "mean_Housing", "overall_score")
+
+df_svi_bor <- df_ranked_sf %>%
+  st_drop_geometry() %>%
+  group_by(Neighborhood_name) %>%
+  summarize(
+    across(all_of(cols), ~ mean(.x, na.rm = TRUE)),
+    .groups = "drop"
+  ) %>%
+  
+  mutate(
+    overall_pct   = dplyr::percent_rank(overall_score),
+    overall_rank  = dplyr::dense_rank(dplyr::desc(overall_score))
+  ) %>%
+
+  ## add borough sf
+  left_join(aoi %>% select(NAME, GSS_CODE), 
+            ., 
+            by = c('NAME' = 'Neighborhood_name'))
+  
+# Result:
+# - overall_score: mean percentile across components in [0,1]
+# - overall_pct: percentile rank of overall_score in [0,1]
+# - overall_rank: 1 = most vulnerable
+```
+
+
+
+```{r - map}
+## plot
+map <-
+  df_svi_bor %>%
+  mutate(label = str_wrap(NAME, width = 12)) %>% # <- insert \n
+  tm_shape(.) +
+  tm_polygons("overall_pct", 
+              title = 'Vulnerability',
+              palette = "brewer.oranges",    # Correct palette argument
+              style = "quantile",            # Quantile classification
+              n = 5,                         # Number of quantiles
+              col_alpha = 0.3,               # This completely hides the borders
+              fill_alpha = 1,                # 1 = opaque, 0 = transparent
+              legend.format = list(digits = 1), 
+              legend.is.portrait = TRUE,
+              legend.reverse = TRUE,  
+              fill.free = T) +
+  
+  tm_text("label",            # <- column to label
+          size = 0.4,
+          col = "black",
+          auto.placement = TRUE,
+          lineheight = 0.5,  # (optional; works in recent tmap to tighten lines) - not working
+          bg.color = "white", bg.alpha = 0.6) +
+
+  
+  tm_layout(legend.show = TRUE,
+            # legend.format = list(continuous = TRUE),
+            legend.outside = FALSE, component.autoscale = F,  
+            # shrink legend
+            legend.text.size  = .7,   # shrink legend labels
+            legend.format = list(digits = 1, decimal.mark = ".", big.mark = ""),
+
+            legend.hist.height = 0.3,  # for continuous color scales
+            legend.hist.width  = 0.4, 
+            # inner.margins = c(top, left, bottom, right)
+            inner.margins = c(0.01, 0.01, 0.01, 0.1),  # extra space on right
+            frame = FALSE,
+            legend.frame = F, 
+            legend.position = c("right", "bottom"))
+map
+
+
+# Save as PNG
+f <- paste0("./figures/", "Vulnerability_SVI_London_borough.png")
+tmap_save(tm = map, filename = f, 
+          width = 7, height = 5, units = "in", dpi = 300)
+```
