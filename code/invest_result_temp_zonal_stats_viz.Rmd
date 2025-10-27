@@ -4,9 +4,12 @@ output: html_document
 date: "2025-09-16"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup}
 
+# To clear your environment 
+remove(list = ls())
+
+library(here)
 library(readr)
 library(dplyr)
 library(tidyr)
@@ -17,6 +20,8 @@ theme_set(theme_bw(base_size = 16))
 
 ymd   <- format(Sys.time(), "%Y%m%d"); ymd
 
+here()
+source(here('code', 'func_ggsave.R'))
 
 dir.fig <- "G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures"
 ```
@@ -29,14 +34,20 @@ dir.fig <- "G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures"
 
 dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
 
-f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'T_air_london_12_zonal_stats_long.csv'); f
+f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'T_air_london_22_zonal_stats_long.csv'); f
 
-df <- read_csv(f, show_col_types = F) %>%
+d <- read_csv(f, show_col_types = F) 
+
+
+df <- d %>%
   mutate(
     year = case_when(
       str_detect(raster, "20.0deg_2.0uhi") ~ '2021 - 20_2',
       str_detect(raster, "22.0deg_2.0uhi") ~ '2030 - 22_2',
+      str_detect(raster, "22deg_2uhi")     ~ '2030 - 22_2',
       str_detect(raster, "25.0deg_5.0uhi") ~ '2050 - 25_5',
+      str_detect(raster, "25deg_5uhi")     ~ '2050 - 25_5',
+      str_detect(raster, "28deg_5uhi")     ~ '2070 - 28_5',
       TRUE ~ NA_character_
     )
   ) %>%
@@ -48,21 +59,17 @@ df <- read_csv(f, show_col_types = F) %>%
   #      T ~ 'future'
   #    )
   #    ) %>%
-  rename('T_mean' = 'mean')
+  rename('T_mean' = 'mean') %>%
+  select(-any_of(c('raster', 'source'))) %>%
+  mutate(T_mean = round(as.numeric(T_mean), digits = 3))
 ```
 
 
 
 ```{r - plot}
-library(dplyr)
-library(ggplot2)
-
-
-str(df)
 
 # Example summarisation (if df has replicates per group)
 df_summary <- df %>%
-  select(-raster) %>%
   as.data.frame() %>%
   group_by(lc_scenario, year) %>%
   # dplyr::group_by(lc_scenario, climate) %>%
@@ -93,7 +100,7 @@ df_summary %>%
   ) +
   
   # facet_wrap(~ year) + # , scale = 'free_y'
-  facet_wrap(~ year, scale = 'free_y') + # 
+  facet_wrap(~ year, scale = 'free') + # 
   labs(
     x = "Land Cover Scenario",
     y = "Mean Value ± SD",
@@ -113,7 +120,7 @@ f <- file.path(dir.fig, paste0("temp_scenarios_fromRaster_", ymd, ".png"))
 ggsave(
   filename = f, 
   width    = 7,                    # width in inches
-  height   = 5,                    # height in inches
+  height   = 8,                    # height in inches
   units = 'in',
   dpi      = 300                   # resolution (good for PPT/publications)
 )
@@ -167,7 +174,7 @@ shp_files <- list.files(
   full.names = TRUE, recursive = T
 )
 
-shp_files
+(shp_files)
 
 cat('There are', length(shp_files), 'files.')
 
@@ -186,7 +193,7 @@ cat('There are', length(shp_files), 'files.')
 shp_all <- map2_dfr(
   shp_files,
   map_chr(shp_files, extract_id),
-  ~ st_read(.x) %>% mutate(id = .y),
+  ~ st_read(.x, quiet = T) %>% mutate(id = .y),
   .id = NULL
 )
 
@@ -198,11 +205,24 @@ saveRDS(object = shp_all, file = f)
 
 
 
-```{r - sf to df}
+```{r - save aoi in sf}
 
 f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'uhi_results_combined_sf.rds')
 shp_all <- readRDS(f)
 
+aoi <- shp_all %>%
+  group_by(NAME, GSS_CODE) %>%
+  slice(1) %>%
+  select(NAME, GSS_CODE) %>%
+  ungroup()
+
+
+f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'aoi_sf.rds')
+saveRDS(object = aoi, file = f)
+```
+
+
+```{r - sf to df}
 shp_all_ <- shp_all %>%
   st_drop_geometry() %>%
   select(-any_of(c("HECTARES", 
@@ -211,12 +231,20 @@ shp_all_ <- shp_all %>%
     id = gsub('work_and_energy_runs_uhi_results_london_', '', id),
     year = case_when(
       str_detect(id, "_20_2") ~ '20_2',
-      str_detect(id, "_22_2") ~ '22_2',
-      str_detect(id, "_25_5") ~ '25_5', # 2050
+      # str_detect(id, "_20_5") ~ '20_5',
+      
+      str_detect(id, "_22_2|22deg_2uhi") ~ '22_2',
+      str_detect(id, "_22_5|22deg_5uhi") ~ '22_5',
+      
+      # str_detect(id, "_25_2|25deg_2uhi") ~ '25_2',
+      str_detect(id, "_25_5|25deg_5uhi") ~ '25_5', # 2050
+      
+      # str_detect(id, "_28_2|28deg_2uhi") ~ '28_2', 
+      str_detect(id, "_28_5|28deg_5uhi") ~ '28_5', 
       TRUE ~ NA_character_
     )
   ) %>%
-  tidyr::separate(id, into = c("lc_scenario", "rest"), sep = "_uhi_results", remove = FALSE) %>%
+  tidyr::separate(id, into = c("lc_scenario", "rest"), sep = "_uhi_results|prc", remove = FALSE) %>%
   select(-rest) %>%
   mutate(lc_scenario = gsub('_20_2|_22_2|_25_5', '', lc_scenario) ) %>%
   as.data.frame()
@@ -234,8 +262,7 @@ shp_all_df <- shp_all_ %>%
 
 
 
-```{r - plot}
-
+```{r - summary df}
 # Example summarisation (if df has replicates per group)
 names(shp_all_df)
 
@@ -254,26 +281,85 @@ df_summary_fromshp <- shp_all_df %>%
 
 
 unique(df_summary_fromshp$lc_scenario)
+```
+
+
+### Average temperature
+
+  `avg_tmp_v` - Average temperature value (degC).
+
+```{r - data stats}
+
+ind <- 'avg_tmp_v'
+ind_scale <- 1
+ind_label <- "temperature (°C)"
+
+df_change <- shp_all_df %>%
+  rename('value' = ind) %>%
+  mutate(value = value * ind_scale) %>%
+  group_by(year) %>%
+  mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
+  filter(lc_scenario != "scenario0") %>%
+  as.data.frame() 
+
+
+
+df_change_sf <- df_change %>%
+  select(GSS_CODE, year, lc_scenario, value_diff) %>%
+  mutate(var = ind) %>%
+  left_join(aoi, ., by = 'GSS_CODE')
+
+
+df_stats <- df_change %>%
+  group_by(lc_scenario, year) %>%
+  dplyr::summarise(
+    value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
+    sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
+    n  = n(),                                          # sample size
+    se = sd / sqrt(n),                                 # standard error
+    ci_lower = value_diff_mean - 1.96 * se,
+    ci_upper = value_diff_mean + 1.96 * se, 
+    .groups = "drop"
+  ) %>%
+  as.data.frame()
+```
+
+
+
+
+
+
+
+```{r - plot - facet by year}
+
+n_year <- length(unique(df_summary_fromshp$year))
+
+if (n_year<5) {
+  fig_h <- 2.5
+} else {
+  fig_h <- 2.5*ceiling(n_year/4)
+}
 
 # Bar plot with error bars
 df_summary_fromshp %>%
-  ggplot(., aes(x = lc_scenario, y = mean)) +
-  geom_col(position = position_dodge(width = 0.9), alpha = 0.5) +
+  ggplot(., aes(x = lc_scenario, y = mean, fill = mean)) +
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.7, show.legend = F) +
   geom_errorbar(
     aes(ymin = mean - sd, ymax = mean + sd),
     width = 0.2, alpha = 0.5, 
     position = position_dodge(width = 0.9)
   ) +
+  scale_fill_distiller(name = "Temp (°C)", palette = "OrRd", oob = scales::squish, direction = 1) +
   
   # add mean values as text labels
   geom_text(
     aes(label = round(mean, 1), y = mean),   # label from mean
     vjust = -0.5,                            # push above bar
     color = 'red',
-    size = 4                                 # adjust font size
+    size = 2                                 # adjust font size
   ) +
   # facet_wrap(~ year, scale = 'free_x') + 
-  facet_wrap(~ year, scale = 'free') +
+  facet_wrap(~ year, scale = 'free', ncol = 4) +
   labs(
     x = "Land Cover Scenario",
     y = "Mean Value ± SD",
@@ -289,21 +375,562 @@ df_summary_fromshp %>%
 
 
 # Save your last ggplot as PNG
-f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", ymd, ".png"))
+f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", ind, '_facetYear_', ymd, ".png"))
+ggsave(filename = f, width = 7, height = fig_h, units = 'in', dpi = 300)
+
+```
+
+```{r - plot - facet by scenario}
+
+# Bar plot with error bars
+df_summary_fromshp %>%
+  ggplot(., aes(x = year, y = mean, fill = mean)) +
+  geom_col(position = position_dodge(width = 0.9), 
+           alpha = 0.7, show.legend = F) +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    width = 0.2, alpha = 0.5, 
+    position = position_dodge(width = 0.9)
+  ) +
+  
+  # add mean values as text labels
+  geom_text(
+    aes(label = round(mean, 1), y = mean),   # label from mean
+    vjust = -0.5,                            # push above bar
+    color = 'red',
+    size = 2                                 # adjust font size
+  ) +
+  scale_fill_distiller(name = "Temp (°C)", palette = "OrRd", oob = scales::squish, direction = 1) +
+  # scico::scale_fill_scico(name = "Temp (°C)", palette = "lajolla", direction = -1, end = 0.8) + 
+  facet_wrap(~ lc_scenario, scale = 'free', ncol = 4) +
+  labs(
+    x = "Year",
+    y = "Mean ± SD",
+  ) +
+  # scale_fill_brewer(palette = "Set2", direction = 1) +  # reverse order
+  theme_bw() +
+  coord_cartesian(ylim = c(20, NA)) +   # start at 20, let top auto-scale
+  scale_y_continuous(expand = c(0, 1.5)) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+
+# Save your last ggplot as PNG
+f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", ind, '_facetLULC_', ymd, ".png"))
 ggsave(
   filename = f,   # file name
   width    = 7,                    # width in inches
-  height   = 5,                    # height in inches
+  height   = 4,                    # height in inches
   units = 'in',
   dpi      = 300                   # resolution (good for PPT/publications)
 )
 
 ```
-```{r - dunns test}
+
+
+
+
+```{r - heatmap}
+# install.packages(c("dplyr","tidyr","ggplot2","scico","forcats"))
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(scico)
+library(forcats)
+
+# --- 1) Prep (aggregate if needed, complete full grid, order axes) ---
+df_grid <- df_summary_fromshp %>%
+  # group_by(year, lc_scenario) %>%
+  # summarize(temp_c = mean(temp_c, na.rm = TRUE), .groups = "drop") %>%
+  rename('temp_c' = 'mean') %>%
+  # ensure a full 4x5 grid (so missing combos plot as NA tiles)
+  complete(year, lc_scenario) %>%
+  # mutate(
+  #   year = factor(year, levels = sort(unique(year))),  # x order left→right
+  #   # order scenarios by their mean temperature (high→low); remove .desc=TRUE to reverse
+  #   lc_scenario = fct_reorder(lc_scenario, temp_c, .fun = mean, .na_rm = TRUE, .desc = TRUE)
+  # ) %>%
+  as.data.frame()
+
+# --- 2) Plot: color grid heatmap ---
+p <- ggplot(df_grid, aes(x = year, y = lc_scenario, fill = temp_c)) +
+  geom_tile(color = "white", linewidth = 0.4, na.rm = FALSE) +
+  scico::scale_fill_scico(
+    name = "Temp (°C)",
+    palette = "lajolla",          # nice warm sequential; try "batlow" or "oslo" too
+    na.value = "grey90"
+  ) +
+  labs(x = "Year", y = "Land-cover scenario",
+       title = "Temperature by Year and Land-cover Scenario") +
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid = element_blank(),
+    axis.title.y = element_text(margin = margin(r = 6)),
+    axis.title.x = element_text(margin = margin(t = 6))
+  )
+
+p
+```
+
+
+```{r - heatmap - grid}
+
+library(ggplot2)
+
+ggplot(df_grid, aes(x = year, y = temp_c, fill = temp_c)) +
+  geom_col(width = 0.85, colour = 'gray') +
+  facet_grid(rows = vars(lc_scenario), switch = "y") +
+  # scale_fill_viridis_c(name = "Temp (°C)", option = "C") +
+  scale_fill_distiller(name = "Temp (°C)", palette = "OrRd", oob = scales::squish, direction = 1) +
+  scale_y_continuous(position = "right") + # <- move y-axis labels/ticks to the right
+  coord_cartesian(ylim = c(20, NA)) +   # start at 20, let top auto-scale
+  labs(x = "Year", y = NULL, title = "Temperature by Year and Scenario") +
+  theme_minimal(base_size = 11) +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        strip.text.y.right = element_text(angle = 0, margin = margin(l = 6)), # right-side labels
+        # strip.text.y.left = element_text(angle = 0),
+        # strip.placement = "outside",
+        legend.position = "right")
+
+# Save your last ggplot as PNG
+f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", ymd, "_grid.png"))
+ggsave(
+  filename = f,   # file name
+  width    = 7,                    # width in inches
+  height   = 8,                    # height in inches
+  units = 'in',
+  dpi      = 300                   # resolution (good for PPT/publications)
+)
+```
+
+```{r - test, eval=FALSE, include=FALSE}
+
+library(ggplot2)
+library(dplyr)
+
+# Assuming your data is in a dataframe called 'df'
+# If you need to read it in, use: df <- read.csv("your_file.csv")
+
+# Create the plot
+ggplot(df_grid, aes(x = year, y = temp_c, color = lc_scenario, group = lc_scenario)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3, alpha = 0.7) +
+  scale_color_manual(
+    values = c(
+      "scenario0" = "#FED976",
+      "scenario1" = "#FEB24C", 
+      "scenario2" = "#FD8D3C",
+      "scenario3" = "#FC4E2A",
+      "scenario4_10" = "#E31A1C",
+      "scenario4_20" = "#BD0026",
+      "scenario4_30" = "#800026"
+    ),
+    name = "Scenario"
+  ) +
+  labs(
+    title = "Temperature Projections by Scenario",
+    subtitle = "Comparing trends across different climate scenarios",
+    x = "Year",
+    y = "Temperature (°C)",
+    caption = "Note: Darker colors indicate more severe scenarios"
+  ) +
+  # scale_x_continuous(breaks = c(20.2, 22.2, 25.5, 28.5)) + 
+  
+  # # Optional: Add confidence intervals using the 'sd' column
+  # # Uncomment the following to add shaded ribbons:
+  # geom_ribbon(aes(ymin = temp_c - sd, ymax = temp_c + sd, fill = lc_scenario),
+  #               alpha = 0.2,show.legend = F, color = NA) + 
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray40", margin = margin(b = 15)),
+    legend.position = "right",
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(linetype = "dashed", linewidth = 0.3),
+    axis.title = element_text(face = "bold")
+  ) 
+
+
+# Save your last ggplot as PNG
+f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", ymd, "_line.png"))
+ggsave(
+  filename = f,   # file name
+  width    = 7,                    # width in inches
+  height   = 8,                    # height in inches
+  units = 'in',
+  dpi      = 300                   # resolution (good for PPT/publications)
+)
+```
+
+
+
+```{r - test 2, eval=FALSE, include=FALSE}
+
+library(ggplot2)
+library(dplyr)
+
+# Assuming your data is in a dataframe called 'df'
+
+df = df_grid
+
+# Option 1: Faceted plot by year to see scenario differences clearly
+p1 <- df_grid %>%
+  ggplot(., aes(x = lc_scenario, y = temp_c, fill = lc_scenario)) +
+  geom_col() +
+  facet_wrap(~year, scales = "free_x", nrow = 1) +
+  scale_fill_manual(
+    values = c(
+      "scenario0" = "#FED976",
+      "scenario1" = "#FEB24C", 
+      "scenario2" = "#FD8D3C",
+      "scenario3" = "#FC4E2A",
+      "scenario4_10" = "#E31A1C",
+      "scenario4_20" = "#BD0026",
+      "scenario4_30" = "#800026"
+    )
+  ) +
+  labs(
+    title = "Temperature by Scenario and Year",
+    subtitle = "Each panel shows scenario comparison for a specific year",
+    x = "Scenario",
+    y = "Temperature (°C)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray40", margin = margin(b = 15)),
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
+    strip.text = element_text(face = "bold", size = 11),
+    panel.spacing = unit(1, "lines")
+  )
+
+
+
+
+# Option 2: Show the differences from a baseline (scenario0)
+df_diff <- df %>%
+  group_by(year) %>%
+  mutate(temp_diff = temp_c - temp_c[lc_scenario == "scenario0"]) %>%
+  filter(lc_scenario != "scenario0")
+
+p2 <- ggplot(df_diff, aes(x = year, y = temp_diff, color = lc_scenario, group = lc_scenario)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  scale_color_manual(
+    values = c(
+      "scenario1" = "#FEB24C", 
+      "scenario2" = "#FD8D3C",
+      "scenario3" = "#FC4E2A",
+      "scenario4_10" = "#E31A1C",
+      "scenario4_20" = "#BD0026",
+      "scenario4_30" = "#800026"
+    ),
+    name = "Scenario"
+  ) +
+  labs(
+    title = "Temperature Difference from Baseline (Scenario 0)",
+    subtitle = "Highlighting how each scenario diverges from the baseline",
+    x = "Year",
+    y = "Temperature Difference (°C)",
+    caption = "Positive values indicate higher temperatures than scenario0"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray40", margin = margin(b = 15)),
+    legend.position = "right",
+    panel.grid.minor = element_blank()
+  ) 
+
+
+# Option 3: Faceted by scenario to see individual trends
+p3 <- df_grid %>%
+  ggplot(., aes(x = year, y = temp_c)) +
+  geom_line(linewidth = 1, color = "#E31A1C") +
+  geom_point(size = 2.5, color = "#E31A1C") +
+  facet_wrap(~lc_scenario, ncol = 4) +
+  labs(
+    title = "Temperature Trends by Individual Scenario",
+    subtitle = "Each panel shows temperature progression for one scenario",
+    x = "Year",
+    y = "Temperature (°C)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray40", margin = margin(b = 15)),
+    strip.text = element_text(face = "bold", size = 10),
+    panel.grid.minor = element_blank()
+  ) 
+
+
+# Display the plots (choose one or compare)
+p1  # Bar chart by year
+p2  # Difference from baseline (RECOMMENDED)
+p3  # Small multiples by scenario
+
+```
+
+
+
+
+```{r - test 3, eval=FALSE, include=FALSE}
+library(ggplot2)
+library(dplyr)
+
+
+
+# Option 2: Show the differences from a baseline (scenario0)
+df_diff <- df %>%
+  group_by(year) %>%
+  mutate(temp_diff = temp_c - temp_c[lc_scenario == "scenario0"]) %>%
+  filter(lc_scenario != "scenario0")
+
+p2 <- ggplot(df_diff, aes(x = year, y = temp_diff, color = lc_scenario, group = lc_scenario)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray60") +
+  scale_color_manual(
+    values = c(
+      "scenario1" = "#d95f0e", # #78C679
+      "scenario2" = "#41AB5D", 
+      "scenario3" = "#fec44f",
+      "scenario4_10" = "#238B45",
+      "scenario4_20" = "#006D2C",
+      "scenario4_30" = "#002910"
+    ),
+    name = "Greening Scenario",
+    labels = c("scenario1" = "Scenario 1",
+               "scenario2" = "Scenario 2",
+               "scenario3" = "Scenario 3",
+               "scenario4_10" = "Scenario 4_10",
+               "scenario4_20" = "Scenario 4_20",
+               "scenario4_30" = "Scenario 4_30")
+  ) +
+  geom_text(
+    data = df_diff %>% filter(year == '28_5'),
+    aes(label = sprintf("%+.2f°C", temp_diff)),
+    hjust = -0.2,
+    size = 3.5, show.legend = F,
+    fontface = "bold"
+  ) +
+  labs(
+    title = "Temperature Difference from Baseline (Scenario 0)",
+    subtitle = "Greening scenarios compared to baseline - darker green indicates more greening",
+    x = "Year",
+    y = "Temperature Difference (°C)",
+    caption = "Positive values indicate higher temperatures than scenario0"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    plot.subtitle = element_text(color = "gray40", margin = margin(b = 10)),
+    # legend.position = "right",
+    legend.position = c(0.21, 0.81),
+    legend.spacing.y = unit(0.02, "cm"),
+    legend.key.height = unit(0.4, "cm"),
+    panel.grid.minor = element_blank()
+  ) 
+
+
+# Display the plots (choose one or compare)
+# p1  # Bar chart by year
+p2  # Difference from baseline (RECOMMENDED)
+# p3  # Small multiples by scenario
+
+f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", ymd, "_line_dif.png"))
+print(f)
+func_ggsave(f, w = 7, h = 6, save_png = T)
+```
+
+
+
+
+
+
+
+
+```{r - func_plot_line}
+
+func_plot_line <- function(data, legend.position.y = 0.21){
+  
+  df_stats <- data
+
+  p <- df_stats %>%
+    ggplot(., aes(x = year, y = value_diff_mean, 
+                  color = lc_scenario, 
+                  fill = lc_scenario, 
+                  group = lc_scenario)) +
+    geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper), alpha = 0.25, color = NA) +
+    geom_line(linewidth = 1.2) +
+    geom_point(size = 3) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray60") +
+    scale_color_manual(
+      values = c(
+        "scenario1" = "#d95f0e", # #78C679
+        "scenario2" = "#41AB5D", 
+        "scenario3" = "#fec44f",
+        "scenario4_10" = "#238B45",
+        "scenario4_20" = "#006D2C",
+        "scenario4_30" = "#002910"
+      ),
+      name = "Greening Scenario",
+      labels = c("scenario1" = "Scenario 1",
+                 "scenario2" = "Scenario 2",
+                 "scenario3" = "Scenario 3",
+                 "scenario4_10" = "Scenario 4_10",
+                 "scenario4_20" = "Scenario 4_20",
+                 "scenario4_30" = "Scenario 4_30")
+    ) +
+    scale_fill_manual(
+      values = c(
+        "scenario1" = "#d95f0e", # #78C679
+        "scenario2" = "#41AB5D", 
+        "scenario3" = "#fec44f",
+        "scenario4_10" = "#238B45",
+        "scenario4_20" = "#006D2C",
+        "scenario4_30" = "#002910"
+      ),
+      guide = "none"
+    ) +
+    geom_text(
+      data = df_stats %>% 
+        filter(year == '28_5'),
+      aes(label = sprintf("%+.2f", value_diff_mean)),
+      hjust = -0.2,
+      size = 3.5, show.legend = F,
+      fontface = "bold"
+    ) +
+    labs(
+      title = paste0(ind_label, " difference from baseline (Scenario 0)"),
+      subtitle = "Greening scenarios compared to baseline - darker green indicates more greening",
+      x = "Year",
+      y = paste0(ind_label, " change"),
+      caption = "Shaded areas represent 95% confidence intervals (±1.96 SE)"
+    ) +
+    ## This allows plot elements (like text) to extend beyond the plot panel boundaries without being clipped
+    coord_cartesian(clip = "off") + 
+    theme_minimal(base_size = 10) +
+    theme(
+      plot.title = element_text(face = "bold", size = 12),
+      plot.subtitle = element_text(color = "gray40", margin = margin(b = 10)),
+      plot.margin = margin(r = 1, unit = "cm"),
+      # legend.position = "right",
+      legend.position = c(0.21, legend.position.y),
+      legend.spacing.y = unit(0.02, "cm"),
+      legend.key.height = unit(0.4, "cm"),
+      panel.grid.minor = element_blank()
+    ) 
+  
+  print(p)
+  
+  ## save figure
+  f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", "line_dif_", ind, '_', ymd, ".png"))
+  print(f)
+  func_ggsave(f, w = 7, h = 6, save_png = T)
+
+}
+
+```
+
+
+
+```{r - func_plot_map}
+
+func_plot_map <- function(data) {
+  
+  # Apply to your data and plot
+  scale_params <- get_color_scale(data$value_diff)
+  
+  p <- ggplot(data = data) +
+    geom_sf(aes(fill = value_diff), color = NA, size = 0.1)
+  
+  
+  # customize colors for temperature change 
+  if (ind == 'avg_tmp_v') {
+    scale_params_colors <- rev(scale_params$colors)
+  } else {
+    scale_params_colors <- scale_params$colors
+  }
+  
+  # Apply appropriate scale based on data
+  if (scale_params$scale_type == "diverging") {
+    p <- p + 
+      scale_fill_gradientn(
+        colors = scale_params_colors,
+        limits = c(scale_params$vmin, scale_params$vmax),
+        values = scales::rescale(c(scale_params$vmin, 0, scale_params$vmax)),
+        name = "Change",
+        na.value = "grey90",
+        oob = scales::squish
+      )
+  } else {
+    p <- p +
+      scale_fill_gradientn(
+        colors = scale_params$colors,
+        limits = c(scale_params$vmin, scale_params$vmax),
+        name = "Change",
+        na.value = "grey90",
+        oob = scales::squish
+      )
+  }
+  
+  p <- p +
+    facet_grid(lc_scenario~year, switch = "y") +
+    theme_minimal() +
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.grid = element_blank(),
+      strip.text = element_text(size = 10, face = "bold"),
+      strip.text.y.left = element_text(
+        angle = 45, 
+        margin = margin(l = 6, r = 4), # Tip: if labels clip, add a little space
+        hjust = 0.5, vjust = 0.5),
+      legend.position = "right",
+      legend.key.width = unit(.5, "cm")
+    ) +
+    labs(
+      title = paste("Change in", ind_label, 'from baseline'),
+    )
+  
+  print(p)
+  
+  
+  f <- file.path(dir.fig, paste0("temp_scenarios_fromshp_", "map_dif_", ind, '_', ymd, ".png"))
+  print(f)
+  func_ggsave(f, w = 7, h = 7, dpi = 500, save_png = T)
+
+}
+
+```
+
+
+```{r - plot - line}
+
+func_plot_line(data = df_stats, legend.position.y = 0.81)
+
+```
+
+
+
+
+```{r - plot - map}
+
+func_plot_map(data = df_change_sf)
+
+```
+
+
+
+
+```{r - dunns test, eval=FALSE, include=FALSE}
 
 source('./code/func_comparing_means_Dunns.R')
-source('./code/func_ggsave.R')
-
 
 text_size = 10
 
@@ -322,3 +949,127 @@ f <- file.path(dir.fig, paste("temp_scenarios_fromshp", ymd, which_test, ".png",
 print(f)
 func_ggsave(f, w = 7, h = 5, save_png = T)
 ```
+
+
+
+
+
+### Energy saving by borough 
+
+  `avd_eng_cn` - (optional) Avoided energy consumption (kWh or $ if optional energy cost input column was provided in the Energy Consumption Table).
+
+```{r - data stats}
+
+ind <- 'avd_eng_cn'
+ind_scale <- 1/10^6  # convert to million
+ind_label <- "avoided energy cost (Million £)"
+
+df_change <- shp_all_df %>%
+  rename('value' = ind) %>%
+  mutate(value = value * ind_scale) %>%
+  group_by(year) %>%
+  mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
+  filter(lc_scenario != "scenario0") %>%
+  as.data.frame() 
+
+
+
+df_change_sf <- df_change %>%
+  select(GSS_CODE, year, lc_scenario, value_diff) %>%
+  mutate(var = ind) %>%
+  left_join(aoi, ., by = 'GSS_CODE')
+
+
+df_stats <- df_change %>%
+  group_by(lc_scenario, year) %>%
+  dplyr::summarise(
+    value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
+    sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
+    n  = n(),                                          # sample size
+    se = sd / sqrt(n),                                 # standard error
+    ci_lower = value_diff_mean - 1.96 * se,
+    ci_upper = value_diff_mean + 1.96 * se, 
+    .groups = "drop"
+  ) %>%
+  as.data.frame()
+
+```
+  
+  
+
+```{r - plot - line}
+
+## apply the function 
+
+func_plot_line(data = df_stats)
+
+```
+
+
+```{r - plot - map}
+
+## apply the function 
+func_plot_map(data = df_change_sf)
+```
+
+
+
+### Heavy work productivity loss
+
+  `avg_hvls_v` - (optional) Heavy work productivity loss (%).
+
+
+```{r - data stats}
+
+ind <- 'avg_hvls_v'
+ind_scale <- -1  ## reverse for easier the interpretation: "productivity loss" --> "productivity gain"
+ind_label <- "heavy work productivity (%)"
+
+df_change <- shp_all_df %>%
+  rename('value' = ind) %>%
+  mutate(value = value * ind_scale) %>%
+  group_by(year) %>%
+  mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
+  filter(lc_scenario != "scenario0") %>%
+  as.data.frame() 
+
+
+df_change_sf <- df_change %>%
+  select(GSS_CODE, year, lc_scenario, value_diff) %>%
+  mutate(var = ind) %>%
+  left_join(aoi, ., by = 'GSS_CODE')
+
+
+
+df_stats <- df_change %>%
+  group_by(lc_scenario, year) %>%
+  dplyr::summarise(
+    value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
+    sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
+    n  = n(),                                          # sample size
+    se = sd / sqrt(n),                                 # standard error
+    ci_lower = value_diff_mean - 1.96 * se,
+    ci_upper = value_diff_mean + 1.96 * se, 
+    .groups = "drop"
+  ) %>%
+  as.data.frame()
+
+```
+  
+  
+
+```{r - plot - line}
+
+## apply the function 
+
+func_plot_line(data = df_stats)
+
+```
+
+
+```{r - plot - map}
+
+func_plot_map(data = df_change_sf)
+
+```
+
