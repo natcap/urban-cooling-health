@@ -40,13 +40,13 @@ This ensures that all file paths are relative to your project folder.
 
 # Load data
 
-cur current/baseline climate 
-fut future climate (2050 or 2070) 
-MAT Mean annual temperature 
-MTWM Maximum temperature of the *warmest* month
-MTCM Minimum temperature of the *coldest* month 
-AP Annual precipitation
-PDQ Precipitation of the driest quarter
+cur   current/baseline climate 
+fut   future climate (2050 or 2070) 
+MAT   Mean annual temperature 
+MTWM  Maximum temperature of the *warmest* month
+MTCM  Minimum temperature of the *coldest* month 
+AP    Annual precipitation
+PDQ   Precipitation of the driest quarter
 
 
 ## Global data
