@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(dplyr)
 library(tidyr)
+library(purrr)
 library(stringr)
 library(ggplot2)
 
@@ -23,10 +24,9 @@ dir_fig <- file.path(dir_main, "3_final/UCM_figures")
 
 ```
 
-## R Markdown
+## total by cause - city-level
 
 ```{r}
-
 # --- paths ---
 dir_data = file.path(dir_main, "2_postprocess_intermediate/UCM_official_runs")
 
@@ -45,16 +45,36 @@ fs <- list.files(path = dir_data, pattern = 'city_total_draws_by_cause.csv', ful
 fs
 
 df_all <- map_dfr(fs, ~ read_csv(.x, show_col_types = FALSE) %>%
-  mutate(Scenario = str_extract(.x, "s\\d+_s\\d+(?=/|$)")))
+  # mutate(Scenario = str_extract(.x, "s\\d+_s\\d+(?=_|/|$)")))  # without '_2050_2050'
+  mutate(Scenario = str_extract(.x, "s\\d+_s\\d+(?:_\\d+_\\d+)?")))
+  # mutate(Scenario = str_extract(.x, "s\\d+_s\\d+(?=/|$)")))
 causes <- setdiff(names(df_all), c("draw", "Scenario"))
 causes
 
+```
+
+
+
+```{r - which year?}
+
+year_range <- '2050_2050'
+
+df_all_ <- df_all %>%
+  mutate(
+    year = str_extract(Scenario, "\\d{4}_\\d{4}"),
+    Scenario = str_remove(Scenario, "_\\d{4}_\\d{4}")
+) 
+
+
+df_all_filter <-df_all_ %>%
+  filter(year %in% year_range)
+```
 
 
 
 
-
-long <- df_all %>%
+```{r - data 1}
+long <- df_all_filter %>%
   # select(-draw) %>%
   pivot_longer(all_of(causes), names_to = "cause", values_to = "value") %>%
   drop_na() %>%
@@ -71,6 +91,8 @@ stats <- long %>%
     p97   = quantile(value, 0.975, na.rm = TRUE),
     .groups = "drop"
   )
+
+
 
 # --- plot ---
 p <- ggplot(long, aes(x = value, y = cause)) +
@@ -105,11 +127,19 @@ p
 ```
 
 
-```{r - 2 data}
-long <- map_dfr(fs, ~ read_csv(.x, show_col_types = FALSE) |>
-  mutate(Scenario = str_extract(.x, "s\\d+(?:_s\\d+)*")) |>
+```{r - data 2}
+
+long2 <- 
+  map_dfr(fs, ~ read_csv(.x, show_col_types = FALSE) |>
+  # mutate(Scenario = str_extract(.x, "s\\d+(?:_s\\d+)*")) |> ## only scenario strings
+  mutate(Scenario = str_extract(.x, "s\\d+_s\\d+(?:_\\d+_\\d+)?")) |> ## scenario + years
   pivot_longer(-c(draw, Scenario), names_to = "cause", values_to = "value")) |>
   drop_na(value) %>%
+  mutate(
+    year = str_extract(Scenario, "\\d{4}_\\d{4}"),
+    Scenario = str_remove(Scenario, "_\\d{4}_\\d{4}"), 
+    year = ifelse(is.na(year), '2021_2050', year)
+    ) %>%
   mutate(cause = str_to_title(cause))
 
 # keep original cause order as in the first file
@@ -117,16 +147,17 @@ first_cols <- names(read_csv(fs[1], n_max = 0, show_col_types = FALSE)) %>%
   str_to_title()
 
 cause_order <- setdiff(first_cols, "Draw")
-long <- long |>
+long2 <- long2 |>
   mutate(
     cause = factor(cause, levels = cause_order),
     Scenario   = factor(Scenario)
-  )
+  ) %>%
+  filter(year %in% year_range)
 
 #-----------------------------
 # 2) Summary stats per cause × Scenario
 #-----------------------------
-stats <- long |>
+stats <- long2 |>
   group_by(cause, Scenario) |>
   summarise(
     mean  = mean(value, na.rm = TRUE),
@@ -146,7 +177,7 @@ stats <- long |>
 
 
 
-```{r - 4}
+```{r - plot}
 
 #-----------------------------
 # 3) Plot (vertical, dodged by Scenario)
@@ -154,8 +185,11 @@ stats <- long |>
 
 pd <- position_dodge2(width = 0.8, preserve = "single")
 
+mean_min <- min(stats$mean, na.rm = T); mean_min
+legend.position.x <- ifelse(mean_min>=0, .85, 0.15)
+
 p <- 
-  ggplot(long, aes(x = cause, y = value, fill = Scenario)) +
+  ggplot(long2, aes(x = cause, y = value, fill = Scenario)) +
   geom_violin(position = pd, color = NA, linewidth = 0, alpha = 0.5, trim = FALSE, width = 0.9, show.legend = F) +
   
   ## 95% interval
@@ -169,15 +203,31 @@ p <-
   # mean labels (aligned with dodged violins)
   stat_summary(
     aes(label = sprintf("%.0f", after_stat(y)), group = Scenario, color = Scenario),
-    fun = mean, geom = "text", position = pd, show.legend = F, vjust = -0.6, size = 4
+    fun = mean, geom = "text", position = pd, show.legend = F, 
+    vjust = -0.6,
+    # hjust = -0.6,
+    size = 3
   ) +
+  
+  scale_color_manual(
+      values = c(
+        "s0_s1" = "#d95f0e", # #78C679
+        "s0_s2" = "#41AB5D", 
+        "s0_s3" = "#fec44f",
+        "s0_s4" = "#238B45",
+        "s0_s41" = "#238B45",
+        "s0_s42" = "#006D2C",
+        "s0_s43" = "#002910"
+      )) +
+  
+  
   labs(x = NULL, y = "Excess deaths (city total ± CI)") +
   theme_bw(base_size = 16) +
   scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) +
   
   coord_flip() +
   theme(
-    legend.position = c(.85, .85),
+    legend.position = c(legend.position.x, .75),
     legend.background = element_rect(color = NA, fill = 'white'),
     # legend.title = element_blank(),
     # axis.text.x = element_text(angle = 45, hjust = 1)
@@ -189,10 +239,8 @@ p
 # 4) Save
 #-----------------------------
 dir.create(dir_fig, showWarnings = FALSE, recursive = TRUE)
-ggsave(file.path(dir_fig, "health_monte_carlo_violins_by_cause_Scenario_dodged.png"),
-       p, width = 7, height = 5, dpi = 300)
-
-
+f <- file.path(dir_fig, paste0("health_monte_carlo_violins_by_cause_Scenario_dodged_", year_range, '_', ymd, ".png")); f
+ggsave(filename = f, plot = p, width = 7, height = 5, dpi = 300)
 
 ```
 
