@@ -21,11 +21,13 @@ Quick start:
 In `VS Code` / Terminal
 
 ```
+
 conda activate geo_env
 
 cd D:\natcap\urban-cooling-health\code\health_assessment
 
-.\health-modeling.bat
+.\health-modeling_s0_s41.bat
+
 ```
 
 Outputs:
