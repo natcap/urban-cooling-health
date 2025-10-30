@@ -16,10 +16,37 @@ remove(list = ls())
 library(here)
 library(dplyr)
 library(readr)
+library(stringr)
 library(ggplot2)
 library (leaflet)
+library(sf)
+library(dplyr)
+library(ggplot2)
 
+
+
+## ------------------------------------- ##
+## Help data
+## ------------------------------------- ##
+
+## load aoi
+dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
+
+## load `aoi` in sf
+f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'aoi_sf.rds')
+aoi <- readRDS(f)
+
+
+
+## dir
+dir.gshare <- 'G:/Shared drives/Wellcome Trust Project Data/0_source_data/'
+dir.fig <- './figures/'
+
+ymd   <- format(Sys.time(), "%Y%m%d"); ymd
 ```
+
+
+
 
 # Raw data
 
@@ -29,9 +56,8 @@ library (leaflet)
   Please refer to the readme file in `E:\London\uk_weather` for data source. 
 
 ```{r - weather stations}
-dir.raw <- 'G:/Shared drives/Wellcome Trust Project Data/0_source_data/'
 
-f <- paste0(dir.raw, 'uk-hourly-weather-obs/', 'midas-open_uk-hourly-weather-obs_dv-202407_station-metadata.csv')
+f <- paste0(dir.gshare, 'uk-hourly-weather-obs/', 'midas-open_uk-hourly-weather-obs_dv-202407_station-metadata.csv')
 d.header <- read_csv(f, n_max = 47, show_col_types = F)
 sta <- read_csv(f, skip = 48, show_col_types = F)
 
@@ -54,18 +80,7 @@ saveRDS(sta, file = f)
 
 
 ```{r - station map}
-## load aoi
-dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
 
-## load `aoi` in sf
-f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'aoi_sf.rds')
-aoi <- readRDS(f)
-
-
-# install.packages(c("sf","dplyr","ggplot2","viridisLite","rnaturalearth"))
-library(sf)
-library(dplyr)
-library(ggplot2)
 
 # 1) Convert to sf (WGS84). Make sure lon/lat are numeric and valid.
 sta_sf <- sta %>%
@@ -125,7 +140,7 @@ pts_clipped %>%
 years <- c(2018:2023)
 
 getwd()
-fs <- list.files(path = paste0(dir.raw, 'uk-hourly-weather-obs/dataset-version-202407/'), 
+fs <- list.files(path = paste0(dir.gshare, 'uk-hourly-weather-obs/dataset-version-202407/'), 
                  pattern = paste0('_(', paste(years, collapse = '|'), ')\\.csv$'), full.names = T)
 basename(fs)
 
@@ -157,6 +172,7 @@ d0 <- d %>%
 
 
 ```{r - bulk load data, warning=FALSE}
+
 library(purrr)
 
 # Read all RDS files and combine them into one dataframe
@@ -218,7 +234,6 @@ dat_ %>%
 
 
 ```{r - data stat}
-
 dat_stat <- dat_ %>%
   select(date_time:rec_st_ind, air_temperature, rltv_hum) %>%
   mutate(year = year(date_time), 
@@ -249,16 +264,33 @@ str(dat_stat)
 ## how many unique stations in London?
 dat_stat_unique <- dat_stat %>%
   distinct(src_id, .keep_all = T)
+```
 
 
+```{r - data saved}
 
 ## save data
 f <- paste0('./data/', 'london_weather_obs_stat.RDS'); f
 saveRDS(dat_stat, f)
+
 ```
+
+
+
+## Re-load data
 
 ```{r - monthly data}
 
+## stations 
+f <- here('data', 'weather_station_metadata.rds')
+sta <- readRDS(f)
+
+## weather data
+f <- paste0('./data/', 'london_weather_obs_stat.RDS'); f
+dat_stat <- readRDS(f)
+
+
+##
 dat_stat_mm <- dat_stat %>%
   select(-day, -week, -date) %>%
   group_by(across(c(-air_temperature, -rltv_hum))) %>%
@@ -267,7 +299,7 @@ dat_stat_mm <- dat_stat %>%
   mutate(date = as.Date(paste(year, month, '01', sep = '-'))) %>%
   # focus on daytime 
   filter(day_night %in% c('day')) %>%
-  left_join(., sta %>% select(src_id, station_latitude, station_longitude), by = 'src_id') %>%
+  left_join(., sta %>% select(src_id, station_name, station_latitude, station_longitude), by = 'src_id') %>%
   as.data.frame()
   
 ```
@@ -304,7 +336,7 @@ dat_summer %>%
 
 
 
-```{r - summer in July - summary}
+```{r - July - summary - by year}
 ## plot by month
 dat_stat_mm_7 <- dat_stat_mm %>%
   filter(month %in% c(7)) 
@@ -333,7 +365,7 @@ dat_stat_mm %>%
 ```
 
 
-```{r - summer in July - summary}
+```{r - July - summary - all years}
 dat_stat_mm %>%
   filter(month %in% c(7,8)) %>%               # your July filter
   filter(year >= 2020) %>% 
@@ -353,7 +385,8 @@ dat_stat_mm %>%
 ```
 
 
-```{r - summer in July}
+```{r - plot July temp by year}
+
 ## how many unique stations in London?
 dat_stat_mm_7 %>%
   distinct(src_id)
@@ -392,12 +425,30 @@ dat_sf <- dat_stat_mm_7 %>%
 
 # 2) Plot: points colored by air temperature (°C)
 ggplot() +
-  geom_sf(data = aoi, fill = "grey95", color = "white", linewidth = 0.2) +
+  geom_sf(data = aoi, fill = "grey85", color = "white", linewidth = 0.2) +
   geom_sf(data = dat_sf, aes(color = air_temperature), size = 4, alpha = 0.9) +
+  # labels
+  geom_sf_text(
+    data = dat_sf,
+    aes(label = str_to_title(station_name)),
+    nudge_y = 0.03,      # move labels a bit so they don’t sit on the point
+    size = 3, vjust = -1,
+    check_overlap = TRUE
+  ) +
   scale_color_viridis_c(name = "Air temp (°C)", option = "C", na.value = "grey70") +
   coord_sf() +
   theme_minimal() +
   labs(title = "Stations colored by air temperature", x = NULL, y = NULL)
+
+# Save your last ggplot as PNG
+f <- file.path(dir.fig, paste0("weather-obs-station-", ymd, ".png"))
+ggsave(
+  filename = f, 
+  width    = 7,                    # width in inches
+  height   = 6,                    # height in inches
+  units = 'in',
+  dpi      = 300                   # resolution (good for PPT/publications)
+)
 
 # --- Variants ---
 # Reproject (e.g., to Web Mercator):
@@ -416,7 +467,7 @@ ggplot() +
 
 ```{r}
 
-f <- paste0(dir.raw, 'Geolocation Data/', 'EMR address.csv')
+f <- paste0(dir.gshare, 'Geolocation Data/', 'EMR address.csv')
 df.emr <- read_csv(f, show_col_types = F)
 
 names(df.emr)
