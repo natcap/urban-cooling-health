@@ -1,0 +1,469 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+# Set up
+
+```{r include=FALSE}
+
+# To clear your environment 
+remove(list = ls())
+
+library(here)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library (leaflet)
+
+```
+
+# Raw data
+
+
+## Climate variables
+
+  Please refer to the readme file in `E:\London\uk_weather` for data source. 
+
+```{r - weather stations}
+dir.raw <- 'G:/Shared drives/Wellcome Trust Project Data/0_source_data/'
+
+f <- paste0(dir.raw, 'uk-hourly-weather-obs/', 'midas-open_uk-hourly-weather-obs_dv-202407_station-metadata.csv')
+d.header <- read_csv(f, n_max = 47, show_col_types = F)
+sta <- read_csv(f, skip = 48, show_col_types = F)
+
+names(sta)
+
+sta_id <- sta %>%
+  distinct(src_id, station_name, station_file_name) %>%
+  distinct(src_id, .keep_all = T)
+
+
+## save data for app
+f <- here('data', 'weather_station_metadata.rds')
+saveRDS(sta, file = f)
+
+# sta %>%
+#   ggplot() +
+#   geom_point(aes(x = station_longitude, y = station_latitude)) +
+#   theme_bw()
+```
+
+
+```{r - station map}
+## load aoi
+dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
+
+## load `aoi` in sf
+f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'aoi_sf.rds')
+aoi <- readRDS(f)
+
+
+# install.packages(c("sf","dplyr","ggplot2","viridisLite","rnaturalearth"))
+library(sf)
+library(dplyr)
+library(ggplot2)
+
+# 1) Convert to sf (WGS84). Make sure lon/lat are numeric and valid.
+sta_sf <- sta %>%
+  filter(last_year >= 2018) %>%
+  mutate(
+    station_longitude = as.numeric(station_longitude),
+    station_latitude  = as.numeric(station_latitude)
+  ) %>%
+  filter(
+    !is.na(station_longitude), !is.na(station_latitude),
+    between(station_longitude, -180, 180),
+    between(station_latitude,  -90,   90)
+  ) %>%
+  st_as_sf(coords = c("station_longitude", "station_latitude"), crs = 4326)
+
+
+
+# make sure same CRS
+aoi  <- st_transform(aoi, 4326)   # or whatever CRS you're using
+pts  <- st_transform(sta_sf, st_crs(aoi))
+
+# 1) simplest / fastest for points:
+pts_clipped <- st_filter(pts, aoi)
+# keeps only points that fall inside AOI
+
+# # 2) equivalent with intersection:
+# pts_clipped2 <- st_intersection(pts, aoi)
+# # also carries over AOI attributes
+# 
+# # 3) if AOI has multiple polygons and you just want a single “dissolved” one:
+# aoi_union <- st_union(aoi)
+# pts_clipped3 <- st_filter(pts, aoi_union)
+
+
+
+# 2) Plot
+pts_clipped %>%
+  ggplot(data = .) +
+  geom_sf(data = aoi, fill = "grey95", color = "white", linewidth = 0.2) +
+  geom_sf(aes(color = station_elevation), size = 4, alpha = 0.9) +
+  scale_color_viridis_c(name = "Station elevation", option = "C", na.value = "grey70") +
+  coord_sf() +
+  theme_minimal() +
+  labs(title = "Stations elevation", x = NULL, y = NULL)
+```
+
+
+`src_id`    	unique source identifier or station site number
+`rec_st_ind`	state indicator for the record, state indicator for the current stage in the life of the record (see MIDAS documentation)
+`wetb_temp`	Wetbulb temperature	degC
+`rltv_hum`	Calculated relative humidity	%
+
+
+
+```{r - variables}
+
+years <- c(2018:2023)
+
+getwd()
+fs <- list.files(path = paste0(dir.raw, 'uk-hourly-weather-obs/dataset-version-202407/'), 
+                 pattern = paste0('_(', paste(years, collapse = '|'), ')\\.csv$'), full.names = T)
+basename(fs)
+
+
+
+## a complete data folder 
+dir_uk_weather <- 'E:/London/uk_weather/'
+fs <- list.files(path = dir_uk_weather, 
+                 pattern = paste0('_qcv-1_(', paste(years, collapse = '|'), ')\\.csv$'), 
+                 # pattern = "_qcv-1_[0-9]{4}\\.csv$",  # _qcv-1_ + 4 digits (year) + .csv
+                 recursive = T, full.names = T)
+basename(fs)
+
+## Use one csv file to see what variables are included 
+f0 <- tail(fs, n=1); basename(f0)
+
+d <- read_csv(f0, show_col_types = F, n_max = 281) 
+
+d0 <- d %>%
+  filter(Conventions %in% c('long_name')) %>%
+  filter(!grepl(sprintf('(%s)$', 
+                paste0(c('_q', '_j'), collapse = '|')), G))
+
+
+# d1 <- read_csv(f0, show_col_types = F, skip = 281)
+# names(d1)
+```
+
+
+
+```{r - bulk load data, warning=FALSE}
+library(purrr)
+
+# Read all RDS files and combine them into one dataframe
+dat <- map_dfr(fs, ~ read_csv(.x, skip = 281, col_types = cols(.default = "c")))
+
+unique(dat$src_id)
+unique(dat$met_domain_name)
+
+```
+
+
+
+## Climate Data filtering 
+
+```{r - selected data - air_temperature}
+
+library(lubridate)
+library(scales)
+library(stringr)
+
+
+dat_ <- dat %>%
+  filter(!is.na(id)) %>%
+  mutate(date_time = parse_date_time(ob_time, "ymd HMS", tz="GMT"),
+         src_id = str_pad(src_id, 5, pad = "0"),
+         air_temperature = as.numeric(air_temperature),
+         rltv_hum = as.numeric(rltv_hum)
+         ) %>%
+  select(1, date_time, everything()) %>%
+  as.data.frame()
+
+# str(dat_)
+
+dat_ %>%
+  ggplot(aes(x = date_time, air_temperature, color = src_id)) +
+  # geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
+  # facet_wrap(~src_id) +
+  scale_x_datetime(date_breaks = '1 month', date_labels = "%b") +
+  theme_minimal() +
+  xlab('Date')
+```
+
+
+`rltv_hum`	Calculated relative humidity	%
+
+```{r - selected data - relative humidity}
+
+dat_ %>%
+  ggplot(aes(x = date_time, rltv_hum, color = src_id)) +
+  # geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
+  # facet_wrap(~src_id) +
+  scale_x_datetime(date_breaks = '1 month', date_labels = "%b") +
+  theme_minimal() +
+  xlab('Date')
+```
+
+
+
+```{r - data stat}
+
+dat_stat <- dat_ %>%
+  select(date_time:rec_st_ind, air_temperature, rltv_hum) %>%
+  mutate(year = year(date_time), 
+         month = month(date_time),
+         day = day(date_time),
+         week = week(date_time),
+         hour = hour(date_time)) %>%
+  mutate(
+    day_night = case_when(
+      hour >= 8 & hour < 20 ~ "day",
+      TRUE ~ "night"), 
+    season = case_when(
+      month %in%c (1, 2, 3) ~ "winter",
+      month %in%c (4, 5, 6) ~ "spring",
+      month %in%c (7, 8, 9) ~ "summer",
+      TRUE ~ "fall"), 
+      ) %>%
+  group_by(across(c(-air_temperature, -rltv_hum, -date_time, -hour))) %>%
+  summarise_at(c("air_temperature", "rltv_hum"), mean, na.rm = TRUE) %>%
+  ## add year and month as date 
+  mutate(date = as.Date(paste(year, month, day, sep = '-')))%>%
+  ungroup() %>%
+  as.data.frame()
+
+str(dat_stat)
+
+
+## how many unique stations in London?
+dat_stat_unique <- dat_stat %>%
+  distinct(src_id, .keep_all = T)
+
+
+
+## save data
+f <- paste0('./data/', 'london_weather_obs_stat.RDS'); f
+saveRDS(dat_stat, f)
+```
+
+```{r - monthly data}
+
+dat_stat_mm <- dat_stat %>%
+  select(-day, -week, -date) %>%
+  group_by(across(c(-air_temperature, -rltv_hum))) %>%
+  summarise_at(c("air_temperature", "rltv_hum"), mean, na.rm = TRUE) %>%
+  ## add year and month as date 
+  mutate(date = as.Date(paste(year, month, '01', sep = '-'))) %>%
+  # focus on daytime 
+  filter(day_night %in% c('day')) %>%
+  left_join(., sta %>% select(src_id, station_latitude, station_longitude), by = 'src_id') %>%
+  as.data.frame()
+  
+```
+
+
+## Plot 
+
+```{r - plot - one station}
+
+## test 
+# station_name == 'KEW GARDENS'
+src_id_i <- "00723";
+
+
+## plot by month
+dat_stat %>%
+  filter(src_id %in% c(src_id_i)) %>%
+  ggplot(aes(x = date, air_temperature, color = day_night, label = round(air_temperature, digits = 1))) +
+  geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
+  # geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5, show.legend = F) + 
+  theme_minimal() +
+  xlab('Date')
+
+
+dat_summer <- dat_stat %>%
+  filter(season == 'summer')
+
+dat_summer %>%
+  group_by(day_night) %>%
+  summarise_at(c("air_temperature"), mean, na.rm = TRUE)
+
+```
+
+
+
+```{r - summer in July - summary}
+## plot by month
+dat_stat_mm_7 <- dat_stat_mm %>%
+  filter(month %in% c(7)) 
+
+summary(dat_stat_mm_7$air_temperature)
+
+
+library(dplyr)
+
+dat_stat_mm %>%
+  filter(month == 7) %>%               # your July filter
+  filter(year >= 2020) %>% 
+  group_by(year) %>%
+  summarise(
+    n     = n(),
+    min   = min(air_temperature, na.rm = TRUE),
+    q1    = quantile(air_temperature, 0.25, na.rm = TRUE),
+    mean  = mean(air_temperature, na.rm = TRUE),
+    median= median(air_temperature, na.rm = TRUE),
+    q3    = quantile(air_temperature, 0.75, na.rm = TRUE),
+    max   = max(air_temperature, na.rm = TRUE),
+    sd    = sd(air_temperature, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(year)
+```
+
+
+```{r - summer in July - summary}
+dat_stat_mm %>%
+  filter(month %in% c(7,8)) %>%               # your July filter
+  filter(year >= 2020) %>% 
+  filter(year <= 2022) %>% 
+  group_by(version_num) %>%
+  summarise(
+    n     = n(),
+    min   = min(air_temperature, na.rm = TRUE),
+    q1    = quantile(air_temperature, 0.25, na.rm = TRUE),
+    mean  = mean(air_temperature, na.rm = TRUE),
+    median= median(air_temperature, na.rm = TRUE),
+    q3    = quantile(air_temperature, 0.75, na.rm = TRUE),
+    max   = max(air_temperature, na.rm = TRUE),
+    sd    = sd(air_temperature, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+
+```{r - summer in July}
+## how many unique stations in London?
+dat_stat_mm_7 %>%
+  distinct(src_id)
+
+dat_stat_mm_7 %>%
+  ggplot(aes(x = date, air_temperature, 
+             color = src_id,
+             label = round(air_temperature, digits = 1))) +
+  geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
+  facet_wrap(~month) +
+  # geom_text(check_overlap = TRUE, vjust = -0.5, hjust = 0.5, show.legend = F) + 
+  theme_minimal() +
+  xlab('Date')
+
+```
+
+
+```{r - map}
+
+# 1) Convert to sf (WGS84). Make sure lon/lat are numeric and valid.
+dat_sf <- dat_stat_mm_7 %>%
+  mutate(
+    station_longitude = as.numeric(station_longitude),
+    station_latitude  = as.numeric(station_latitude)
+  ) %>%
+  # filter(
+  #   !is.na(station_longitude), !is.na(station_latitude),
+  #   between(station_longitude, -180, 180),
+  #   between(station_latitude,  -90,   90)
+  # ) %>%
+  st_as_sf(coords = c("station_longitude", "station_latitude"), crs = 4326)
+
+
+
+
+# 2) Plot: points colored by air temperature (°C)
+ggplot() +
+  geom_sf(data = aoi, fill = "grey95", color = "white", linewidth = 0.2) +
+  geom_sf(data = dat_sf, aes(color = air_temperature), size = 4, alpha = 0.9) +
+  scale_color_viridis_c(name = "Air temp (°C)", option = "C", na.value = "grey70") +
+  coord_sf() +
+  theme_minimal() +
+  labs(title = "Stations colored by air temperature", x = NULL, y = NULL)
+
+# --- Variants ---
+# Reproject (e.g., to Web Mercator):
+# dat_sf_3857 <- st_transform(dat_sf, 3857)
+# ggplot() + geom_sf(data = dat_sf_3857, aes(color = air_temperature)) + coord_sf(crs = st_crs(3857))
+#
+# Size by humidity and color by day/night:
+# ggplot(dat_sf) +
+#   geom_sf(aes(color = day_night, size = rltv_hum)) +
+#   scale_size(range = c(1, 4), name = "RH (%)")
+
+
+```
+
+## EMR location data
+
+```{r}
+
+f <- paste0(dir.raw, 'Geolocation Data/', 'EMR address.csv')
+df.emr <- read_csv(f, show_col_types = F)
+
+names(df.emr)
+
+
+df.emr.geo <- df.emr %>%
+  select(town_name, adminstrative_area, latitude, longitude) %>%
+  distinct(latitude, longitude, .keep_all = T) %>%
+  slice_sample(prop = 0.01) %>%
+  as.data.frame()
+
+
+## save data for app
+f <- './data/EMR_address_sample.rds'
+saveRDS(df.emr.geo, file = f)
+```
+
+
+
+```{r plot}
+
+leaflet() %>%
+  addTiles() %>%
+  addProviderTiles(providers$OpenStreetMap) %>%
+  # addPolygons(data = home_tract_ply, color = "green", popup = ~GEOID) %>%
+  addCircleMarkers(
+    data = sta, 
+    lng = ~station_longitude, lat = ~station_latitude,
+    # radius = ~ifelse(populous == "Largest", 15, 10),
+    color = "red",
+    # color = ~pal(populous), 
+    popup = ~paste(
+      "<strong> station_name: </strong>", station_name, "<br>",
+      "<strong> station_elevation: </strong>", station_elevation, "<br>",
+      "<strong> first_year: </strong>", first_year, "<br>",
+      "<strong> last_year: </strong>", last_year, "<br>"
+      ),
+    stroke = FALSE, fillOpacity = 0.5
+  ) %>%
+  addCircleMarkers(
+    data = df.emr.geo,
+    lng = ~longitude, lat = ~latitude,
+    popup = ~adminstrative_area,
+    color = "blue", 
+    radius = 2,
+    stroke = FALSE, fillOpacity = 0.5)  %>%
+  setView(-0.119, 51.525, zoom = 10) 
+
+```
+
