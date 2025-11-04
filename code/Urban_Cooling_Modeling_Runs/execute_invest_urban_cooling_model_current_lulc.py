@@ -50,8 +50,9 @@ if __name__ == '__main__':
     args['lulc_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/LCM2023_London_10m_clip2aoi_tcc24.tif')
     args['ref_eto_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/evapotranspiration/et0_V3_07_clipped_reprojected.tif')
     # create an array with groups of temps, UHI values and humidity
-    variables = np.array([[20, 2, 66.9],[20, 5, 66.9], [22, 2, 55],
-                          [22, 5, 55], [25, 2, 45], [25, 5, 45]])
+    variables = np.array([[28, 2, 45], [28, 5, 45]])
+    #variables = np.array([[20, 2, 66.9],[20, 5, 66.9], [22, 2, 55],
+    #                      [22, 5, 55], [25, 2, 45], [25, 5, 45]])
     # Loops through the different temperatures and degrees:
     for temp, uhi, hum in variables:
         # set the temperatures and UHI values
