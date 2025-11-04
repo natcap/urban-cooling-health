@@ -22,6 +22,7 @@ ymd   <- format(Sys.time(), "%Y%m%d"); ymd
 
 here()
 source(here('code', 'func_ggsave.R'))
+source(here('code', 'func_get_color_scale.R'))
 
 dir.fig <- "G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures"
 ```
@@ -230,17 +231,17 @@ shp_all_ <- shp_all %>%
   mutate(
     id = gsub('work_and_energy_runs_uhi_results_london_', '', id),
     year = case_when(
-      str_detect(id, "_20_2") ~ '20_2',
+      str_detect(id, "_20_2")            ~ '2023-20_2',
       # str_detect(id, "_20_5") ~ '20_5',
       
-      str_detect(id, "_22_2|22deg_2uhi") ~ '22_2',
-      str_detect(id, "_22_5|22deg_5uhi") ~ '22_5',
+      str_detect(id, "_22_2|22deg_2uhi") ~ '2030-22_2',
+      str_detect(id, "_22_5|22deg_5uhi") ~ '2030-22_5',
       
       # str_detect(id, "_25_2|25deg_2uhi") ~ '25_2',
-      str_detect(id, "_25_5|25deg_5uhi") ~ '25_5', # 2050
+      str_detect(id, "_25_5|25deg_5uhi") ~ '2050-25_5', # 2050
       
       # str_detect(id, "_28_2|28deg_2uhi") ~ '28_2', 
-      str_detect(id, "_28_5|28deg_5uhi") ~ '28_5', 
+      str_detect(id, "_28_5|28deg_5uhi") ~ '2070-28_5', 
       TRUE ~ NA_character_
     )
   ) %>%
