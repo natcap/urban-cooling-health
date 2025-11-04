@@ -1,0 +1,568 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-16"
+---
+
+```{r setup}
+
+# To clear your environment 
+remove(list = ls())
+
+library(here)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(sf)
+library(purrr)
+
+library(ggplot2)
+library(RColorBrewer)
+
+
+
+theme_set(theme_bw(base_size = 12))
+
+ymd   <- format(Sys.time(), "%Y%m%d"); ymd
+
+here()
+source(here('code', 'func_ggsave.R'))
+source(here('code', 'func_get_color_scale.R'))
+
+
+## dir
+dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
+dir.fig <- here('figures')
+
+
+
+
+```
+
+## Data
+
+
+### help data 
+
+```{r}
+
+f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'aoi_sf.rds')
+aoi <- readRDS(f)
+```
+
+
+### csv data from zonal stats
+
+```{r - chesla - historical}
+# --- 0) Inputs ---
+dir.ch <- "E:/chelsa02/clipped_london_stats/"
+dir.wc <- "E:/GCMs/clipped/stats/"
+
+# --- 1) Baseline (observed) CSV (read FIRST, since we join to it) ---
+
+# 1) List CHELSA tasmax CSVs
+files <- list.files(
+  path = dir.ch,
+  pattern = "^borough_stats_CHELSA_.*tasmax_.*\\.csv$",
+  full.names = TRUE
+) |> sort()
+
+# 2) Helper to parse year (and month) from filename
+# expects: ..._tasmax_MM_YYYY_...
+parse_meta_ch <- function(path) {
+  bn <- basename(path)
+  m  <- str_match(bn, "tasmax_(\\d{2})_(\\d{4})")
+  tibble(
+    # file  = basename(path),
+    month = as.integer(m[, 2]),
+    year  = as.integer(m[, 3])
+  )
+}
+
+# 3) Read & combine
+df_all_ch <- map_dfr(files, function(f) {
+  meta <- parse_meta_ch(f)
+  read_csv(f, show_col_types = FALSE) |>
+    mutate(
+      # source_file = basename(f),
+      year  = meta$year,
+      month = meta$month)
+})
+
+
+df1 <- read_csv(
+  "E:/chelsa02/clipped_london_stats/borough_stats_CHELSA_tasmax_07_2021_V.2.1_London.csv",
+  show_col_types = FALSE
+)
+
+
+```
+
+
+```{r}
+
+# --- 2) Helper: parse model name from filename ---
+# expects names like: borough_stats_wc2.1_30s_tmax_ACCESS-CM2_ssp370_2041-2060_London.csv
+parse_meta <- function(paths) {
+  bn <- basename(paths)
+  m  <- str_match(bn, "tmax_([^_]+)_(ssp\\d+)_(\\d{4}-\\d{4})")
+
+  # cols: 1=full match, 2=model, 3=scenario, 4=period
+  tibble(
+    file     = paths,
+    model    = m[, 2] %||% NA_character_,
+    scenario = m[, 3] %||% NA_character_,
+    period   = m[, 4] %||% NA_character_
+  )
+}
+
+# helper: %||% (replace NA from failed matches)
+`%||%` <- function(x, y) ifelse(is.na(x), y, x)
+
+# --- 3) Helper: join one model file to baseline and compute diff ---
+join_model <- function(model_csv, df_baseline) {
+  
+  meta <- parse_meta(model_csv)
+  
+  readr::read_csv(model_csv, show_col_types = FALSE) %>%
+    dplyr::inner_join(df_baseline, by = "borough", suffix = c("_s", "_b")) %>%
+    dplyr::mutate(
+      model    = meta$model,
+      scenario = meta$scenario,
+      period   = meta$period,
+      mean_diff = mean_s - mean_b
+    ) %>%
+    mutate(period = case_when(
+      period == '2021-2040' ~ '2030',
+      period == '2041-2060' ~ '2050',
+      period == '2061-2080' ~ '2070',
+      T                     ~ period
+    ))
+}
+
+```
+
+
+
+```{r - worldclim - future}
+
+# --- 4) Collect model files and batch process ---
+files <- list.files(
+  path = dir.wc,
+  pattern = "^borough_stats_wc2\\.1_.*tmax_.*_ssp.*\\.csv$",
+  full.names = TRUE
+)
+
+df_all <- map_dfr(files, ~ join_model(.x, df1)) 
+
+
+# --- 5) add sf 
+df_all_sf <- aoi %>%
+  rename('borough'='NAME') %>%
+  left_join(df_all, by = 'borough')
+
+
+# Optional: ensure a valid CRS for plotting
+if (is.na(sf::st_crs(df_all_sf))) {
+  sf::st_crs(df_all_sf) <- 4326
+}
+
+
+# Ensure factors have a nice order
+df_all_sf <- df_all_sf %>%
+  mutate(
+    model  = fct_inorder(as.factor(model)),
+    period = fct_inorder(as.factor(period))
+  )
+
+```
+
+
+### plot
+
+```{r - boxplot - change over time}
+
+
+df_all_ch_sub <- df_all_ch %>%
+  select(any_of(c("borough", "year", "month", "mean"))) %>%
+  mutate(scenario = 'baseline')
+
+
+
+df_all_mc_sub <- df_all %>%
+  group_by(borough, scenario, period) %>%
+  summarise(
+    mean = mean(mean_s, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  rename(year = period) %>%
+  mutate(month = 7) %>%
+  ## make sure the two df have the same col names
+  select(any_of(names(df_all_ch_sub)))
+
+
+names(df_all_ch_sub)
+names(df_all_mc_sub)
+
+
+## combine the two 
+df_all_sub <- rbind(df_all_ch_sub, df_all_mc_sub)
+
+
+# Which column holds the temperature?
+value_col <- "mean"        # or "air_temperature"
+
+
+df_all_sub %>%
+  filter(year >= 2020) %>%
+  ggplot(., aes(x = year, y = .data[[value_col]], group = year)) +
+  geom_boxplot(
+    aes(fill = year >= 2030),
+    outlier.shape = NA, width = 0.7, linewidth = 0.2, 
+    position = position_dodge(width = 0.75), show.legend = F,
+    # fill = "grey85", 
+    color = "grey40", alpha = .5) +
+  # fill colors for the condition
+  scale_fill_manual(
+    values = c(`FALSE` = "grey75", `TRUE` = "grey95"),  # pick your future color
+    name   = NULL,
+    labels = c(`FALSE` = "≤ 2030", `TRUE` = "> 2030")
+  ) +
+  # # optional: show all borough points with jitter
+  # geom_point(position = position_jitter(width = 0.15, height = 0),
+  #            alpha = 0.2, 
+  #            # size = 1.2, 
+  #            color = "grey35") +
+  # optional: show mean per year
+  stat_summary(fun = mean, geom = "point", shape = 18, color = "#f03b20", size = 2, alpha = .5) +
+  # mean label (one decimal)
+  stat_summary(
+    fun = mean, geom = "text", color = "#f03b20", 
+    aes(label = after_stat(sprintf("%.1f", y))),
+    vjust = -1.2,
+    # hjust = -1, 
+    size = 3
+  ) +
+  scale_y_continuous(expand = expansion(mult = c(0.02, 0.10))) +
+  labs(
+    x = "Year",
+    y = "Temperature (°C)",
+    # title = "July temperature by year"
+  ) +
+  # theme_minimal(base_size = 11) +
+  theme_bw(base_size = 11) +
+  theme(panel.grid.major.x = element_blank())
+
+
+# --- 3) save ---
+ggsave(
+  filename = file.path(dir.fig, "T_change_borough_overTime.png"),
+  plot = last_plot(), width = 3.5, height = 5.5, units = "in", dpi = 300
+)
+
+```
+
+
+```{r - tmap, eval=FALSE, include=FALSE}
+
+library(tmap)
+
+
+# --- 6) facet map using tmap (mean_diff by model) ---
+
+# Make a symmetric color scale around 0 so warming/cooling are comparable across facets
+max_abs <- max(abs(df_all_sf$mean_diff), na.rm = TRUE)
+# choose nice breaks (e.g., every 0.5 °C); tweak step to your data spread
+step <- if (max_abs <= 2) 0.5 else if (max_abs <= 5) 1 else 2
+brks <- seq(-ceiling(max_abs/step)*step, ceiling(max_abs/step)*step, by = step)
+
+# tmap style
+tmap_mode("plot")  # static plotting
+
+tm_map_diff <- 
+  tm_shape(df_all_sf) +
+  tm_fill(
+    col = "mean_diff",
+    # style = "fixed",
+    # breaks = brks,
+    style = "quantile", # "equal", "pretty", "quantile", "kmeans"
+    n = 8, 
+    # breaks = brks,
+    palette = "YlOrRd",                  # diverging, blue=cooler, red=warmer
+    title = "Δ Temp (°C)\n(model - baseline)",
+    legend.format = list(digits = 1),
+    legend.reverse = TRUE,
+    colorNA = "grey90"
+  ) +
+  tm_borders(col = "grey40", lwd = 0.5) +
+  tm_facets(by = "model", ncol = 2, free.scales = FALSE) +  # same legend across facets
+  tm_layout(
+    legend.outside = F,
+    legend.position = c("right", "bottom"), # inside the map: left/top/right/bottom
+    legend.format = list(digits = 1),
+    panel.labels.rot = 0,
+    frame = FALSE
+  )
+
+tm_map_diff
+
+# --- Save (optional) ---
+# tmap automatically sizes facets; set width/height to suit your grid
+tmap_save(
+  tm = tm_map_diff,
+  filename = file.path(dir.fig, "T_change_borough_by_model-quantile2.png"),
+  width = 7, height = 5, units = "in", dpi = 300
+)
+
+# --- Variants ---
+# 1) If you want to facet by scenario instead (if present as a column):
+# tm_facets(by = "scenario", ncol = 3, free.scales = FALSE)
+
+# 2) Map the model's absolute mean (mean_s) instead of difference:
+# tm_fill("mean_s", style = "quantile", n = 5, palette = "YlOrRd", title = "Model mean (°C)")
+
+# 3) Add borough labels (centroids) sparingly:
+# centers <- sf::st_point_on_surface(df_all_sf)
+# tm_shape(centers) + tm_text("borough", size = 0.5, auto.placement = TRUE, bg.color = "white", bg.alpha = 0.5)
+```
+
+```{r - ggplot}
+
+library(forcats)
+library(scales)
+
+# --- 1) make global quantile bins (8 classes) ---
+probs   <- seq(0, 1, length.out = 9)
+brks    <- quantile(df_all_sf$mean_diff, probs = probs, na.rm = TRUE, type = 7)
+brks    <- unique(brks)                           # guard against duplicate quantiles
+labs    <- sprintf("%s–%s",
+                   format(round(brks[-length(brks)], 1), nsmall = 1),
+                   format(round(brks[-1],          1), nsmall = 1))
+
+df_plot <- df_all_sf %>%
+  mutate(
+    mean_diff_bin = cut(mean_diff,
+                        breaks = brks,
+                        include.lowest = TRUE,
+                        labels = labs)
+  )
+
+# --- 2) plot with ggplot (facets by model) ---
+p <- ggplot(df_plot) +
+  geom_sf(aes(fill = mean_diff_bin), color = "grey40", linewidth = 0.3) +
+  # facet_wrap(~ model, ncol = 2) +
+  facet_grid(rows = vars(period), cols = vars(model)) +
+  scale_fill_brewer(
+    palette = "YlOrRd",
+    na.value = "grey90",
+    drop = FALSE,
+    name = "ΔT (°C)"
+  ) +
+  guides(fill = guide_legend(
+    reverse = F,
+    nrow = 1, # all keys in a single row
+    byrow = TRUE)) +  # reverse legend order
+
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid = element_blank(), 
+    axis.text = element_blank(),
+    # legend.position = c(0.85, 0.02), # inside bottom-right; tweak or set "right"
+    legend.position = "bottom",
+    legend.box = "horizontal",
+    legend.key.size = unit(10, "pt"),
+    legend.title = element_text(lineheight = 0.9)
+  )
+
+p
+
+# --- 3) save ---
+ggsave(
+  filename = file.path(dir.fig, "T_change_borough_by_model-quantile_ggplot_years.png"),
+  plot = p, width = 7, height = 5, units = "in", dpi = 300
+)
+
+```
+
+### avg across models
+
+```{r - bin}
+
+df <- df_all_sf_avg %>%
+  rename('value' = 'mean_diff_avg')
+
+# --- 1) make global quantile bins (8 classes) ---
+probs   <- seq(0, 1, 0.1)
+brks    <- quantile(df$value, probs = probs, na.rm = TRUE, type = 7)
+brks    <- unique(brks)                           # guard against duplicate quantiles
+labs    <- sprintf("%s–%s",
+                   format(round(brks[-length(brks)], 1), nsmall = 1),
+                   format(round(brks[-1],          1), nsmall = 1))
+
+df_plot <- df %>%
+  mutate(
+    mean_diff_bin = cut(value,
+                        breaks = brks,
+                        include.lowest = TRUE,
+                        labels = labs)
+  )
+
+# --- make enough colors (length = number of bins) ---
+n_bins <- length(levels(df_plot$mean_diff_bin))
+pal    <- colorRampPalette(brewer.pal(9, "YlOrRd"))(n_bins)  # extends YlOrRd beyond 9
+
+
+
+# --- 2) plot with ggplot (facets by model) ---
+
+facet_ncol = 2; hist2_x = 0.76; hist1_y = 0.06; hist2_y = 0.06; hist_w=0.2; hist_h=0.20; legend_x =0.47; legend_y=0.20; p_h=4
+facet_ncol = 1; hist2_x = 0.03; hist1_y = 0.50; hist2_y = 0.00; hist_w=0.4; hist_h=0.15; legend_x =0.88; legend_y=0.55; p_h=5.7
+
+
+p_map <- ggplot(df_plot) +
+  geom_sf(aes(fill = mean_diff_bin), color = "grey40", linewidth = 0.3) +
+  facet_wrap(~ period, ncol = facet_ncol) +
+  scale_fill_manual(values = pal, drop = FALSE,name = "ΔT (°C)") +
+  # scale_fill_viridis_d(name = "ΔT (°C)", option = "C", drop = FALSE) +
+  guides(fill = guide_legend(reverse = TRUE)) +  # reverse legend order
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid = element_blank(), 
+    axis.text = element_blank(),
+    legend.position = c(legend_x, legend_y),              # inside bottom-right; tweak or set "right"
+    # legend.justification = c("right", "bottom"),
+    legend.key.size = unit(9, "pt"),
+    legend.title = element_text(lineheight = 0.9)
+  )
+
+# p_map
+
+
+
+# --- the inset histogram ---
+n_bins <- 5
+
+p_hist1 <- 
+  df_plot %>%
+  filter(period == '2050') %>%
+  ggplot(., aes(x = value)) +
+  geom_histogram(bins = n_bins, fill = "grey60", colour = 'white', alpha = 0.5) +
+  # add count labels per bin
+  geom_text(
+    stat = "bin",
+    bins = n_bins,
+    aes(label = ifelse(after_stat(count) > 0, after_stat(count), "")),
+    vjust = -0.25,
+    size = 2
+  ) +
+  scale_y_continuous(expand = expansion(mult = c(0.0, 0.18))) +  # headroom for labels
+  labs(x = "ΔT (°C)", y = "Count") +
+  theme_minimal(base_size = 8) +
+  theme(
+    panel.background = element_rect(fill = NA, color = NA),
+    plot.margin = margin(0, 0, 0, 0), 
+    panel.grid = element_blank(),
+    axis.title = element_text(size = 8),
+    axis.text  = element_text(size = 7)
+  )
+
+
+p_hist2 <- 
+  df_plot %>%
+  filter(period == '2070') %>%
+  ggplot(., aes(x = value)) +
+  geom_histogram(bins = n_bins, fill = "grey60", colour = 'white', alpha = 0.5) +
+  # add count labels per bin
+  geom_text(
+    stat = "bin",
+    bins = n_bins,
+    aes(label = ifelse(after_stat(count) > 0, after_stat(count), "")),
+    vjust = -0.3,
+    size = 2
+  ) +
+  scale_y_continuous(expand = expansion(mult = c(0.0, 0.15))) +  # headroom for labels
+  labs(x = "ΔT (°C)", y = "Count") +
+  theme_minimal(base_size = 8) +
+  theme(
+    panel.background = element_rect(fill = NA, color = NA),
+    plot.margin = margin(0, 0, 0, 0), 
+    panel.grid = element_blank(),
+    axis.title = element_text(size = 8),
+    axis.text  = element_text(size = 7)
+  )
+
+
+# --- overlay: x/y/width/height are in [0,1] relative to the figure ---
+library(cowplot)
+p_final <- ggdraw(p_map) +
+  draw_plot(p_hist1, x = 0.03,    y = hist1_y, width = hist_w, height = hist_h) +
+  draw_plot(p_hist2, x = hist2_x, y = hist2_y, width = hist_w, height = hist_h)
+
+p_final
+
+
+
+# --- 3) save ---
+ggsave(
+  filename = file.path(dir.fig, "T_change_borough_by_model-quantile_ggplot_avg_years-v.png"),
+  plot = p_final, width = 3.5*facet_ncol, height = p_h, units = "in", dpi = 300
+)
+
+```
+
+
+
+
+```{r - cont}
+
+ggplot(df_plot) +
+  geom_sf(aes(fill = value), color = "grey40", linewidth = 0.3) +
+  facet_wrap(~ period, ncol = 2) +
+  scale_fill_distiller(
+    name = "ΔT (°C)",
+    palette = "YlOrRd",   # Brewer palette
+    direction = 1,        # -1 to reverse
+    na.value = "grey90",
+    limits = range(df_plot$value, na.rm = TRUE),  # optional; fixes range
+    oob = scales::squish
+  ) +
+  
+  # scale_fill_viridis_c(name = "ΔT (°C)", option = "C", na.value = "grey90") +
+  # continuous guide (colorbar) and reverse if desired
+  # guides(fill = guide_colorbar(
+  #   # reverse   = TRUE,
+  #   ticks     = TRUE
+  # )) +
+  
+  
+  ## --- to show Percentile --- 
+  # scale_fill_gradientn(
+  #   colours = colorRampPalette(RColorBrewer::brewer.pal(9, "YlOrRd"))(256),
+  #   name    = "Percentile",
+  #   breaks  = brks,                      # legend ticks at quantiles
+  #   labels  = percent(probs),            # "0%", "10%", "25%", ...
+  #   na.value = "grey90",
+  #   oob = squish
+  # ) +
+  # guides(fill = guide_colorbar(barheight = unit(70, "pt"), barwidth = unit(8, "pt"))) +
+  
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid = element_blank(), 
+    axis.text = element_blank(),
+    legend.position = c(0.55, 0.02),              # inside bottom-right; tweak or set "right"
+    legend.justification = c("right", "bottom"),
+    legend.key.size = unit(10, "pt"),
+    legend.title = element_text(lineheight = 0.9)
+  )
+
+ggsave(
+  filename = file.path(dir.fig, "T_change_borough_by_model-quantile_ggplot_avg_years3-2.png"),
+  plot = last_plot(), width = 7, height = 4, units = "in", dpi = 300
+)
+
+```
+
+
+
