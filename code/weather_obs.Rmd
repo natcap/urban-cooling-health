@@ -84,6 +84,7 @@ saveRDS(sta, file = f)
 
 # 1) Convert to sf (WGS84). Make sure lon/lat are numeric and valid.
 sta_sf <- sta %>%
+  # filter(first_year <= 2000) %>%
   filter(last_year >= 2018) %>%
   mutate(
     station_longitude = as.numeric(station_longitude),
@@ -137,7 +138,7 @@ pts_clipped %>%
 
 ```{r - variables}
 
-years <- c(2018:2023)
+years <- c(2000:2023)
 
 getwd()
 fs <- list.files(path = paste0(dir.gshare, 'uk-hourly-weather-obs/dataset-version-202407/'), 
@@ -348,7 +349,7 @@ library(dplyr)
 
 dat_stat_mm %>%
   filter(month == 7) %>%               # your July filter
-  filter(year >= 2020) %>% 
+  # filter(year >= 2020) %>% 
   group_by(year) %>%
   summarise(
     n     = n(),
@@ -368,7 +369,7 @@ dat_stat_mm %>%
 ```{r - July - summary - all years}
 dat_stat_mm %>%
   filter(month %in% c(7,8)) %>%               # your July filter
-  filter(year >= 2020) %>% 
+  filter(year >= 2000) %>% 
   filter(year <= 2022) %>% 
   group_by(version_num) %>%
   summarise(
@@ -465,7 +466,7 @@ ggsave(
 
 ## EMR location data
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 f <- paste0(dir.gshare, 'Geolocation Data/', 'EMR address.csv')
 df.emr <- read_csv(f, show_col_types = F)
@@ -487,7 +488,7 @@ saveRDS(df.emr.geo, file = f)
 
 
 
-```{r plot}
+```{r plot, eval=FALSE, include=FALSE}
 
 leaflet() %>%
   addTiles() %>%
