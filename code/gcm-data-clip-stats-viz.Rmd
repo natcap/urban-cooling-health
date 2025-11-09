@@ -14,6 +14,7 @@ library(readr)
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(forcats)
 library(sf)
 library(purrr)
 
@@ -81,7 +82,7 @@ parse_meta_ch <- function(path) {
 }
 
 # 3) Read & combine
-df_all_ch <- map_dfr(files, function(f) {
+df_ch <- map_dfr(files, function(f) {
   meta <- parse_meta_ch(f)
   read_csv(f, show_col_types = FALSE) |>
     mutate(
@@ -91,10 +92,11 @@ df_all_ch <- map_dfr(files, function(f) {
 })
 
 
-df1 <- read_csv(
-  "E:/chelsa02/clipped_london_stats/borough_stats_CHELSA_tasmax_07_2021_V.2.1_London.csv",
-  show_col_types = FALSE
-)
+
+## subset the baseline year ---
+df1 <- df_ch %>%
+  filter(year == 2021) %>%
+  select(-year, -month)
 
 
 ```
@@ -154,23 +156,23 @@ files <- list.files(
   full.names = TRUE
 )
 
-df_all <- map_dfr(files, ~ join_model(.x, df1)) 
+df_wc <- map_dfr(files, ~ join_model(.x, df1)) 
 
 
 # --- 5) add sf 
-df_all_sf <- aoi %>%
+df_wc_sf <- aoi %>%
   rename('borough'='NAME') %>%
-  left_join(df_all, by = 'borough')
+  left_join(df_wc, by = 'borough')
 
 
 # Optional: ensure a valid CRS for plotting
-if (is.na(sf::st_crs(df_all_sf))) {
-  sf::st_crs(df_all_sf) <- 4326
+if (is.na(sf::st_crs(df_wc_sf))) {
+  sf::st_crs(df_wc_sf) <- 4326
 }
 
 
 # Ensure factors have a nice order
-df_all_sf <- df_all_sf %>%
+df_wc_sf <- df_wc_sf %>%
   mutate(
     model  = fct_inorder(as.factor(model)),
     period = fct_inorder(as.factor(period))
@@ -181,67 +183,104 @@ df_all_sf <- df_all_sf %>%
 
 ### plot
 
-```{r - boxplot - change over time}
+```{r - summary}
 
-
-df_all_ch_sub <- df_all_ch %>%
+df_ch_sub <- df_ch %>%
   select(any_of(c("borough", "year", "month", "mean"))) %>%
   mutate(scenario = 'baseline')
 
 
 
-df_all_mc_sub <- df_all %>%
+df_wc_summ <- df_wc_sf %>%
   group_by(borough, scenario, period) %>%
   summarise(
     mean = mean(mean_s, na.rm = TRUE),
+    mean_diff_avg = mean(mean_diff, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   rename(year = period) %>%
-  mutate(month = 7) %>%
+  mutate(month = 7) 
+
+
+df_wc_summ_sub <- df_wc_summ %>%
+  st_drop_geometry() %>%
   ## make sure the two df have the same col names
-  select(any_of(names(df_all_ch_sub)))
+  select(any_of(names(df_ch_sub)))
 
 
-names(df_all_ch_sub)
-names(df_all_mc_sub)
+# names(df_ch_sub)
+# names(df_wc_summ_sub)
 
 
 ## combine the two 
-df_all_sub <- rbind(df_all_ch_sub, df_all_mc_sub)
+df_ch_wc <- rbind(df_ch_sub, df_wc_summ_sub)
+```
 
+
+```{r - boxplot - change over time}
 
 # Which column holds the temperature?
 value_col <- "mean"        # or "air_temperature"
 
 
-df_all_sub %>%
+p <- 
+  df_ch_wc %>%
   filter(year >= 2020) %>%
-  ggplot(., aes(x = year, y = .data[[value_col]], group = year)) +
+  ggplot(., aes(x = factor(year),  # factor(year) on x-axis ensures discrete spacing
+                y = .data[[value_col]], 
+                color = scenario, # outline color by scenario
+                # dodge by scenario within each year
+                group = interaction(year, scenario))) +
   geom_boxplot(
-    aes(fill = year >= 2030),
-    outlier.shape = NA, width = 0.7, linewidth = 0.2, 
-    position = position_dodge(width = 0.75), show.legend = F,
+    aes(fill = year >= 2030,
+        # color = scenario, # outline color by scenario
+      ),
+    
+    # position = position_dodge(width = 0.75), 
+    # position_dodge2() must be consistent across all layers (boxplot and both stat_summary calls)
+    position = position_dodge2(width = 0.75, padding = 0.1, preserve = "single"),
+    show.legend = FALSE,
+    outlier.shape = NA, width = 0.6, linewidth = 0.2, 
     # fill = "grey85", 
-    color = "grey40", alpha = .5) +
+    # color = "grey40", 
+    alpha = 0.4) +
+  
   # fill colors for the condition
   scale_fill_manual(
     values = c(`FALSE` = "grey75", `TRUE` = "grey95"),  # pick your future color
-    name   = NULL,
+    name   = NULL, 
     labels = c(`FALSE` = "≤ 2030", `TRUE` = "> 2030")
   ) +
+  
+  # Color scale for scenario (add your specific colors)
+  scale_color_manual(
+    name = NULL,
+    values = c("baseline" = "#4e79a7", "ssp370" = "#f28e2b", "ssp585" = "#e15759")) +
+  
   # # optional: show all borough points with jitter
   # geom_point(position = position_jitter(width = 0.15, height = 0),
   #            alpha = 0.2, 
   #            # size = 1.2, 
   #            color = "grey35") +
-  # optional: show mean per year
-  stat_summary(fun = mean, geom = "point", shape = 18, color = "#f03b20", size = 2, alpha = .5) +
+  # show Mean point per year/scenario
+  stat_summary(
+    position = position_dodge(width = 0.6),
+    # position = position_dodge2(width = 0.75, padding = 0.1, preserve = "single"),
+    fun = mean, 
+    geom = "point", 
+    shape = 18, 
+    # color = "#f03b20", 
+    size = 2, alpha = .7) +
   # mean label (one decimal)
   stat_summary(
-    fun = mean, geom = "text", color = "#f03b20", 
-    aes(label = after_stat(sprintf("%.1f", y))),
+    # position = position_dodge(width = 0.75),
+    position = position_dodge2(width = 0.75, padding = 0.1, preserve = "single"),
+    fun = mean, 
+    geom = "text", 
+    # color = "#f03b20", 
+    aes(label = after_stat(sprintf("%.1f", y))), show.legend = F,
     vjust = -1.2,
-    # hjust = -1, 
+    hjust = 0.8,
     size = 3
   ) +
   scale_y_continuous(expand = expansion(mult = c(0.02, 0.10))) +
@@ -252,14 +291,26 @@ df_all_sub %>%
   ) +
   # theme_minimal(base_size = 11) +
   theme_bw(base_size = 11) +
-  theme(panel.grid.major.x = element_blank())
+  theme(panel.grid.major.x = element_blank(), 
+        legend.position = c(0.2, 0.9))
 
+n_scenario <- df_ch_wc %>%
+  ungroup() %>%
+  filter(year >= 2030) %>%
+  pull(scenario) %>%
+  unique() %>%
+  length()
+
+# if (n_scenario>1){
+#   p <- p + 
+#     facet_wrap(~scenario)
+# }
+
+p
 
 # --- 3) save ---
-ggsave(
-  filename = file.path(dir.fig, "T_change_borough_overTime.png"),
-  plot = last_plot(), width = 3.5, height = 5.5, units = "in", dpi = 300
-)
+f <- paste0(dir.fig, "/T_change_borough_overTime_", n_scenario, "s.png")
+ggsave( filename = f, plot = p, width = 3.5, height = 5.5, units = "in", dpi = 300)
 
 ```
 
@@ -272,7 +323,7 @@ library(tmap)
 # --- 6) facet map using tmap (mean_diff by model) ---
 
 # Make a symmetric color scale around 0 so warming/cooling are comparable across facets
-max_abs <- max(abs(df_all_sf$mean_diff), na.rm = TRUE)
+max_abs <- max(abs(df_wc_sf$mean_diff), na.rm = TRUE)
 # choose nice breaks (e.g., every 0.5 °C); tweak step to your data spread
 step <- if (max_abs <= 2) 0.5 else if (max_abs <= 5) 1 else 2
 brks <- seq(-ceiling(max_abs/step)*step, ceiling(max_abs/step)*step, by = step)
@@ -281,7 +332,7 @@ brks <- seq(-ceiling(max_abs/step)*step, ceiling(max_abs/step)*step, by = step)
 tmap_mode("plot")  # static plotting
 
 tm_map_diff <- 
-  tm_shape(df_all_sf) +
+  tm_shape(df_wc_sf) +
   tm_fill(
     col = "mean_diff",
     # style = "fixed",
@@ -323,7 +374,7 @@ tmap_save(
 # tm_fill("mean_s", style = "quantile", n = 5, palette = "YlOrRd", title = "Model mean (°C)")
 
 # 3) Add borough labels (centroids) sparingly:
-# centers <- sf::st_point_on_surface(df_all_sf)
+# centers <- sf::st_point_on_surface(df_wc_sf)
 # tm_shape(centers) + tm_text("borough", size = 0.5, auto.placement = TRUE, bg.color = "white", bg.alpha = 0.5)
 ```
 
@@ -334,13 +385,13 @@ library(scales)
 
 # --- 1) make global quantile bins (8 classes) ---
 probs   <- seq(0, 1, length.out = 9)
-brks    <- quantile(df_all_sf$mean_diff, probs = probs, na.rm = TRUE, type = 7)
+brks    <- quantile(df_wc_sf$mean_diff, probs = probs, na.rm = TRUE, type = 7)
 brks    <- unique(brks)                           # guard against duplicate quantiles
 labs    <- sprintf("%s–%s",
                    format(round(brks[-length(brks)], 1), nsmall = 1),
                    format(round(brks[-1],          1), nsmall = 1))
 
-df_plot <- df_all_sf %>%
+df_plot <- df_wc_sf %>%
   mutate(
     mean_diff_bin = cut(mean_diff,
                         breaks = brks,
@@ -385,24 +436,22 @@ ggsave(
 
 ```
 
+
 ### avg across models
 
 ```{r - bin}
 
-df <- df_all_sf_avg %>%
-  rename('value' = 'mean_diff_avg')
-
 # --- 1) make global quantile bins (8 classes) ---
 probs   <- seq(0, 1, 0.1)
-brks    <- quantile(df$value, probs = probs, na.rm = TRUE, type = 7)
+brks    <- quantile(df_wc_summ$mean_diff_avg, probs = probs, na.rm = TRUE, type = 7)
 brks    <- unique(brks)                           # guard against duplicate quantiles
 labs    <- sprintf("%s–%s",
                    format(round(brks[-length(brks)], 1), nsmall = 1),
                    format(round(brks[-1],          1), nsmall = 1))
 
-df_plot <- df %>%
+df_plot <- df_wc_summ %>%
   mutate(
-    mean_diff_bin = cut(value,
+    mean_diff_bin = cut(mean_diff_avg,
                         breaks = brks,
                         include.lowest = TRUE,
                         labels = labs)
@@ -422,7 +471,7 @@ facet_ncol = 1; hist2_x = 0.03; hist1_y = 0.50; hist2_y = 0.00; hist_w=0.4; hist
 
 p_map <- ggplot(df_plot) +
   geom_sf(aes(fill = mean_diff_bin), color = "grey40", linewidth = 0.3) +
-  facet_wrap(~ period, ncol = facet_ncol) +
+  facet_wrap(~ year, ncol = facet_ncol) +
   scale_fill_manual(values = pal, drop = FALSE,name = "ΔT (°C)") +
   # scale_fill_viridis_d(name = "ΔT (°C)", option = "C", drop = FALSE) +
   guides(fill = guide_legend(reverse = TRUE)) +  # reverse legend order
@@ -445,8 +494,8 @@ n_bins <- 5
 
 p_hist1 <- 
   df_plot %>%
-  filter(period == '2050') %>%
-  ggplot(., aes(x = value)) +
+  filter(year == '2050') %>%
+  ggplot(., aes(x = mean_diff_avg)) +
   geom_histogram(bins = n_bins, fill = "grey60", colour = 'white', alpha = 0.5) +
   # add count labels per bin
   geom_text(
@@ -470,8 +519,8 @@ p_hist1 <-
 
 p_hist2 <- 
   df_plot %>%
-  filter(period == '2070') %>%
-  ggplot(., aes(x = value)) +
+  filter(year == '2070') %>%
+  ggplot(., aes(x = mean_diff_avg)) +
   geom_histogram(bins = n_bins, fill = "grey60", colour = 'white', alpha = 0.5) +
   # add count labels per bin
   geom_text(
@@ -504,10 +553,8 @@ p_final
 
 
 # --- 3) save ---
-ggsave(
-  filename = file.path(dir.fig, "T_change_borough_by_model-quantile_ggplot_avg_years-v.png"),
-  plot = p_final, width = 3.5*facet_ncol, height = p_h, units = "in", dpi = 300
-)
+f <- paste0(dir.fig, '/T_change_borough_by_model-quantile_ggplot_avg_years-v-', ymd, '.png')
+ggsave(filename = f, plot = p_final, width = 3.5*facet_ncol, height = p_h, units = "in", dpi = 300)
 
 ```
 
@@ -517,14 +564,14 @@ ggsave(
 ```{r - cont}
 
 ggplot(df_plot) +
-  geom_sf(aes(fill = value), color = "grey40", linewidth = 0.3) +
-  facet_wrap(~ period, ncol = 2) +
+  geom_sf(aes(fill = mean_diff_avg), color = "grey40", linewidth = 0.3) +
+  facet_wrap(~ year, ncol = 2) +
   scale_fill_distiller(
     name = "ΔT (°C)",
     palette = "YlOrRd",   # Brewer palette
     direction = 1,        # -1 to reverse
     na.value = "grey90",
-    limits = range(df_plot$value, na.rm = TRUE),  # optional; fixes range
+    limits = range(df_plot$mean_diff_avg, na.rm = TRUE),  # optional; fixes range
     oob = scales::squish
   ) +
   
