@@ -243,6 +243,11 @@ aoi <- readRDS(f)
 
 ```{r - re-code df}
 
+## pick the baseline year for later comparison 
+year_baseline <- 2021
+
+
+## tidy and re-code data 
 shp_all_ <- shp_all %>%
   st_drop_geometry() %>%
   select(-any_of(c("HECTARES", 
@@ -266,8 +271,7 @@ shp_all_ <- shp_all %>%
       TRUE ~ NA_character_
     ) 
   ) %>%
-  
-  
+
   tidyr::separate(id, into = c("lc_scenario", "rest"), sep = "_uhi_results|prc", remove = FALSE) %>%
   select(-rest) %>%
   mutate(lc_scenario = gsub('_20_2|_22_2|_25_5', '', lc_scenario) ) %>%
@@ -344,54 +348,74 @@ ind <- 'avg_tmp_v'
 ind_scale <- 1
 ind_label <- "temperature (°C)"
 
-df_change <- shp_all_df %>%
-  rename('value' = ind) %>%
-  mutate(value = value * ind_scale) %>%
-  group_by(year) %>%
-  mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
-  filter(lc_scenario != "scenario0") %>%
-  as.data.frame() 
+
+## compare to the (baseline year + lc scenario0)
+
+func_calculate_change_from_yri_lc0 <- function(
+    data = shp_all_df,
+    return_sf = FALSE
+) {
+
+  df_change <- data %>%
+    rename('value' = ind) %>%
+    mutate(value = value * ind_scale) %>%
+    group_by(year) %>%
+    mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
+    mutate(year = as.numeric(year)) %>%
+    filter(year >= year_baseline) %>%
+    filter(lc_scenario != "scenario0") %>%
+    as.data.frame() 
+  
+  
+  # df_change_check <- shp_all_df %>%
+  #   rename('value' = ind) %>%
+  #   mutate(value = value * ind_scale) %>%
+  #   select(1:2, value, lc_scenario, year) %>%
+  #   pivot_wider(names_from = lc_scenario, values_from = value) %>%
+  #   mutate(val_d_420 = scenario4_20 - scenario0, 
+  #          val_d_430 = scenario4_20 - scenario0)
+  # 
+  # df_change_check_summ <- 
+  #   df_change_check %>%
+  #   dplyr::group_by(year) %>%
+  #   dplyr::summarise(
+  #     n = sum(!is.na(val_d_420)),
+  #     mean = mean(val_d_420, na.rm = TRUE),
+  #     mean_sig12 = signif(mean, 12),
+  #     sd = sd(val_d_420, na.rm = TRUE)
+  #   )
+  
+  
+  
+  
+  df_chg_sf_i0 <- df_change %>%
+    select(GSS_CODE, year, lc_scenario, value_diff) %>%
+    mutate(var = ind) %>%
+    left_join(aoi, ., by = 'GSS_CODE')
+  
+  
+  df_stats_i0 <- df_change %>%
+    group_by(year, lc_scenario) %>%
+    dplyr::summarise(
+      value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
+      sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
+      n  = n(),                                          # sample size
+      se = sd / sqrt(n),                                 # standard error
+      ci_lower = value_diff_mean - 1.96 * se,
+      ci_upper = value_diff_mean + 1.96 * se, 
+      .groups = "drop"
+    ) %>%
+    as.data.frame()
+  
+  return(df_stats_i0)
+  ## which plot to show in the window
+  return(if (isTRUE(return_sf)) df_chg_sf_i0 else df_stats_i0)
+  
+}
 
 
-# df_change_check <- shp_all_df %>%
-#   rename('value' = ind) %>%
-#   mutate(value = value * ind_scale) %>%
-#   select(1:2, value, lc_scenario, year) %>%
-#   pivot_wider(names_from = lc_scenario, values_from = value) %>%
-#   mutate(val_d_420 = scenario4_20 - scenario0, 
-#          val_d_430 = scenario4_20 - scenario0)
-# 
-# df_change_check_summ <- 
-#   df_change_check %>%
-#   dplyr::group_by(year) %>%
-#   dplyr::summarise(
-#     n = sum(!is.na(val_d_420)),
-#     mean = mean(val_d_420, na.rm = TRUE),
-#     mean_sig12 = signif(mean, 12),
-#     sd = sd(val_d_420, na.rm = TRUE)
-#   )
-
-
-
-
-df_change_sf <- df_change %>%
-  select(GSS_CODE, year, lc_scenario, value_diff) %>%
-  mutate(var = ind) %>%
-  left_join(aoi, ., by = 'GSS_CODE')
-
-
-df_stats <- df_change %>%
-  group_by(year, lc_scenario) %>%
-  dplyr::summarise(
-    value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
-    sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
-    n  = n(),                                          # sample size
-    se = sd / sqrt(n),                                 # standard error
-    ci_lower = value_diff_mean - 1.96 * se,
-    ci_upper = value_diff_mean + 1.96 * se, 
-    .groups = "drop"
-  ) %>%
-  as.data.frame()
+df_stats_i0 <- func_calculate_change_from_yri_lc0(data = shp_all_df)
+df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = shp_all_df, return_sf = T)
 ```
 
 
@@ -399,47 +423,58 @@ df_stats <- df_change %>%
 ```{r - stats: change from yr 0 + lc 0}
 
 ## compare to the (baseline year + lc scenario0)
-baseline_year <- 2021
 
-df_i <- shp_all_df %>%
-  rename('value' = ind) %>%
-  mutate(value = value * ind_scale,
-         climate_lc = paste0(year, "_", lc_scenario))
+func_calculate_change_from_yr0_lc0 <- function(
+    data = shp_all_df
+) {
+  
+  df_i <- data %>%
+    rename('value' = ind) %>%
+    mutate(value = value * ind_scale,
+           climate_lc = paste0(year, "_", lc_scenario))
+  
+  # 1) compute baseline per feature (2020, scenario0)
+  df_base <- df_i %>%
+    filter(year == year_baseline, lc_scenario == "scenario0") %>%
+    select(GSS_CODE, 
+           # NAME, id, year, lc_scenario, climate_lc, 
+           baseline = value) # <-- use your feature key here (e.g., id/borough)
+  
+  # 2) join and compute differences for all rows
+  df_change_00 <- df_i %>%
+    left_join(df_base, by = "GSS_CODE") %>%        # join baseline per feature
+    mutate(value_diff = value - baseline) %>%
+    select(-baseline) %>%
+    # filter(climate_lc != paste0(year_baseline, "_scenario0")) %>%
+    as.data.frame() 
+  
+  
+  df_change_00_sf <- df_change_00 %>%
+    select(GSS_CODE, year, lc_scenario, value_diff) %>%
+    mutate(var = ind) %>%
+    left_join(aoi, ., by = 'GSS_CODE')
+  
+  
+  df_stats_00 <- df_change_00 %>%
+    group_by(year, lc_scenario) %>%
+    dplyr::summarise(
+      value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
+      sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
+      n  = dplyr::n(),                                          # sample size
+      se = sd / sqrt(n),                                 # standard error
+      ci_lower = value_diff_mean - 1.96 * se,
+      ci_upper = value_diff_mean + 1.96 * se, 
+      .groups = "drop"
+    ) %>%
+    as.data.frame()
+  
+  return(df_stats_00)
 
-# 1) compute baseline per feature (2020, scenario0)
-df_base <- df_i %>%
-  filter(year == baseline_year, lc_scenario == "scenario0") %>%
-  select(GSS_CODE, 
-         # NAME, id, year, lc_scenario, climate_lc, 
-         baseline = value) # <-- use your feature key here (e.g., id/borough)
-
-# 2) join and compute differences for all rows
-df_change_00 <- df_i %>%
-  left_join(df_base, by = "GSS_CODE") %>%        # join baseline per feature
-  mutate(value_diff = value - baseline) %>%
-  select(-baseline) %>%
-  # filter(climate_lc != paste0(baseline_year, "_scenario0")) %>%
-  as.data.frame() 
+}
 
 
-df_change_00_sf <- df_change_00 %>%
-  select(GSS_CODE, year, lc_scenario, value_diff) %>%
-  mutate(var = ind) %>%
-  left_join(aoi, ., by = 'GSS_CODE')
 
-
-df_stats_00 <- df_change_00 %>%
-  group_by(year, lc_scenario) %>%
-  dplyr::summarise(
-    value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
-    sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
-    n  = n(),                                          # sample size
-    se = sd / sqrt(n),                                 # standard error
-    ci_lower = value_diff_mean - 1.96 * se,
-    ci_upper = value_diff_mean + 1.96 * se, 
-    .groups = "drop"
-  ) %>%
-  as.data.frame()
+df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df)
 ```
 
 
@@ -448,27 +483,42 @@ df_stats_00 <- df_change_00 %>%
 
 ```{r - both --- }
 
-stat_00 <- df_stats_00 %>%
-  select(year, lc_scenario, chg = value_diff_mean, ci_lower, ci_upper) %>%
-  mutate(label = 'climate+lc effect')
+func_combine_two_change_dfs <- function(
+  df_stats_00,
+  df_stats_i0
+){
+
+  stat_00 <- df_stats_00 %>%
+    select(year, lc_scenario, chg = value_diff_mean, ci_lower, ci_upper) %>%
+    mutate(year = as.factor(year)) %>%
+    mutate(label = 'climate+lc effect')
+  
+  
+  stat_i0 <- df_stats_i0 %>% 
+    select(year, lc_scenario, chg = value_diff_mean, ci_lower, ci_upper) %>%
+    mutate(year = as.factor(year)) %>%
+    mutate(label = 'lc effect')
+  
+  
+  stat_both <- stat_00 %>%
+    filter(lc_scenario != "scenario0") %>%
+    rename(chg_0 = chg) %>%
+    left_join(stat_i0 %>% rename(chg_i = chg), 
+              by = c('year', 'lc_scenario'))
+  
+  
+  stat_both_l <- rbind(stat_00, stat_i0) %>%
+    filter(!year %in% c('2020')) %>%
+    group_by(year) %>%
+    arrange(year, lc_scenario)
+  
+  return(stat_both_l)
+  
+  }
 
 
-stat_i0 <- df_stats %>% 
-  select(year, lc_scenario, chg = value_diff_mean, ci_lower, ci_upper) %>%
-  mutate(label = 'lc effect')
-
-
-stat_both <- stat_00 %>%
-  filter(lc_scenario != "scenario0") %>%
-  rename(chg_0 = chg) %>%
-  left_join(stat_i0 %>% rename(chg_i = chg), 
-            by = c('year', 'lc_scenario'))
-
-
-stat_both_l <- rbind(stat_00, stat_i0) %>%
-  filter(!year %in% c('2020')) %>%
-  group_by(year) %>%
-  arrange(year, lc_scenario)
+## apply the function 
+stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
 
 
 
@@ -578,11 +628,11 @@ func_ggsave(f, w = 7, h = 5, dpi = 300, save_png = T)
 
 ```
 
-```{r - one}
+```{r - one - lc+climate}
 
 stat_both_l %>%
   filter(label == 'climate+lc effect') %>%
-  filter(!(year == baseline_year & lc_scenario != "scenario0")) %>%
+  filter(!(year == year_baseline & lc_scenario != "scenario0")) %>%
   ggplot(aes(x = year, 
              y = chg, 
              group = interaction(year, lc_scenario),
@@ -622,90 +672,192 @@ stat_both_l %>%
       panel.grid.minor = element_blank()
     ) 
 
-f <- file.path(dir.fig, paste("temp_scenarios_fromshp", "line_dif", ind, 'both', ymd, "01.png", sep = '_'))
+f <- file.path(dir.fig, paste("temp_scenarios_fromshp", "line_dif", ind, 'both01', ymd, ".png", sep = '_'))
 func_ggsave(f, w = 7/2, h = 5, dpi = 300, save_png = T)
 
 ```
 
 
 
-```{r - one - 2}
+```{r - one - lc}
 
-p <- 
-  stat_both_l %>%
-  ungroup() %>%
-  filter(label == 'lc effect') %>%
-  filter(year != baseline_year) %>%
-  mutate(chg_direction = ifelse(chg>=0, 'inc', 'dec')) %>%
-  mutate(lc_scenario = factor(lc_scenario, levels = unique(lc_scenario))) %>%
-  ggplot(aes(x = year, 
-             y = chg, 
-             group = interaction(year, lc_scenario),
-             color = lc_scenario
-             )) +
-  geom_point(
-    aes(shape = chg_direction),
-    size = 2.5, 
-    position = position_dodge(width = 0.9),
-    fill = NA, 
-    stroke = 1, 
-    alpha = .7) +
+func_plot_change_point <- function(data, plot_avg = FALSE){
+
+  stat_chg_per_lc_yr <- 
+    data %>%
+    ungroup() %>%
+    filter(label == 'lc effect') %>%
+    filter(year != year_baseline) %>%
+    mutate(chg_direction = ifelse(chg>=0, 'inc', 'dec')) %>%
+    mutate(lc_scenario = factor(lc_scenario, levels = unique(lc_scenario))) 
   
-  # geom_errorbar(
-  #   aes(ymin = ci_lower, ymax = ci_upper),
-  #   width = 0.1, alpha = 0.5, 
-  #   position = position_dodge(width = 0.9)
-  # ) +
-  # 
   
-  geom_text(
-      aes(label = sprintf("%+.2f", chg)),
+  p1 <- 
+    stat_chg_per_lc_yr %>%
+    ggplot(aes(x = year, 
+               y = chg, 
+               group = interaction(year, lc_scenario),
+               color = lc_scenario
+               )) +
+    geom_point(
+      aes(shape = chg_direction),
+      size = 2.5, 
       position = position_dodge(width = 0.9),
-      hjust = -0.2,
-      size = 3, show.legend = F,
-      fontface = "bold"
+      fill = NA, 
+      stroke = 1, 
+      alpha = .7) +
+    
+    # geom_errorbar(
+    #   aes(ymin = ci_lower, ymax = ci_upper),
+    #   width = 0.1, alpha = 0.5, 
+    #   position = position_dodge(width = 0.9)
+    # ) +
+    # 
+    
+    geom_text(
+        aes(label = sprintf("%+.2f", chg)),
+        position = position_dodge(width = 0.9),
+        hjust = -0.2,
+        size = 3, show.legend = F,
+        fontface = "bold"
+      ) +
+    
+    geom_hline(yintercept = 0, linetype = 'dashed', colour = 'gray', show.legend = FALSE) +
+   
+    
+    facet_wrap(~year, scales = 'free_x', ncol = 2) + 
+  
+    scale_color_manual(
+      values = scenario_colors,
+      name = "Land Scenario"
     ) +
+    scale_shape_manual(values = c('inc' = 2, 'dec' = 6), guide = "none") +
+    guides(fill = "none", 
+           # guide_legend(override.aes = ...) ensures the legend shows hollow points (matching fill = NA)
+           color = guide_legend(override.aes = list(shape = 6, fill = NA, size = 2, stroke = 0.5, alpha = 1)),
+           shape = 'none') + 
   
-  geom_hline(yintercept = 0, linetype = 'dashed', colour = 'gray', show.legend = FALSE) +
- 
+    labs(x = "Year",y = str_to_title(paste0(ind_label, " change"))) +
+    ## This allows plot elements (like text) to extend beyond the plot panel boundaries without being clipped
+    coord_cartesian(clip = "off") + 
+    theme_bw() +
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(), 
+      panel.border = element_rect(fill = "transparent", color = 'gray30', linewidth=0.2),
+      strip.background = element_rect(color = "gray30", linewidth = 0.2),
+      
+      legend.position = c(0.8, 0.25),
+      legend.spacing.y  = unit(0.05, "cm"),
+      # legend.key.height = unit(0.05, "cm"), 
+      # legend.key.width = unit(0.03, "cm"),
+      legend.key.size = unit(1, "pt"),
+      
+      legend.background = element_rect(fill = "transparent", color = NA),
+      legend.key = element_rect(fill = "transparent", color = NA),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank()
+      ) 
+  p1
+  f <- file.path(dir.fig, paste("temp_scenarios_fromshp", "line_dif", ind, 'both02', ymd, ".png", sep = '_'))
+  func_ggsave(f, w = 7/2, h = 5, dpi = 300, save_png = T)
   
-  facet_wrap(~year, scales = 'free_x', ncol = 2) + 
 
-  scale_color_manual(
-    values = scenario_colors,
-    name = "Land Scenario"
-  ) +
-  scale_shape_manual(values = c('inc' = 2, 'dec' = 6), guide = "none") +
-  guides(fill = "none", 
-         # guide_legend(override.aes = ...) ensures the legend shows hollow points (matching fill = NA)
-         color = guide_legend(override.aes = list(shape = 6, fill = NA, size = 2, stroke = 0.5, alpha = 1)),
-         shape = 'none') + 
+  
+  ## ------------------------------------------------------------------------ ##
+  stat_chg_avg <- stat_chg_per_lc_yr %>%
+    group_by(lc_scenario, label) %>%
+    summarise_if(is.numeric, mean, na.rm = TRUE) %>%
+    ## add a place holder
+    mutate(year = 'year')
+    
+  p2 <- 
+    stat_chg_avg %>%
+    ggplot(aes(x = year, 
+               y = chg, 
+               group = lc_scenario,
+               color = lc_scenario
+               )) +
+    # geom_point(
+    #   aes(shape = chg_direction),
+    #   size = 2.5, 
+    #   position = position_dodge(width = 0.9),
+    #   fill = NA, 
+    #   stroke = 1, 
+    #   alpha = .7) +
+    # scale_shape_manual(values = c('inc' = 2, 'dec' = 6), guide = "none") +
+    
+    geom_col(
+      # position = position_dodge(width = 0.9),
+      position = position_dodge2(width = 0.9, padding = 0.2),
+      fill = 'gray80', 
+      alpha = .7
+    ) +
+    
+    geom_text(
+        aes(label = sprintf("%+.2f", chg)),
+        position = position_dodge(width = 0.9),
+        # hjust = -0.2, # if using geom_point
+        vjust = -0.5,
+        size = 3, show.legend = F,
+        fontface = "bold"
+      ) +
+    
+    geom_hline(yintercept = 0, linetype = 'dashed', colour = 'gray', show.legend = FALSE) +
+   
+    scale_color_manual(
+      values = scenario_colors,
+      name = "Land Scenario"
+    ) +
+    
+    guides(fill = "none", 
+           color = guide_legend(override.aes = list(shape = 6, fill = NA, size = 2, stroke = 0.5, alpha = 1)),
+           shape = 'none') + 
+  
+    labs(x = "",y = str_to_title(paste0(ind_label, " change"))) +
+    ## This allows plot elements (like text) to extend beyond the plot panel boundaries without being clipped
+    coord_cartesian(clip = "off") + 
+    theme_bw() +
+    theme(
+      # axis.title.x = element_blank(),
+      # axis.text.x = element_blank(),
+      axis.text.x = element_text(color = "transparent"), 
+      axis.ticks.x = element_blank(), 
+      panel.border = element_rect(fill = "transparent", color = 'gray30', linewidth=0.2),
+      strip.background = element_rect(color = "gray30", linewidth = 0.2),
+      
+      # legend.position = c(0.8, 0.9),
+      legend.position = 'none',
+      legend.spacing.y  = unit(0.05, "cm"),
+      legend.key.size = unit(1, "pt"),
+  
+      legend.background = element_rect(fill = "transparent", color = NA),
+      legend.key = element_rect(fill = "transparent", color = NA),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank()
+      ) 
+  f <- file.path(dir.fig, paste("temp_scenarios_fromshp", "line_dif", ind, 'both03', ymd, ".png", sep = '_'))
+  ggsave(filename = f, plot = p2, width = 7/2, height = 5, dpi = 300)
+  
+  
+  ## which plot to show in the window
+  return(if (isTRUE(plot_avg)) p2 else p1)
 
-  labs(x = "Year",y = str_to_title(paste0(ind_label, " change"))) +
-  ## This allows plot elements (like text) to extend beyond the plot panel boundaries without being clipped
-  coord_cartesian(clip = "off") + 
-  theme_bw() +
-  theme(
-    axis.title.x = element_blank(),
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank(), 
-    panel.border = element_rect(fill = "transparent", color = 'gray30', linewidth=0.2),
-    strip.background = element_rect(color = "gray30", linewidth = 0.2),
-    
-    legend.position = c(0.8, 0.25),
-    legend.spacing.y  = unit(0.05, "cm"),
-    # legend.key.height = unit(0.05, "cm"), 
-    # legend.key.width = unit(0.03, "cm"),
-    legend.key.size = unit(1, "pt"),
-    
-    legend.background = element_rect(fill = "transparent", color = NA),
-    legend.key = element_rect(fill = "transparent", color = NA),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank()
-    ) 
-p
-f <- file.path(dir.fig, paste("temp_scenarios_fromshp", "line_dif", ind, 'both', ymd, "02.png", sep = '_'))
-func_ggsave(f, w = 7/2, h = 5, dpi = 300, save_png = T)
+}
+
+
+
+func_plot_change_point(data = stat_both_l)
+```
+
+
+  As the change due to lc are almost the same, we only need to present one figure using the averaged value. 
+  
+```{r - one - lc - avg}
+
+func_plot_change_point(data = stat_both_l, plot_avg = T)
+
 ```
 
 
@@ -1276,7 +1428,8 @@ func_plot_map <- function(data) {
       legend.key.width = unit(.5, "cm")
     ) +
     labs(
-      title = paste("Change in", ind_label, 'from baseline'),
+      title = paste(str_to_title(ind_label), 'change attributable to land use'), 
+      subtitle = '(climate held constant, same year)'
     )
   
   print(p)
@@ -1293,8 +1446,9 @@ func_plot_map <- function(data) {
 
 ```{r - plot - line}
 
-df_stats_input <- df_stats %>% 
+df_stats_input <- df_stats_i0 %>% 
   filter(!year %in% c('2020')) %>%
+  mutate(year = as.factor(year)) %>%
   as.data.frame()
 
 func_plot_line(data = df_stats_input, legend.position.y = 0.81, y_break = NA, yr_label = '2070')
@@ -1307,7 +1461,11 @@ func_plot_line(data = df_stats_input, legend.position.y = 0.81, y_break = NA, yr
 
 ```{r - plot - map}
 
-func_plot_map(data = df_change_sf)
+df_chg_sf_i0_input <- df_chg_sf_i0 %>% 
+  filter(year > year_baseline) %>%
+  mutate(year = as.factor(year)) 
+
+func_plot_map(data = df_chg_sf_i0_input)
 
 ```
 
@@ -1334,128 +1492,5 @@ func_test_dif_dunn2(df = df_summary_fromshp,
 f <- file.path(dir.fig, paste("temp_scenarios_fromshp", ymd, which_test, ".png", sep = '_'))
 print(f)
 func_ggsave(f, w = 7, h = 5, save_png = T)
-```
-
-
-
-
-
-### Energy saving by borough 
-
-  `avd_eng_cn` - (optional) Avoided energy consumption (kWh or $ if optional energy cost input column was provided in the Energy Consumption Table).
-
-```{r - data stats}
-
-ind <- 'avd_eng_cn'
-ind_scale <- 1/10^6  # convert to million
-ind_label <- "avoided energy cost (Million £)"
-
-df_change <- shp_all_df %>%
-  rename('value' = ind) %>%
-  mutate(value = value * ind_scale) %>%
-  group_by(year) %>%
-  mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
-  filter(lc_scenario != "scenario0") %>%
-  as.data.frame() 
-
-
-
-df_change_sf <- df_change %>%
-  select(GSS_CODE, year, lc_scenario, value_diff) %>%
-  mutate(var = ind) %>%
-  left_join(aoi, ., by = 'GSS_CODE')
-
-
-df_stats <- df_change %>%
-  group_by(lc_scenario, year) %>%
-  dplyr::summarise(
-    value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
-    sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
-    n  = n(),                                          # sample size
-    se = sd / sqrt(n),                                 # standard error
-    ci_lower = value_diff_mean - 1.96 * se,
-    ci_upper = value_diff_mean + 1.96 * se, 
-    .groups = "drop"
-  ) %>%
-  as.data.frame()
-
-```
-  
-  
-
-```{r - plot - line}
-
-## apply the function 
-
-func_plot_line(data = df_stats)
-
-```
-
-
-```{r - plot - map}
-
-## apply the function 
-func_plot_map(data = df_change_sf)
-```
-
-
-
-### Heavy work productivity loss
-
-  `avg_hvls_v` - (optional) Heavy work productivity loss (%).
-
-
-```{r - data stats}
-
-ind <- 'avg_hvls_v'
-ind_scale <- -1  ## reverse for easier the interpretation: "productivity loss" --> "productivity gain"
-ind_label <- "heavy work productivity (%)"
-
-df_change <- shp_all_df %>%
-  rename('value' = ind) %>%
-  mutate(value = value * ind_scale) %>%
-  group_by(year) %>%
-  mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
-  filter(lc_scenario != "scenario0") %>%
-  as.data.frame() 
-
-
-df_change_sf <- df_change %>%
-  select(GSS_CODE, year, lc_scenario, value_diff) %>%
-  mutate(var = ind) %>%
-  left_join(aoi, ., by = 'GSS_CODE')
-
-
-
-df_stats <- df_change %>%
-  group_by(lc_scenario, year) %>%
-  dplyr::summarise(
-    value_diff_mean = mean(value_diff, na.rm = TRUE),  # group mean
-    sd = sd(value_diff, na.rm = TRUE),                 # standard deviation
-    n  = n(),                                          # sample size
-    se = sd / sqrt(n),                                 # standard error
-    ci_lower = value_diff_mean - 1.96 * se,
-    ci_upper = value_diff_mean + 1.96 * se, 
-    .groups = "drop"
-  ) %>%
-  as.data.frame()
-
-```
-  
-  
-
-```{r - plot - line}
-
-## apply the function 
-
-func_plot_line(data = df_stats)
-
-```
-
-
-```{r - plot - map}
-
-func_plot_map(data = df_change_sf)
-
 ```
 
