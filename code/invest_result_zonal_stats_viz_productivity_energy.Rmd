@@ -1,0 +1,114 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-16"
+---
+
+
+-->
+--> Note: run the `invest_result_zonal_stats_viz_temp.Rmd` first, before run this script. 
+--> 
+
+
+### Energy saving by borough 
+
+  `avd_eng_cn` - (optional) Avoided energy consumption (kWh or $ if optional energy cost input column was provided in the Energy Consumption Table).
+
+```{r - data stats}
+
+ind <- 'avd_eng_cn'
+ind_scale <- 1/10^6  # convert to million
+ind_label <- "avoided energy cost (Million £)"
+
+# 1. calculate the change from year i
+df_stats_i0 <- func_calculate_change_from_yri_lc0(data = shp_all_df)
+df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = shp_all_df, return_sf = T)
+
+
+# 2. also calculate the change from year 0
+df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df)
+
+# 3. and combine the two change calculations  
+stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
+
+```
+  
+  
+
+```{r - plot - line}
+
+## plot change from year i, old plot 
+func_plot_line(data = df_stats_i0 %>% filter(year >= year_baseline))
+
+## plot change from year i 
+func_plot_change_point(data = stat_both_l, plot_avg = F)
+func_plot_change_point(data = stat_both_l, plot_avg = T)
+
+```
+
+
+```{r - plot - map}
+
+
+df_change_sf_input <- df_change_sf %>% 
+  filter(year > year_baseline) %>%
+  mutate(year = as.factor(year)) 
+
+
+## apply the function 
+func_plot_map(data = df_change_sf_input)
+```
+
+
+
+### Heavy work productivity loss
+
+  `avg_hvls_v` - (optional) Heavy work productivity loss (%).
+
+
+```{r - data stats}
+
+ind <- 'avg_hvls_v'
+ind_scale <- -1  ## reverse for easier the interpretation: "productivity loss" --> "productivity gain"
+ind_label <- "heavy work productivity (%)"
+
+
+# 1. calculate the change from year i
+df_stats_i0 <- func_calculate_change_from_yri_lc0(data = shp_all_df)
+df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = shp_all_df, return_sf = T)
+
+
+# 2. also calculate the change from year 0
+df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df)
+
+# 3. and combine the two change calculations  
+stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
+
+```
+  
+  
+
+```{r - plot - line}
+
+## plot change from year i, old plot 
+func_plot_line(data = df_stats_i0 %>% filter(year >= year_baseline))
+
+## plot change from year i 
+func_plot_change_point(data = stat_both_l, plot_avg = F)
+func_plot_change_point(data = stat_both_l, plot_avg = T)
+
+```
+
+
+```{r - plot - map}
+
+df_change_sf_input <- df_change_sf %>% 
+  filter(year > year_baseline) %>%
+  mutate(year = as.factor(year)) 
+
+
+## apply the function 
+func_plot_map(data = df_change_sf_input)
+
+```
+
