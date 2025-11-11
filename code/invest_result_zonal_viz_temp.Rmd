@@ -400,7 +400,6 @@ func_calculate_change_from_yri_lc0 <- function(
     ) %>%
     as.data.frame()
   
-  return(df_stats_i0)
   ## which plot to show in the window
   return(if (isTRUE(return_sf)) df_chg_sf_i0 else df_stats_i0)
   
@@ -687,6 +686,7 @@ func_plot_change_point <- function(data, plot_avg = FALSE){
   
   p1 <- 
     stat_chg_per_lc_yr %>%
+    mutate(year = as.factor(year)) %>%
     ggplot(aes(x = year, 
                y = chg, 
                group = interaction(year, lc_scenario),
