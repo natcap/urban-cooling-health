@@ -1,0 +1,169 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-11-10"
+---
+
+
+## Intro 
+
+  This script aims to process the *NEWLY* calculated work productivity data aside from the UCM. 
+  
+  The output figures were generated using the same function from those for plotting average change in temp, and energy
+
+
+```{r setup}
+
+# # To clear your environment 
+# remove(list = ls())
+
+library(here)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+
+theme_set(theme_bw(base_size = 16))
+
+ymd   <- format(Sys.time(), "%Y%m%d"); ymd
+
+here()
+source(here('code', 'func_ggsave.R'))
+source(here('code', 'func_get_color_scale.R'))
+
+
+dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
+dir_prod_new <- file.path(dir_ucm_out, 'new_work_intensity/post_processing_stats')
+dir.fig <- "G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures"
+
+```
+
+
+## Data
+
+### Data csv from zonal stats
+
+```{r}
+
+
+f <- file.path(dir_prod_new, 'work_productivity_24_zonal_stats_long.csv'); f
+
+d <- read_csv(f, show_col_types = F) 
+
+
+pd <- d %>%
+  mutate(
+    year = case_when(
+      str_detect(scenario, "20_2") ~ '2020',
+      str_detect(scenario, "22_2") ~ '2021',
+      str_detect(scenario, "25_5") ~ '2050',
+      str_detect(scenario, "28_5") ~ '2070',
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  
+  # rename the variable as `hvpd` - Heavy work productivity (%)
+  rename('avg_hvpd_v' = 'mean') %>%
+  # scale 0-1 to 0-100 (i.e., %)
+  mutate(avg_hvpd_v = round(as.numeric(avg_hvpd_v)*100, digits = 2)) %>%
+  select(-any_of(c('raster', 'source'))) %>%
+  
+  ## re-code: change scenario-3 (tree risk) as scenario-2
+  mutate(
+    lc_scenario = case_when(
+      lc_scenario == 'scenario3'  ~ 'scenario2_TR',
+      lc_scenario == 'scenario2'  ~ 'scenario3_TO',
+      TRUE                        ~ lc_scenario
+    ) 
+  ) %>%
+  as.data.frame()
+```
+
+
+
+### Filter data
+
+```{r - reload saved data}
+
+f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'aoi_sf.rds')
+aoi <- readRDS(f)
+
+
+pd_sf <- pd %>%
+  left_join(., aoi, by = c("NAME", "GSS_CODE"))
+
+
+## pick the baseline year for later comparison 
+year_baseline <- 2021
+
+
+## filter out 20_5, and 22_5, 25_2 for now 
+pd_sf_filter <- pd_sf %>%
+  filter(!is.na(year))
+
+```
+
+
+
+
+### Heavy work productivity 
+
+  `avg_hvls_v` - Heavy work productivity loss (%) <-- *OLD*
+  `avg_hvpd_v` - Heavy work productivity (%)      <-- *NEW*
+
+
+```{r - data stats}
+
+ind <- 'avg_hvpd_v'
+ind_scale <- 1  ## Here we use value 1 because the new outcome is "work productivity" (0-1), while the UCM produces "productivity loss" (then the scale factor will use -1). 
+ind_label <- "heavy work productivity (%)"
+
+
+# 1. calculate the change from year i
+df_stats_i0 <- func_calculate_change_from_yri_lc0(data = pd_sf_filter)
+df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = pd_sf_filter, return_sf = T)
+
+
+# 2. also calculate the change from year 0
+df_stats_00 <- func_calculate_change_from_yr0_lc0(data = pd_sf_filter)
+
+# 3. and combine the two change calculations  
+stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
+
+```
+  
+  
+
+```{r - plot - line}
+
+## plot change from year i, old plot 
+df_stats_input <- df_stats_i0 %>% 
+  filter(year >= year_baseline) %>%
+  mutate(year = as.factor(year)) %>%
+  as.data.frame()
+func_plot_line(data = df_stats_input)
+
+## plot change from year i 
+func_plot_change_point(data = stat_both_l, plot_avg = F)
+func_plot_change_point(data = stat_both_l, plot_avg = T)
+
+```
+
+
+```{r - plot - map}
+
+df_change_sf_input <- df_chg_sf_i0 %>% 
+  filter(year > year_baseline) %>%
+  mutate(year = as.factor(year)) 
+
+
+## apply the function 
+func_plot_map(data = df_change_sf_input)
+
+```
+
+
+
+
+
