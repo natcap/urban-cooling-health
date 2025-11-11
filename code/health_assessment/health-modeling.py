@@ -352,7 +352,7 @@ def robust_gdal_alignment(input_files, output_dir, reference_file):
 #  correct, density-preserving final alignment 
 def _pixel_area(transform) -> float:
     """Return pixel area in square meters for an affine transform."""
-    return abs(transform.a * transform.e)  # <<< EDIT: area = |scale_x * scale_y|
+    return abs(transform.a * transform.e)  # area = |scale_x * scale_y|
 
 
 
