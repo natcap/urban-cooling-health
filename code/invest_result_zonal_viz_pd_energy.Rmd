@@ -50,13 +50,13 @@ func_plot_change_point(data = stat_both_l, plot_avg = T)
 ```{r - plot - map}
 
 
-df_change_sf_input <- df_change_sf %>% 
+df_chg_sf_i0_input <- df_chg_sf_i0 %>% 
   filter(year > year_baseline) %>%
   mutate(year = as.factor(year)) 
 
 
 ## apply the function 
-func_plot_map(data = df_change_sf_input)
+func_plot_map(data = df_chg_sf_i0_input)
 ```
 
 
@@ -102,13 +102,13 @@ func_plot_change_point(data = stat_both_l, plot_avg = T)
 
 ```{r - plot - map}
 
-df_change_sf_input <- df_change_sf %>% 
+df_chg_sf_i0_input <- df_chg_sf_i0 %>% 
   filter(year > year_baseline) %>%
   mutate(year = as.factor(year)) 
 
 
 ## apply the function 
-func_plot_map(data = df_change_sf_input)
+func_plot_map(data = df_chg_sf_i0_input)
 
 ```
 
