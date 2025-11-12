@@ -31,6 +31,7 @@ ymd   <- format(Sys.time(), "%Y%m%d"); ymd
 here()
 source(here('code', 'func_ggsave.R'))
 source(here('code', 'func_get_color_scale.R'))
+source(here('code', 'func_colors.R')) # scenario_colors
 
 
 dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
@@ -47,7 +48,7 @@ dir.fig <- "G:/Shared drives/Wellcome Trust Project Data/3_final/UCM_figures"
 ```{r}
 
 
-f <- file.path(dir_prod_new, 'work_productivity_24_zonal_stats_long.csv'); f
+f <- file.path(dir_prod_new, 'work_productivity_42_zonal_stats_long.csv'); f
 
 d <- read_csv(f, show_col_types = F) 
 
@@ -57,6 +58,7 @@ pd <- d %>%
     year = case_when(
       str_detect(scenario, "20_2") ~ '2020',
       str_detect(scenario, "22_2") ~ '2021',
+      str_detect(scenario, "22_5") ~ '2030',
       str_detect(scenario, "25_5") ~ '2050',
       str_detect(scenario, "28_5") ~ '2070',
       TRUE ~ NA_character_
@@ -72,12 +74,17 @@ pd <- d %>%
   ## re-code: change scenario-3 (tree risk) as scenario-2
   mutate(
     lc_scenario = case_when(
-      lc_scenario == 'scenario3'  ~ 'scenario2_TR',
-      lc_scenario == 'scenario2'  ~ 'scenario3_TO',
+      lc_scenario == 'scenario3'   ~ 'scenario2_TR',
+      lc_scenario == 'scenario2'   ~ 'scenario3_TO',
+      lc_scenario == 'scenario41'  ~ 'scenario4_10',
+      lc_scenario == 'scenario42'  ~ 'scenario4_20',
+      lc_scenario == 'scenario43'  ~ 'scenario4_30',
       TRUE                        ~ lc_scenario
     ) 
   ) %>%
   as.data.frame()
+
+unique(pd$lc_scenario)
 ```
 
 

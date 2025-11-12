@@ -49,6 +49,7 @@ df <- d %>%
       str_detect(raster, "20.0deg_2.0uhi") ~ '2020',
       str_detect(raster, "22.0deg_2.0uhi") ~ '2021',
       str_detect(raster, "22deg_2uhi")     ~ '2021',
+      # str_detect(raster, "22deg_5uhi")     ~ '2030',
       str_detect(raster, "25.0deg_5.0uhi") ~ '2050',
       str_detect(raster, "25deg_5uhi")     ~ '2050',
       str_detect(raster, "28deg_5uhi")     ~ '2070',
@@ -336,7 +337,6 @@ unique(df_summary_fromshp$lc_scenario)
   `avg_tmp_v` - Average temperature value (degC).
 
 ```{r - stats: change from yr i + lc 0}
-
 ind <- 'avg_tmp_v'
 ind_scale <- 1
 ind_label <- "temperature (°C)"
@@ -404,16 +404,19 @@ func_calculate_change_from_yri_lc0 <- function(
   return(if (isTRUE(return_sf)) df_chg_sf_i0 else df_stats_i0)
   
 }
+```
 
+
+```{r}
 
 df_stats_i0 <- func_calculate_change_from_yri_lc0(data = shp_all_df)
 df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = shp_all_df, return_sf = T)
+
 ```
 
 
 
 ```{r - stats: change from yr 0 + lc 0}
-
 ## compare to the (baseline year + lc scenario0)
 
 func_calculate_change_from_yr0_lc0 <- function(
@@ -463,18 +466,20 @@ func_calculate_change_from_yr0_lc0 <- function(
   return(df_stats_00)
 
 }
+```
 
 
+```{r}
 
 df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df)
+
 ```
 
 
 
 
 
-```{r - both --- }
-
+```{r - both -- function}
 func_combine_two_change_dfs <- function(
   df_stats_00,
   df_stats_i0
@@ -507,7 +512,10 @@ func_combine_two_change_dfs <- function(
   return(stat_both_l)
   
   }
+```
 
+
+```{r}
 
 ## apply the function 
 stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
@@ -671,8 +679,7 @@ func_ggsave(f, w = 7/2, h = 5, dpi = 300, save_png = T)
 
 
 
-```{r - one - lc}
-
+```{r - one - lc - function}
 func_plot_change_point <- function(data, plot_avg = FALSE){
 
   stat_chg_per_lc_yr <- 
@@ -838,10 +845,13 @@ func_plot_change_point <- function(data, plot_avg = FALSE){
   return(if (isTRUE(plot_avg)) p2 else p1)
 
 }
+```
 
 
+```{r - one - lc}
 
 func_plot_change_point(data = stat_both_l)
+
 ```
 
 
