@@ -21,7 +21,7 @@ USAGE (example):
         --pop_scenario path/to/pop_scenario.tif \
         --baseline_deaths_cardio path/to/baseline_deaths_cardio.tif \
         --baseline_deaths_resp path/to/baseline_deaths_resp.tif \
-        --baseline_deaths_cere path/to/baseline_deaths_cere.tif \
+        --baseline_deaths_self_harm path/to/baseline_deaths_self_harm.tif \
         --out_dir ./outputs \
         --n_draws 1000
 
@@ -29,7 +29,6 @@ NOTES:
  - All rasters should be in the SAME CRS and cover the same urban extent.
  - If rasters are at different resolutions/CRS, set --align_to to one of the inputs;
    the script will reproject/align the others to match.
- - Mortality rates must be deaths per person per YEAR.
  - Population is persons per pixel.
  - For city totals, the script sums per-pixel values, ignoring NaNs.
  - Causes: cardiovascular, respiratory, self_harm (customizable).
@@ -105,130 +104,8 @@ def _write_geotiff(path: str, array: np.ndarray, profile_like, nodata=np.nan) ->
         dst.write(array.astype(np.float32), 1)
 
 
-def _align_to_template(src_path: str, template_src) -> np.ndarray:
-    """
-    Reproject/align a raster to match the template dataset's grid/CRS.
-    
-    Args:
-        src_path: Path to source raster
-        template_src: Rasterio dataset to use as alignment template
-        
-    Returns:
-        Aligned numpy array
-    """
-    with rasterio.open(src_path) as src:
-        dst_arr = np.empty((template_src.height, template_src.width), dtype=np.float32)
-        dst_arr[:] = np.nan
-        reproject(
-            source=rasterio.band(src, 1),
-            destination=dst_arr,
-            src_transform=src.transform,
-            src_crs=src.crs,
-            dst_transform=template_src.transform,
-            dst_crs=template_src.crs,
-            dst_nodata=np.nan,
-            resampling=Resampling.bilinear,
-        )
-    return dst_arr
 
 
-
-def _ensure_aligned(paths: Dict[str, str], align_to: Optional[str] = None) -> Tuple:
-    """
-    Open rasters and align all to a template grid with shape validation.
-    """
-    if align_to is None:
-        first_key = next(iter(paths.keys()))
-        template_path = paths[first_key]
-    else:
-        template_path = align_to
-
-    with rasterio.open(template_path) as template_src:
-        template_profile = template_src.profile.copy()
-        arrs = {}  # rename from `arrays` to avoid confusion
-        
-        print(f"Template shape: {template_src.shape}")
-        
-        for key, p in paths.items():
-            print(f"Processing: {key}")
-            
-            if p == template_path:
-                arrs[key] = template_src.read(1, masked=True).filled(np.nan).astype(np.float32)
-                print(f"  Shape: {arrs[key].shape}")
-            else:
-                try:
-                    arrs[key] = _align_to_template(p, template_src)
-                    print(f"  Shape after alignment: {arrs[key].shape}")
-                    
-                    # Verify shape matches template
-                    if arrs[key].shape != template_src.shape:
-                        print(f"  WARNING: Shape mismatch! Expected {template_src.shape}, got {arrs[key].shape}")
-                        # Force resize to template shape
-                        arrs[key] = _force_resize(arrs[key], template_src.shape)
-
-                except Exception as e:
-                    print(f"  ERROR aligning {key}: {e}")
-                    # Fallback: read directly and hope for the best
-                    with rasterio.open(p) as src:
-                        arrs[key] = src.read(1, masked=True).filled(np.nan).astype(np.float32)
-                        print(f"  Fallback shape: {arrs[key].shape}")
-
-    return template_profile, arrs
-
-
-def _force_resize(array, target_shape):
-    """Force resize an array to target shape using padding/cropping"""
-    result = np.full(target_shape, np.nan, dtype=array.dtype)
-    
-    # Copy the overlapping region
-    min_rows = min(array.shape[0], target_shape[0])
-    min_cols = min(array.shape[1], target_shape[1])
-    
-    result[:min_rows, :min_cols] = array[:min_rows, :min_cols]
-    return result
-
-
-
-
-def preprocess_with_gdal(input_files, output_dir, reference_file):
-    """Pre-align all files using GDAL before main processing"""
-    import subprocess
-    import os
-    
-    os.makedirs(output_dir, exist_ok=True)
-    aligned_files = {}
-    
-    # Get reference file properties
-    with rasterio.open(reference_file) as ref:
-        ref_bounds = ref.bounds
-        ref_res = ref.res
-        ref_crs = ref.crs  # read CRS for potential use
-    
-    for key, input_file in input_files.items():
-        output_file = os.path.join(output_dir, f"aligned_{os.path.basename(input_file)}")
-        
-        cmd = [
-            'gdalwarp', 
-            '-te', str(ref_bounds.left), str(ref_bounds.bottom), 
-                   str(ref_bounds.right), str(ref_bounds.top),
-            '-tr', str(ref_res[0]), str(ref_res[1]),
-            '-t_srs', (ref_crs.to_string() if ref_crs else 'EPSG:27700'), # Default to EPSG:27700 if no CRS
-            '-r', 'bilinear',        # Bilinear resampling for continuous data
-            '-overwrite',
-            input_file, 
-            output_file
-        ]
-        
-        try:
-            subprocess.run(cmd, check=True, capture_output=True) # ensure import exists
-            aligned_files[key] = output_file
-            print(f"✓ Successfully aligned: {key}")
-        except subprocess.CalledProcessError as e:
-            print(f"✗ Failed to align {key}: {e.stderr.decode()}")
-            # Fallback: use original file
-            aligned_files[key] = input_file
-    
-    return aligned_files
 
 def read_aligned_arrays(aligned_files, reference_file=None):
     """Simply read pre-aligned files without additional processing"""
@@ -284,69 +161,132 @@ def _coerce_to_ref_if_local(src_crs, ref_crs):
 
 
 
+# -----------------------------
 def robust_gdal_alignment(input_files, output_dir, reference_file):
-    """GDAL alignment with thorough verification"""
+    """
+    Align all rasters to the reference grid using GDAL (gdalwarp), with
+    cautious CRS handling.
+
+    - Uses the reference raster's bounds, resolution, and CRS as the target.
+    - Applies -t_srs to reproject into the reference CRS.
+    - Applies -s_srs ONLY when the source CRS is missing or looks like a
+      local/BNG-like definition (see _looks_like_bng).
+    - Uses bilinear resampling (suitable for continuous fields; counts will
+      be handled in a density-preserving way later by force_align_with_reproject).
+    - On failure, falls back to the original input file for that key.
+
+    Args:
+        input_files: dict[str, str]
+            Mapping from logical key (e.g., "t_baseline") to input file path.
+        output_dir: str
+            Directory where aligned files will be written.
+        reference_file: str
+            Path to the reference raster that defines the target grid.
+
+    Returns:
+        aligned_files: dict[str, str]
+            Mapping from key to aligned file path. If alignment fails for a
+            given file, the original path is returned for that key.
+    """
     import subprocess
-    
+
     os.makedirs(output_dir, exist_ok=True)
     aligned_files = {}
-    
+
     # Get precise reference properties
     with rasterio.open(reference_file) as ref:
         ref_bounds = ref.bounds
         ref_res = ref.res
-        # Force canonical EPSG for the target
         ref_crs_obj = ref.crs
-        ref_crs_str = ref_crs_obj.to_wkt() if ref_crs_obj else ""
         ref_shape = ref.shape
-    
-    print(f"Reference: bounds={ref_bounds}, res={ref_res}, crs={(ref_crs_obj or 'None')}")
-    
+
+    # Prefer WKT for maximum robustness; None if CRS is missing
+    ref_crs_str = ref_crs_obj.to_wkt() if ref_crs_obj else None
+
+    print(f"Reference for GDAL alignment:")
+    print(f"  file  : {reference_file}")
+    print(f"  bounds: {ref_bounds}")
+    print(f"  res   : {ref_res}")
+    print(f"  crs   : {ref_crs_obj or 'None'}")
+    print(f"  shape : {ref_shape}")
+    print("---")
+
     for key, input_file in input_files.items():
-        output_file = os.path.join(output_dir, f"aligned_{os.path.basename(input_file)}")
-        
+        print(f"Aligning {key} from {input_file} ...")
+
+        # Try to inspect the source CRS; if this fails, we treat as unknown.
+        try:
+            with rasterio.open(input_file) as src:
+                src_crs = src.crs
+        except Exception as e:
+            print(f"  Warning: could not read CRS for {input_file}: {e}")
+            src_crs = None
+
+        output_file = os.path.join(
+            output_dir, f"aligned_{key}.tif"
+        )
+
+        # Base gdalwarp command: clip to ref bounds + match resolution
         cmd = [
-            'gdalwarp', 
-            '-te', str(ref_bounds.left), str(ref_bounds.bottom), 
+            "gdalwarp",
+            "-te", str(ref_bounds.left), str(ref_bounds.bottom),
                    str(ref_bounds.right), str(ref_bounds.top),
-            '-tr', str(ref_res[0]), str(ref_res[1]),
+            "-tr", str(ref_res[0]), str(ref_res[1]),
         ]
 
+        # Target CRS: always warp into the reference CRS if present
         if ref_crs_str:
-            cmd += ['-t_srs', ref_crs_str]  # <<< EDIT
+            cmd += ["-t_srs", ref_crs_str]
 
+        # Resampling + grid alignment
         cmd += [
-            '-r', 'bilinear',
-            '-tap',
-            '-overwrite',
-            '-dstnodata', '-9999',
+            "-r", "bilinear",   # continuous fields; counts handled later
+            "-tap",             # align to reference grid
+            "-overwrite",
+            "-dstnodata", "-9999",
         ]
 
-        # If an input is missing/LOCAL, hint its source CRS using the same ref CRS string.
-        # We can conservatively add -s_srs for all inputs if ref_crs_str is present.
-        if ref_crs_str:
-            cmd += ['-s_srs', ref_crs_str]  # <<< EDIT
+        # Only hint the source CRS if it is missing or looks like a local/BNG-like CRS.
+        # We DO NOT override a well-defined CRS with the reference CRS.
+        if ref_crs_str and (src_crs is None or _looks_like_bng(src_crs)):
+            cmd += ["-s_srs", ref_crs_str]
 
         cmd += [input_file, output_file]
-        
+
         try:
-            print(f"Aligning {key}...")
-            subprocess.run(cmd, check=True, capture_output=True, text=True)
-            
-            # Verify the output file
+            result = subprocess.run(
+                cmd, check=True, capture_output=True, text=True
+            )
+        except FileNotFoundError:
+            # gdalwarp not installed / not on PATH
+            print("  ✗ gdalwarp not found on PATH; using original file as fallback.")
+            aligned_files[key] = input_file
+            continue
+        except subprocess.CalledProcessError as e:
+            print("  ✗ gdalwarp failed with non-zero exit code.")
+            print("    Command:", " ".join(cmd))
+            print("    stderr :", e.stderr.strip())
+            aligned_files[key] = input_file
+            continue
+
+        # Verify the output file
+        try:
             with rasterio.open(output_file) as src:
                 if src.shape != ref_shape:
-                    print(f"WARNING: {key} shape mismatch after GDAL: {src.shape} vs {ref_shape}")
-
+                    print(
+                        f"  WARNING: shape mismatch after GDAL for {key}: "
+                        f"{src.shape} vs reference {ref_shape}"
+                    )
             aligned_files[key] = output_file
-            print(f"✓ Success: {key}")
-            
+            print(f"  ✓ Success: {key} → {output_file}")
         except Exception as e:
-            print(f"✗ Failed {key}: {e}")
-            print(f"Using original file as fallback")
+            print(f"  ✗ Could not open aligned file for {key}: {e}")
+            print("    Using original file as fallback.")
             aligned_files[key] = input_file
-    
+
     return aligned_files
+
+
 
 
 #  correct, density-preserving final alignment 
@@ -369,7 +309,7 @@ def force_align_with_reproject(aligned_files: Dict[str, str], reference_file: st
     ref_path = ref_aligned if os.path.exists(ref_aligned) else reference_file   
     arrays = {}
     with rasterio.open(ref_path) as ref:
-        # Use canonical EPSG for destination CRS regardless of how ref is labeled
+        # Use the reference raster's CRS and transform as the destination grid
         ref_profile = ref.profile.copy()
         ref_shape = ref.shape
         ref_transform = ref.transform
@@ -381,7 +321,7 @@ def force_align_with_reproject(aligned_files: Dict[str, str], reference_file: st
                 dst = np.full(ref_shape, np.nan, dtype=np.float32)
                 # detect “counts” layers by key name
                 is_count = key in ("pop_baseline", "pop_scenario",
-                                   "baseline_deaths_cardio", "baseline_deaths_resp", "baseline_deaths_cere")  
+                                   "baseline_deaths_cardio", "baseline_deaths_resp", "baseline_deaths_self_harm")  
                 if is_count:
                     # Convert counts -> densities (per m²), resample densities with average, then back to counts
                     area_src = _pixel_area(src.transform)
@@ -413,37 +353,7 @@ def force_align_with_reproject(aligned_files: Dict[str, str], reference_file: st
 
 
 
-def force_align_arrays(arrays, reference_key="t_baseline"):
-    """Force all arrays to match the reference array shape"""
-    if reference_key not in arrays:
-        print(f"Reference key {reference_key} not found, using first array")
-        reference_key = list(arrays.keys())[0]
-    
-    reference_shape = arrays[reference_key].shape
-    print(f"Reference shape: {reference_shape} from {reference_key}")
-    
-    aligned_arrays = {}
-    
-    for key, array in arrays.items():
-        if array.shape == reference_shape:
-            aligned_arrays[key] = array
-            print(f"✓ {key}: already matches reference shape")
-        else:
-            print(f"⚠ {key}: {array.shape} -> resizing to {reference_shape}")
-            aligned_arrays[key] = resize_array(array, reference_shape)
-    
-    return aligned_arrays
 
-def resize_array(array, target_shape, fill_value=np.nan):
-    """Resize array to target shape with padding/cropping"""
-    result = np.full(target_shape, fill_value, dtype=array.dtype)
-    
-    # Copy overlapping region
-    rows = min(array.shape[0], target_shape[0])
-    cols = min(array.shape[1], target_shape[1])
-    
-    result[:rows, :cols] = array[:rows, :cols]
-    return result
 
 
 def debug_shape_issues(paths):
@@ -496,44 +406,6 @@ def _choose_reference(paths: Dict[str, str], align_to: Optional[str] = None) -> 
     print(f"Auto-selected reference: {best_key} -> {best_path} (pixels={best_pixels})")
     return best_path
 
-
-def upsample_population_data(path_map, target_resolution="high_res"):
-    """Upsample population data to match temperature resolution"""
-    # First identify which files are high vs low resolution
-    with rasterio.open(path_map["t_baseline"]) as temp_src:
-        high_res_shape = temp_src.shape
-        high_res_bounds = temp_src.bounds
-        high_res_crs = temp_src.crs
-    
-    print(f"High resolution target: {high_res_shape}")
-    
-    # Upsample population files
-    upsampled_files = {}
-    for key in ["pop_baseline", "pop_scenario"]:
-        input_file = path_map[key]
-        output_file = input_file.replace(".tif", "_upsampled.tif")
-        
-        cmd = [
-            'gdalwarp',
-            '-te', str(high_res_bounds.left), str(high_res_bounds.bottom),
-                   str(high_res_bounds.right), str(high_res_bounds.top),
-            '-ts', str(high_res_shape[1]), str(high_res_shape[0]),  # width, height
-            '-t_srs', high_res_crs.to_string(),
-            '-r', 'average',  # Use average for population data
-            '-overwrite',
-            input_file,
-            output_file
-        ]
-        
-        try:
-            subprocess.run(cmd, check=True)
-            upsampled_files[key] = output_file
-            print(f"✓ Upsampled {key} to {high_res_shape}")
-        except:
-            print(f"✗ Failed to upsample {key}, using original")
-            upsampled_files[key] = input_file
-    
-    return upsampled_files
 
 
 
@@ -628,15 +500,24 @@ def adjusted_baseline_deaths(baseline_deaths: np.ndarray,
     Returns:
         Adjusted baseline deaths for scenario population
     """
+
+    mask = (
+        ~np.isfinite(baseline_deaths) |
+        ~np.isfinite(pop_baseline) |
+        ~np.isfinite(pop_scenario) |
+        (pop_baseline <= 0)
+    )
+
     # Calculate death rate per person in baseline
     with np.errstate(divide='ignore', invalid='ignore'):
-        death_rate = np.where(pop_baseline > 0, baseline_deaths / pop_baseline, 0.0)
-    death_rate[~np.isfinite(death_rate)] = 0 # Handle NaN/Inf
+        death_rate = baseline_deaths / pop_baseline
     
+    death_rate[mask] = np.nan
+
     # Apply same death rate to scenario population
-    adjusted_deaths = death_rate * np.where(np.isfinite(pop_scenario), pop_scenario, 0.0)
-    adjusted_deaths[~np.isfinite(adjusted_deaths)] = 0.0 # Handle NaN/Inf
-    return adjusted_deaths
+    adjusted = death_rate * pop_scenario
+    adjusted[mask | ~np.isfinite(adjusted)] = np.nan
+    return adjusted
 
 
 
@@ -667,7 +548,7 @@ def main(args):
         "pop_scenario": args.pop_scenario,
         "baseline_deaths_cardio": args.baseline_deaths_cardio,
         "baseline_deaths_resp": args.baseline_deaths_resp,
-        "baseline_deaths_cere": args.baseline_deaths_cere,
+        "baseline_deaths_self_harm": args.baseline_deaths_self_harm,
     }
 
 
@@ -694,7 +575,6 @@ def main(args):
     
     # Step 4: Read & Finalize alignment correctly (reproject everything to reference grid)
     print("\n=== Reading & finalizing alignment ===")
-    _, _ = read_aligned_arrays(aligned_files, reference_file=reference_file)  # read check (profile from ref)
     template_profile, arrays = force_align_with_reproject(aligned_files, reference_file)  # TRUE reprojection
 
     # Step 5: Profile shape must match the finalized arrays (reference grid)
@@ -711,6 +591,9 @@ def main(args):
     T_baseline = arrays["t_baseline"]
     T_scenario = arrays["t_scenario"]
     dT = T_scenario - T_baseline  # degC temperature change
+    # quick sanity check
+    print("deltaT stats:",
+      np.nanmin(dT), np.nanmax(dT), np.nanmean(dT))
     # Write temperature change raster
     _write_geotiff(os.path.join(args.out_dir, "deltaT_degC.tif"), dT, template_profile)
 
@@ -719,9 +602,6 @@ def main(args):
 
     pop_baseline = arrays["pop_baseline"]
     pop_scenario = arrays["pop_scenario"]
-    baseline_deaths_cardio = arrays["baseline_deaths_cardio"]
-    baseline_deaths_resp   = arrays["baseline_deaths_resp"]  
-    baseline_deaths_cere   = arrays["baseline_deaths_cere"]
 
     # 2) Deterministic estimates for each cause
     results = []
@@ -732,7 +612,7 @@ def main(args):
         elif cause.name == "respiratory":
             baseline_deaths = arrays["baseline_deaths_resp"]
         elif cause.name == "self_harm":
-            baseline_deaths = arrays["baseline_deaths_cere"]
+            baseline_deaths = arrays["baseline_deaths_self_harm"]
         else:
             print(f"Warning: Unknown cause '{cause.name}', skipping")
             continue
@@ -761,7 +641,7 @@ def main(args):
             "RR_1C": cause.rr_1c,
             "city_total_baseline_deaths": total_baseline,
             "city_total_excess_deaths": total_excess,
-            "attributable_fraction": (total_excess / (total_baseline + total_excess)) if (total_baseline + total_excess) > 0 else 0
+            "fraction_of_total_deaths_excess": (total_excess / (total_baseline + total_excess)) if (total_baseline + total_excess) > 0 else 0
         })
 
     # Save deterministic results
@@ -789,7 +669,7 @@ def main(args):
             elif cause.name == "respiratory":
                 baseline_deaths = arrays["baseline_deaths_resp"]
             elif cause.name == "self_harm":
-                baseline_deaths = arrays["baseline_deaths_cere"]
+                baseline_deaths = arrays["baseline_deaths_self_harm"]
             else:
                 print(f"Warning: Unknown cause '{cause.name}', skipping Monte Carlo")
                 continue
@@ -858,14 +738,18 @@ def main(args):
         
         # Also save full distribution for advanced analysis
         if args.n_draws <= 1000:  # Only save if not too large
-            distribution_path = os.path.join(args.out_dir, "monte_carlo_distributions.csv")
-            distribution_data = []
-            for i, cause in enumerate(DEFAULT_CAUSES):
-                if i < len(mc_rows):
-                    for j, total in enumerate(totals if i == 0 else []):
-                        # This would need to be adjusted to store all draws for all causes
-                        pass
-            # For simplicity, we're just saving summary statistics
+            flat_rows = []
+            for cause_name, totals in cause_draws.items():
+                for draw_id, total in enumerate(totals, start=1):
+                    flat_rows.append({
+                        "cause": cause_name,
+                        "draw": draw_id,
+                        "excess": float(total),
+                    })
+            pd.DataFrame(flat_rows).to_csv(
+                os.path.join(args.out_dir, "monte_carlo_distributions.csv"),
+                index=False
+            )
         print("Monte Carlo simulation completed.")
 
 
@@ -881,7 +765,7 @@ if __name__ == "__main__":
     parser.add_argument("--pop_scenario", required=True, help="Scenario population raster (persons/pixel)")
     parser.add_argument("--baseline_deaths_cardio", required=True, help="Baseline deaths raster, cardiovascular (deaths/pixel/year)")
     parser.add_argument("--baseline_deaths_resp", required=True, help="Baseline deaths raster, respiratory (deaths/pixel/year)")
-    parser.add_argument("--baseline_deaths_cere", required=True, help="Baseline deaths raster, self_harm (deaths/pixel/year)")
+    parser.add_argument("--baseline_deaths_self_harm", required=True, help="Baseline deaths raster, self_harm (deaths/pixel/year)")
     parser.add_argument("--out_dir", required=True, help="Output directory")
     # Optional arguments
     parser.add_argument("--align_to", default=None, help="Optional path to raster used as alignment template")
