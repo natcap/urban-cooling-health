@@ -1,0 +1,882 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-11-20"
+---
+
+
+
+## Load data
+
+```{r}
+library(sf)
+library(tmap)
+library(tidyverse)
+library(stringr)
+
+library(ggplot2)
+library(tmap)
+
+
+library(conflicted)
+conflict_prefer("select", "dplyr")
+conflict_prefer("filter", "dplyr")
+
+
+sf::st_drivers()[sf::st_drivers()$name == "ESRI Shapefile", ]
+
+
+## AOI layer
+dir_g <- "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs"
+f_aoi <- file.path(dir_g, 'London_Borough_aoi.shp')
+aoi <- st_read(f_aoi, quiet = T)
+```
+
+
+### equity data
+
+```{r}
+## data
+f <- './data/Social_Vulnerability_Index_london.gpkg'
+
+# --- metrics ---
+metrics <- c(
+  "pIncomeDeprivation",
+  "p5under",
+  "p75over",
+  "pNotEnglishProficient",
+  "pSocial_housing",
+  "pBAME"
+)
+
+
+svi_lsoa <- st_read(f) %>%
+  # ----- pooled quintiles for all EP_* variables -----
+  mutate(
+    across(
+      all_of(metrics),
+      ~ {
+        brks <- quantile(.x, probs = seq(0, 1, by = 0.2), na.rm = TRUE, type = 7)
+        brks <- unique(brks)                       # handle duplicate quantiles
+        if (length(brks) < 2) {
+          # all values identical or mostly NA: return all-NA factor with Q1–Q5 levels
+          factor(NA_real_, levels = paste0("Q", 1:5))
+        } else {
+          labs <- paste0("Q", seq_len(length(brks) - 1))
+          cut(.x, breaks = brks, include.lowest = TRUE, labels = labs)
+        }
+      },
+      .names = "{.col}_q"
+    )
+  )
+
+names(svi_lsoa)
+
+
+svi_lsoa_subset <- svi_lsoa %>%
+  ## remove percentile cols 
+  dplyr::select(-ends_with('_pct'))
+
+
+# 2. Calculate quintiles and add them as a new column -- the same result as above
+# We use ntile() from dplyr for easy splitting, or cut() with quantile() for base R
+df <- svi_lsoa %>%
+  mutate(quintile = factor(ntile(pIncomeDeprivation, 5)))
+```
+
+
+```{r}
+
+svi_lsoa_subset %>%
+  ggplot(., aes(x = pIncomeDeprivation, fill = pIncomeDeprivation_q)) +
+  geom_histogram(binwidth = 2, color = "white", alpha = 0.8) +
+  scale_fill_brewer(palette = "Spectral", direction = -1) +
+  labs(title = "Histogram Colored by Quintile",
+       x = "Value",
+       y = "Count",
+       fill = "Quintile") +
+  theme_minimal()
+
+
+
+
+# 2. Reshape, Group, and Calculate Quintiles
+plot_data <- svi_lsoa_subset %>%
+  select(-starts_with('mean_')) %>%
+  select(-starts_with('overall_')) %>%
+  select(-ends_with('_q')) %>%
+  # Select only the columns you want + pivot them to long format
+  pivot_longer(cols = all_of(metrics), 
+               names_to = "Metric", 
+               values_to = "Value") %>%
+  # Group by the Metric name so quintiles are calculated per column
+  group_by(Metric) %>%
+  mutate(Quintile = factor(ntile(Value, 5))) %>%
+  ungroup()
+
+# 3. Plot
+ggplot(plot_data, aes(x = Value, fill = Quintile)) +
+  geom_histogram(
+    # binwidth = 2,
+    # bins = 30, 
+    color = "white", alpha = 0.8) +
+  # Create a separate panel for each metric
+  facet_wrap(~Metric, scales = "free") + 
+  scale_fill_brewer(palette = "Spectral", direction = -1) +
+  labs(title = "Distribution of Demographics by Quintile",
+       x = "Percentage / Value",
+       y = "Count") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+```
+
+
+
+### health data
+```{r}
+
+## load data 
+
+dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
+
+
+## --> update this input data
+# f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long.csv'); post_fix <- '00_2021_2050'; 
+f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long_LSOA_2050_2050.csv'); post_fix <- 'i0_2050_2050'
+
+health_df <- read_csv(f, show_col_types = F) %>%
+  mutate(
+    indicator = gsub('\\.tif|Excess_', '', raster),
+    lc_scenario = gsub('health_output_', '', lc_scenario),
+    lc_scenario = gsub('_2050', '', lc_scenario),
+    indicator = ifelse(indicator == 'self_harm', "suicide", indicator),
+    indicator = str_to_title(indicator)
+  ) %>%
+  
+  # mutate(climate = str_extract(raster, "\\d+deg_\\d+uhi")) %>%
+  # mutate(
+  #    climate = case_when(
+  #      indicator < 2030 ~ 'current',
+  #      T ~ 'future'
+  #    )
+  #    ) %>%
+  ## re-code: change scenario-3 (tree risk) as scenario-2
+  mutate(
+    lc_scenario = gsub('s0_', '', lc_scenario),
+    lc_scenario = case_when(
+      lc_scenario == 's1'  ~ 'scenario1',
+      lc_scenario == 's2'  ~ 'scenario3_TO',
+      lc_scenario == 's3'  ~ 'scenario2_TR',
+      lc_scenario == 's41' ~ 'scenario4_10',
+      lc_scenario == 's42' ~ 'scenario4_20',
+      lc_scenario == 's43' ~ 'scenario4_30',
+      TRUE                 ~ NA_character_
+    ) 
+  ) %>%
+  rename('cases' = 'sum') %>%
+  
+  ## convert "Excess deaths" to "Preventable deaths" to indicate "benefits" of nature
+  mutate(cases = -cases) %>%
+  
+  
+  select(any_of(c("id", "Neighborhood_name","cases", "lc_scenario", "indicator")))
+
+names(health_df)
+
+## add sf 
+health_sf <- health_df %>%
+  left_join(svi_lsoa_subset, ., by = 'id')
+
+```
+
+
+## Plot 
+
+### boxplot
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# 1. Reshape the data from Wide to Long
+plot_data <- health_sf %>%
+  select(cases, ends_with("_q"), lc_scenario, indicator) %>%   # Select 'cases' and all columns ending in '_q'
+  pivot_longer(
+    cols = ends_with("_q"),            # Take all the quintile columns
+    names_to = "Metric",               # New column for the variable name (e.g., "pIncomeDeprivation_q")
+    values_to = "Quintile"             # New column for the values ("Q1", "Q5", etc.)
+  ) %>%
+  # Optional: Clean the Metric names by removing "_q" for nicer plot titles
+  mutate(Metric = gsub("_q", "", Metric))
+```
+
+
+```{r data}
+# lc_snr <- 'scenario1'
+# lc_snr <- 'scenario2_TR'
+# lc_snr <- 'scenario4_10'
+lc_snr <- 'scenario4_30'
+
+# 2. Plot
+plot_data2 <- 
+  plot_data %>%
+  st_drop_geometry() %>%
+  filter(indicator == 'Cardiovascular') %>%
+  filter(lc_scenario == lc_snr) 
+  
+# Calculate the typical range (e.g., 5th to 95th percentile) to determine zoom limits automatically
+lower_bound <- quantile(plot_data2$cases, 0.05, na.rm = TRUE)
+upper_bound <- quantile(plot_data2$cases, 0.95, na.rm = TRUE)
+  
+# 1. Define a function to calculate N and position it
+stat_box_data <- function(y) {
+  return( 
+    data.frame(
+      y = max(y, na.rm = T) * 1.05,  # Position: Just above the max value (whisker or outlier)
+      label = paste0("n = ", length(y)) # Label: "n = 123"
+    )
+  )
+}
+
+stat_box_data_bottom <- function(y) {
+  return( 
+    data.frame(
+      y = min(y, na.rm = T) - (max(y, na.rm = T) - min(y, na.rm = T)) * 0.05, # Just below min
+      label = length(y) # simple number "123" (cleaner for bottom axis)
+    )
+  )
+}
+
+
+library(ggpubr)
+
+plot_data2 %>%
+  ggplot(., aes(x = Quintile, y = cases, fill = Quintile)) +
+  # geom_boxplot(outlier.alpha = 0.5) +
+  geom_boxplot(outlier.shape = NA) +  # Hides the outlier points
+  
+  # # Add the sample size text -- not needed as the sample size among groups are similar 
+  # stat_summary(
+  #   fun.data = stat_box_data,
+  #   hjust = 0.5,
+  #   vjust = -0.5,
+  #   
+  #   # fun.data = stat_box_data_bottom, 
+  #   geom = "text", 
+  #   size = 3 # Adjust text size
+  # ) +
+  
+  
+  # 1. Add Global P-value (Is there a difference overall?)
+  stat_compare_means(method = "kruskal.test", label.y.npc = "top") + 
+  
+  # 2. Add Pairwise Comparisons (Optional - can get messy with 5 groups)
+  stat_compare_means(comparisons = list(c("Q1", "Q5")), label = "p.signif") +
+  
+  
+  scale_fill_brewer(palette = "Spectral", direction = -1) +
+  coord_cartesian(ylim = c(lower_bound, upper_bound)) + # Zooms the view without deleting data
+  facet_wrap(~Metric, scales = "free") +
+  scale_y_continuous(expand = c(0, 0.02)) +
+  labs(title = "Distribution of Cases by Quintile",
+       y = "Cases (Residuals/Rate)", 
+       x = "Quintile") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1)) # Angled text helps if labels are long
+
+
+# 2. Pairwise Test (Dunn's Test or Pairwise Wilcoxon)
+# If the global test is significant, check Q1 vs Q5 specifically:
+pairwise_results <- plot_data2 %>%
+  group_by(Metric) %>%
+  summarise(
+    # Compare Q1 vs Q5 (assuming specific interest in the gap)
+    q1_vs_q5_p = wilcox.test(cases[Quintile == "Q1"], cases[Quintile == "Q5"])$p.value
+  )
+```
+
+
+
+```{r brackets}
+
+library(ggpubr)  # For plotting p-values
+library(rstatix) # For calculating the tests easily
+
+# 1. Run the Pairwise Wilcoxon Test
+# We group by 'Metric' so the test is done separately for each panel
+stat_test <- plot_data2 %>%
+  group_by(Metric) %>%
+  wilcox_test(cases ~ Quintile) %>%
+  adjust_pvalue(method = "bonferroni") %>% # Adjust for multiple comparisons to avoid false positives
+  add_significance() %>%                   # Adds stars (*, **, ns)
+  filter(p.adj < 0.05) %>%                 # <--- THIS LINE removes non-significant pairs
+  add_xy_position(x = "Quintile", fun = 'median_iqr', step.increase = 1) # Auto-calculates bracket height
+
+# 2. Plot
+ggplot(plot_data2, aes(x = Quintile, y = cases, fill = Quintile)) +
+  
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  
+  geom_boxplot(outlier.shape = NA) +
+  
+  # Add the p-values manually using the dataframe we created above
+  stat_pvalue_manual(
+    stat_test, 
+    color = 'gray',
+    label = "p.adj.signif", # Use stars (*, **) instead of numbers
+    tip.length = 0.01,      # Length of the bracket tips
+    hide.ns = TRUE          # Double check to ensure NS are hidden
+  ) +
+  
+  facet_wrap(~Metric, scales = "free_y") +
+  
+  coord_cartesian(ylim = c(lower_bound, upper_bound)) + # Zooms the view without deleting data
+  # Important: Add extra space at the top for the brackets
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.5))) +
+  
+  scale_fill_brewer(palette = "Spectral", direction = -1) +
+  labs(title = "Significant Pairwise Differences by Quintile",
+       subtitle = "Only significant comparisons (p.adj < 0.05) are shown",
+       y = "Cases") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+f <- paste0('./figures/', 'health_outcome_equity_q_brackets_', lc_snr, '.png')
+ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+
+  To use the Compact Letter Display (CLD) method (where *groups sharing the same letter are not significantly different*), you need to combine a statistical test with the multcompView package.
+  Since you are likely using non-parametric data (given the previous discussion on Quintiles/Cases), here is the robust workflow using *Dunn’s Test* (the post-hoc test for Kruskal-Wallis) to generate the letters.
+  
+```{r cld}
+
+library(multcompView)
+library(rstatix)
+
+
+# 1. Define a helper function to generate letters for one metric
+get_cld_letters <- function(data) {
+  # Run Dunn's Test (Non-parametric pairwise)
+  dunn_res <- dunn_test(data, cases ~ Quintile, p.adjust.method = "bonferroni")
+  
+  # Format p-values for multcompView ("Group1-Group2" = p.val)
+  p_values <- setNames(dunn_res$p.adj, paste(dunn_res$group1, dunn_res$group2, sep = "-"))
+  
+  # Convert p-values to Letters
+  letters_list <- multcompLetters(p_values)$Letters
+  
+  # Return as a dataframe
+  return(data.frame(Quintile = names(letters_list), Letter = letters_list))
+}
+
+# 2. Apply this function to every Metric group
+cld_data <- plot_data2 %>%
+  group_by(Metric) %>%
+  # Nest data to run the function per group
+  nest() %>%
+  mutate(cld = purrr::map(data, get_cld_letters)) %>%
+  unnest(cld) %>%
+  select(Metric, Quintile, Letter)
+
+# 3. Calculate Y-positions (Just above the highest outlier per group)
+# This ensures the letter sits nicely on top of the boxplot
+y_positions <- plot_data2 %>%
+  group_by(Metric, Quintile) %>%
+  summarise(
+    # max_y = max(cases, na.rm = TRUE), 
+    max_y = quantile(cases, 0.9, na.rm = TRUE),  # 95th percentile
+    q3  = quantile(cases, 0.75 + 0.05, na.rm = TRUE), # add a bit more for better viz
+    iqr = IQR(cases, na.rm = TRUE),
+    .groups = "drop") %>%
+  # Add a little buffer (5% of height) so the letter doesn't touch the whisker
+  mutate(
+    upper_cap = q3 + 1.5 * iqr,
+    max_y     = q3,
+    y_pos = max_y * 1.05) 
+
+# 4. Merge Letters with Positions
+final_labels <- left_join(cld_data, y_positions, by = c("Metric", "Quintile"))
+
+# Check the result
+head(final_labels)
+
+
+
+## Step 3: Plot with Letters
+ggplot(plot_data2, aes(x = Quintile, y = cases, fill = Quintile)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  geom_boxplot(
+               # outlier.shape = NA,
+               outlier.shape = 1, outlier.size = 1, 
+               outlier.alpha = 0.2) + # Show outliers lightly
+  
+  # Add the Letters
+  geom_text(data = final_labels, 
+            aes(x = Quintile, y = y_pos, label = Letter), 
+            vjust = 0, # Sits right on the y_pos line
+            color = 'gray50',hjust = -0.2,
+            size = 3, 
+            fontface = "bold") +
+  
+  facet_wrap(~Metric, scales = "free_y") +
+  
+  # Expand Y axis slightly to fit the letters
+  scale_y_continuous(expand = expansion(mult = c(0.1, 0.2))) +
+  
+  coord_cartesian(ylim = c(lower_bound, upper_bound)) + # Zooms the view without deleting data
+  
+  scale_fill_brewer(palette = "Spectral", direction = -1) +
+  labs(title = "Differences in Cases by Quintile",
+       subtitle = "Groups sharing the same letter are not significantly different (Dunn's Test, p < 0.05)",
+       y = "Cases") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+f <- paste0('./figures/', 'health_outcome_equity_q_cld_', lc_snr, '.png')
+ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+
+
+
+```{r reg}
+plot_data_cont <- health_sf %>%
+  st_drop_geometry() %>%
+  filter(indicator == 'Cardiovascular') %>%
+  filter(lc_scenario == lc_snr) %>%
+  select(cases, all_of(metrics)) %>% # Use the original continuous columns, not the _q columns
+  pivot_longer(cols = all_of(metrics), names_to = "Metric", values_to = "Value") 
+
+ggplot(plot_data_cont, aes(x = Value, y = cases)) +
+  # Use alpha to handle overlapping points
+  geom_point(alpha = 0.1, size = 0.5, color = "gray50") + 
+  # Add a smoothed trend line (blue) with confidence interval
+  geom_smooth(method = "loess", color = "#2c7bb6", fill = "#2c7bb6", alpha = 0.2) +
+  
+  coord_cartesian(ylim = c(lower_bound, upper_bound)) + # Zooms the view without deleting data
+  
+  facet_wrap(~Metric, scales = "free_x") +
+  labs(title = "Continuous Relationship: Demographics vs Cases",
+       x = "Percentage / Value",
+       y = "Cases") +
+  theme_minimal()
+
+f <- paste0('./figures/', 'health_outcome_equity_reg_', lc_snr, '.png')
+# ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+
+```{r es - lm}
+
+library(broom)
+library(purrr)
+library(dplyr)
+library(ggplot2)
+
+# 1. Standardize predictors (Z-score) so coefficients are comparable
+df_cont <- health_sf %>%
+  filter(indicator == 'Cardiovascular') %>%
+  filter(lc_scenario == lc_snr) %>%
+  select(cases, all_of(metrics))
+
+
+df_scaled <- df_cont %>%
+  st_drop_geometry() %>%
+  mutate(across(all_of(metrics), scale))
+
+# 2. Run regressions and create significance columns
+models <- map_dfr(metrics, function(m) {
+  formula <- as.formula(paste("cases ~", m))
+  broom::tidy(lm(formula, data = df_scaled), conf.int = TRUE) %>%
+    filter(term != "(Intercept)") %>%
+    mutate(Metric = m)
+}) %>%
+  # ADD THIS SECTION: Create significance categories and stars
+  mutate(
+    # Create a categorical column for coloring
+    Significance = ifelse(p.value < 0.05, "Significant", "Not Significant"),
+    
+    # Create a text column for stars
+    Stars = case_when(
+      p.value < 0.001 ~ "***",
+      p.value < 0.01  ~ "**",
+      p.value < 0.05  ~ "*",
+      TRUE            ~ ""
+    )
+  )
+
+# 3. Plot the coefficients (Forest Plot)
+# 3. Plot with Significance highlighting
+ggplot(models, aes(x = estimate, y = reorder(Metric, estimate), color = Significance)) +
+  # Add vertical line at 0 (Null effect)
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
+  
+  # Error bars
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  
+  # The Point Estimate
+  geom_point(size = 3) +
+  
+  # Add the Stars just slightly above the point
+  geom_text(aes(label = Stars), vjust = -0.8, show.legend = FALSE, size = 5) +
+  
+  # Manual colors: Blue for significant, Gray for not
+  scale_color_manual(values = c("Significant" = "#2c7bb6", "Not Significant" = "gray70")) +
+  
+  labs(title = "Standardized Effect Sizes on Illness Cases",
+       subtitle = "Statistically significant associations are highlighted in blue (* p<0.05)",
+       x = "Coefficient Estimate (Change in Cases per 1 SD)",
+       y = "") +
+  theme_minimal() +
+  theme(legend.position = c(0.8, 0.1))
+
+f <- paste0('./figures/', 'health_outcome_equity_es_', lc_snr, '.png')
+ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+
+Fig. x | Standardized associations between social vulnerability indicators and preventable cases. Estimates represent the change in preventable case rate per one standard deviation (SD) increase in each vulnerability metric (linear regression coefficients). Error bars denote 95% confidence intervals. Points colored in blue indicate statistically significant associations (P<0.05); gray points indicate non-significance. All metrics are standardized (Z-scores) to allow for direct comparison of effect sizes.
+
+
+
+  
+  
+```{r}
+library(mgcv)
+library(ggplot2)
+
+# s() tells R to make this variable "smooth" (non-linear)
+gam_model <- gam(cases ~ s(pIncomeDeprivation), data = df, method = "REML")
+
+# Check if the curve is actually non-linear
+summary(gam_model) 
+# Look at "Effective degrees of freedom" (edf):
+# edf = 1  -> It is a straight line (Linear was fine).
+# edf > 1  -> It is a curve (GAM was needed).
+
+# Visualize the curve
+plot(gam_model, pages = 1, scheme = 1, all.terms = TRUE, shade = TRUE, 
+     main = "Non-linear Relationship (GAM)")
+
+
+
+
+# Adding I(variable^2) creates a curve (Parabola)
+poly_model <- lm(cases ~ pIncomeDeprivation + I(pIncomeDeprivation^2), data = df)
+summary(poly_model)
+# If the squared term is significant (p < 0.05): The relationship is non-linear (curved).
+# If not: Stick to the simple straight line.
+
+
+library(rms)
+
+# 1. Set up the data distribution
+dd <- datadist(df)
+options(datadist = "dd")
+
+# 2. Fit the model (ols = Ordinary Least Squares, same as lm but allows splines)
+rcs_model <- ols(cases ~ rcs(pIncomeDeprivation, 4), data = df)
+
+# 3. Plot
+ggplot(Predict(rcs_model), anova = anova(rcs_model), pval = TRUE)
+```
+
+
+
+```{r es - gam}
+
+library(mgcv)
+
+# 1. Standardize your data (optional, but helps compare "strength" visually)
+# df_scaled
+
+# 2. Extract curve data for every metric
+plot_data_list <- list()
+
+for (m in metrics) {
+  # Fit the GAM: cases ~ s(metric)
+  formula <- as.formula(paste("cases ~ s(", m, ")"))
+  model <- gam(formula, data = df_scaled, method = "REML")
+  
+  # Generate predictions for the curve (from -2 SD to +2 SD)
+  # We create a new sequence of data points to draw a smooth line
+  pred_data <- data.frame(
+    Var_Value = seq(-2.5, 2.5, length.out = 100) # Range of Z-scores
+  )
+  # Rename column to match the current metric name so predict() works
+  colnames(pred_data) <- m 
+  
+  # Predict values (fit) and standard error (se.fit)
+  preds <- predict(model, newdata = pred_data, se.fit = TRUE)
+  
+  # Store clean dataframe
+  plot_data_list[[m]] <- data.frame(
+    Metric = m,
+    x = pred_data[,1], # The Z-score
+    y = preds$fit,     # The predicted Cases
+    se = preds$se.fit  # The Error
+  )
+}
+
+# Combine all into one dataframe
+curve_data <- do.call(rbind, plot_data_list)
+
+
+## plot ----------------------------
+ggplot(curve_data, aes(x = x, y = y)) +
+  # Add the Confidence Interval Ribbon
+  geom_ribbon(aes(ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
+              fill = "#2c7bb6", alpha = 0.2) +
+  
+  # Add the main Curve Line
+  geom_line(color = "#2c7bb6", linewidth = 1) +
+  
+  # Facet by Metric
+  facet_wrap(~Metric) + # , scales = "free_y"
+  
+  # Add visual reference lines
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") + # Zero Effect line
+  geom_vline(xintercept = 0, linetype = "dotted", color = "gray50") + # Mean Value line
+  
+  labs(title = "Non-linear Associations with Preventable Cases",
+       subtitle = "Modeled using Generalized Additive Models (GAM)",
+       x = "Vulnerability Metric (Standardized Z-Score)",
+       y = "Predicted Change in Cases") +
+  theme_minimal(base_size = 10) +
+  theme(panel.grid.minor = element_blank())
+
+f <- paste0('./figures/', 'health_outcome_equity_esGAM_', lc_snr, '-.png')
+ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+Fig. 2: Non-linear associations between social vulnerability metrics and simulated preventable cases. Curves represent the estimated smooth functions from Generalized Additive Models (GAM). The x-axis represents the standardized score (Z-score) of each metric, and the y-axis represents the predicted change in preventable cases relative to the mean. Shaded regions indicate 95% confidence intervals.
+
+
+"Given the significant non-linearity detected (edf > 1, P < 0.05 for non-linear terms), we visualized the associations using partial dependence plots (Fig. 2) rather than summarizing them with linear coefficients. For example, 'Income Deprivation' showed a saturation effect, where case rates increased rapidly at lower levels of deprivation but plateaued at high levels (Fig 2a)."
+
+
+If "Predicted Change in Cases" means "Number of [1]cases prevented by trees," your simulation suggests that wealthier, less vulnerable areas are benefiting MORE from the trees than deprived areas.
+  - Why? This might be because wealthier areas have different baseline characteristics in your simulation (e.g., lower density, different layout) or because the p75over (Elderly) result shows that only Age behaves "expectedly" (where more vulnerable = higher cases).
+
+
+
+**draft**
+```
+Generalized additive models (GAMs) revealed significant non-linearities in the relationship between sociodemographic vulnerability and preventable case reductions (P<0.001 for smooth terms; effective degrees of freedom > 1). Socioeconomic deprivation markers, specifically income deprivation, social housing density, and BAME proportion, exhibited a distinct saturation effect (Fig. 2). The estimated reduction in cases was highest in the least vulnerable neighborhoods (Z<−1.5), declined sharply as deprivation increased toward the mean (Z = 0), and plateaued in the most deprived deciles (Z>1). This trajectory implies that the modeled intervention yields diminishing marginal returns as socioeconomic vulnerability intensifies, with the greatest variability in outcomes driven by differences among affluent areas rather than among the most deprived.
+
+In contrast, biological vulnerability, represented by the proportion of residents aged over 75, displayed a J-shaped association. While the preventable case rate remained stable or declined slightly across low-to-moderate densities of elderly residents, it rose sharply in areas with high concentrations of elderly populations (Z>1). This suggests a unique divergence where extreme age-related vulnerability is associated with disproportionately higher sensitivity to the intervention, unlike the plateauing observed in socioeconomic metrics.
+
+```
+
+
+Summary of Recommendations
+- lm (Linear)	                    Data is normally distributed (Rare for cases).	
+- glm.nb (Negative Binomial)	    Data is counts, skewed, variance > mean. (Most likely)	IRR (Rate Ratio)
+- lme4::glmer.nb (Mixed Effects)	You have data from many different cities/regions and need to control for that grouping.	IRR (Rate Ratio)
+
+*glm.nb (Negative Binomial), poisson, and Gamma cannot handle negative numbers. They will crash or give wrong answers.*
+
+```{r es - glm_nb}
+
+library(dplyr)
+library(ggplot2)
+library(broom)
+library(purrr)
+library(MASS) # Required for glm.nb
+
+# 1. Standardize your metrics (Z-scores)
+# This ensures the Rate Ratio is "per 1 SD increase" in deprivation
+df_scaled <- df_scaled
+
+# 2. Run Negative Binomial Regression for each metric
+models_nb <- map_dfr(metrics, function(m) {
+  
+  # Formula: cases ~ metric + offset(log(population))
+  # Note: If you have a 'population' column, use offset() to model RATES, not just counts.
+  # If 'cases' is already a rate, remove the offset.
+  
+  formula_str <- paste("cases ~", m) # Add "+ offset(log(population))" if 'cases' is a raw count
+  
+  tryCatch({
+    model <- glm.nb(as.formula(formula_str), data = df_scaled)
+    
+    # Tidy the results, asking for Exponentiated coefficients (Rate Ratios)
+    broom::tidy(model, conf.int = TRUE, exponentiate = TRUE) %>%
+      filter(term != "(Intercept)") %>%
+      mutate(Metric = m)
+  }, error = function(e) return(NULL)) # Skips if model fails to converge
+}) %>%
+  mutate(
+    Significance = ifelse(p.value < 0.05, "Significant", "NS"),
+    Stars = case_when(
+      p.value < 0.001 ~ "***",
+      p.value < 0.01  ~ "**",
+      p.value < 0.05  ~ "*",
+      TRUE            ~ ""
+    )
+  )
+
+# 3. Plot the Rate Ratios (Forest Plot)
+ggplot(models_nb, aes(x = estimate, y = reorder(Metric, estimate), color = Significance)) +
+  # Reference line is now at 1 (Rate Ratio of 1 = No Effect), not 0
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray50") +
+  
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  geom_point(size = 3) +
+  geom_text(aes(label = Stars), vjust = -0.8, show.legend = FALSE) +
+  
+  scale_color_manual(values = c("Significant" = "#2c7bb6", "NS" = "gray70")) +
+  
+  labs(title = "Impact of Vulnerability on Disease Risk (Negative Binomial)",
+       subtitle = "Values represent Incidence Rate Ratios (IRR) per 1 SD increase in metric",
+       x = "Incidence Rate Ratio (IRR) [1 = No Change]",
+       y = "") +
+  theme_minimal() +
+  theme(legend.position = c(0.8, 0.1))
+
+f <- paste0('./figures/', 'health_outcome_equity_esIRR_', lc_snr, '.png')
+ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+
+
+
+
+```{r es - compare models}
+
+df <- df_scaled
+
+# Calculate Mean and Variance of your outcome
+mean_val <- mean(df$cases, na.rm = TRUE)
+var_val  <- var(df$cases, na.rm = TRUE)
+
+print(paste("Mean:", round(mean_val, 2)))
+print(paste("Variance:", round(var_val, 2)))
+
+hist(df$cases, nclass = 300)
+
+# Compare simplest versions
+model_lm  <- lm(cases ~ pIncomeDeprivation, data = df_scaled)
+model_nb  <- MASS::glm.nb(cases ~ pIncomeDeprivation, data = df_scaled)
+
+model_lm  <- lm(cases ~ pIncomeDeprivation + p75over, data = df_scaled)
+model_nb  <- MASS::glm.nb(cases ~ pIncomeDeprivation  + p75over, data = df_scaled)
+
+AIC(model_lm, model_nb)
+
+library(performance)
+# # Compare performance visually
+# check_model(model_lm)
+# check_model(model_nb)
+
+# # return a list of single plots
+# diagnostic_plots <- plot(check_model(model_lm, panel = FALSE))
+# # posterior predicive checks
+# diagnostic_plots[[1]]
+# 
+# diagnostic_plots <- plot(check_model(model_nb, panel = FALSE))
+# diagnostic_plots[[1]]
+
+# model_performance(model_lm)
+# model_performance(model_nb)
+
+# compare_performance(model_lm, model_nb, verbose = FALSE)
+compare_performance(model_lm, model_nb, verbose = FALSE, rank = T)
+
+plot(compare_performance(model_lm, model_nb, rank = TRUE, verbose = FALSE))
+```
+
+
+### map - bicolor?
+
+```{r - one}
+# install.packages("biscale")
+
+library(biscale)
+library(cowplot)
+
+# 1. Create Bivariate Classes (3x3 Grid)
+# style = "quantile" splits data into equal groups (like your quintiles)
+# dim = 3 creates a 3x3 grid (Low/Med/High)
+data_bivariate <- bi_class(df_cont, x = pIncomeDeprivation, y = cases, style = "quantile", dim = 3)
+
+# 2. Create the Map
+map <- ggplot() +
+  geom_sf(data = data_bivariate, aes(fill = bi_class), color = 'gray', size = 0.05, show.legend = FALSE) +
+  bi_scale_fill(pal = "DkBlue", dim = 3) + # Palette options: "DkBlue", "DkCyan", "GrPink", etc.
+  labs(title = "Income Deprivation vs. Preventable Cases") +
+  bi_theme(base_size = 10) +
+  # This removes the white box behind the square legend
+  theme(
+    plot.background = element_rect(fill = "transparent", color = NA),
+    panel.background = element_rect(fill = "transparent", color = NA)
+  )
+
+# 3. Create the Square Legend
+legend <- bi_legend(pal = "DkBlue",
+                    dim = 3,
+                    xlab = "Deprivation ",
+                    ylab = "Cases ",
+                    size = 8) +
+  theme(
+    # This sets the overall background of the legend plot to transparent
+    plot.background = element_rect(fill = "transparent", color = NA),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    # This ensures no other rectangle elements (like borders) have color
+    rect = element_rect(fill = "transparent", color = NA)
+  )
+
+
+# 4. Combine Map and Legend
+final_plot <- ggdraw() +
+  draw_plot(map, 0, 0, 1, 1) +
+  draw_plot(legend, x = 0.7, y = 0.05, width = 0.2, height = 0.2) # Adjust x/y position of legend
+
+print(final_plot)
+
+f <- paste0('./figures/', 'health_outcome_equity_map_', lc_snr, '_pIncomeDeprivation--.png')
+ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+
+```{r - loop}
+
+# List of your metrics
+# metrics <- c("pIncomeDeprivation", "pBAME", "pSocial_housing", "p75over")
+
+# Loop through each metric
+for (var in metrics) {
+  
+  # 1. Prepare data (Note: We rename columns dynamically for bi_class to work easier)
+  temp_gdf <- df_cont %>%
+    mutate(x_var = .data[[var]], 
+           y_var = cases) %>%
+    bi_class(x = x_var, y = y_var, style = "quantile", dim = 3)
+  
+  # 2. Map
+  map <- ggplot() +
+    geom_sf(data = temp_gdf, aes(fill = bi_class), color = NA, size = 0.05, show.legend = FALSE) +
+    bi_scale_fill(pal = "DkBlue", dim = 3) +
+    labs(title = paste0(var, " vs. Cases")) +
+    bi_theme(base_size = 10)
+  
+  # 3. Legend
+  legend <- bi_legend(pal = "DkBlue", dim = 3, xlab = "Vulnerability", ylab = "Cases", size = 8) +
+    theme(
+      # This sets the overall background of the legend plot to transparent
+      plot.background = element_rect(fill = "transparent", color = NA),
+      panel.background = element_rect(fill = "transparent", color = NA),
+      # This ensures no other rectangle elements (like borders) have color
+      rect = element_rect(fill = "transparent", color = NA)
+  )
+  
+  # 4. Combine
+  final_plot <- ggdraw() +
+    draw_plot(map, 0, 0, 1, 1) +
+    draw_plot(legend, 0.7, 0.05, 0.2, 0.2)
+  
+  # 5. Save
+  f <- paste0('./figures/', 'health_outcome_equity_map_', lc_snr, '_', var, ".png"); f
+  ggsave(filename = f, plot = final_plot, width = 7, height = 5)
+}
+```
+
+
+
+
