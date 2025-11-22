@@ -1,0 +1,111 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-11-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(tidyverse)
+library(tmap)
+
+ymd   <- format(Sys.time(), "%Y%m%d"); ymd
+
+```
+
+
+## load data 
+
+```{r}
+
+dir_ucm_in  <- 'G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs'
+dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
+
+
+# load aoi
+f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'aoi_sf.rds')
+aoi <- readRDS(f) 
+
+
+# load building type name
+f <- file.path(dir_ucm_in, "energy_buildings",  "_UCM_Energy Consumption Table.csv")
+bld_name <- read_csv(f, show_col_types = f) %>%
+  rename('type' = 'Type') %>%
+  select(type, type_name, Consumption) %>%
+  mutate(
+    Consumption = round(Consumption, digits = 2),
+    type_name = gsub(', presumed non-residential','', type_name)) %>%
+  as.data.frame()
+
+
+# load stat
+f = file.path(dir_ucm_in, "energy_buildings",  "bld_with_attr_compact_ucm2_stats.csv")
+bld_stat <- read_csv(f, show_col_types = f) %>%
+  as.data.frame() %>%
+  filter(type != -1)
+  
+
+
+# 2) ensure every city has every type; missing ones get NA area
+all_types <- sort(unique(bld_stat$type))
+bld_complete <- bld_stat %>%
+  dplyr::select(-NAME) %>%
+  complete(GSS_CODE, type = all_types) %>%  # area becomes NA where missing
+  ## add name
+  left_join(y = bld_name, by = 'type') %>%
+  dplyr::mutate(type = as.factor(type)) %>%
+  # filter(!type_name %in% c('Residential') ) %>%
+  
+  ## add total area by building type
+  ungroup() %>%
+  group_by(type, type_name) %>%
+  dplyr::mutate(
+    total_area = sum(bldg_area_km2, na.rm = T),
+    area_pct = bldg_area_km2 / total_area * 100) %>%
+  ungroup() %>%
+  # dplyr::filter(bldg_area_km2 > 0) %>% # use for data check
+  dplyr::filter(Consumption > 0) %>%
+  select(GSS_CODE, type, type_name, Consumption, everything()) %>%
+  as.data.frame()
+
+bld_stat_sf <- aoi %>%
+  left_join(x = ., y = bld_complete, by = 'GSS_CODE')
+
+# str(bld_stat_sf)
+```
+
+
+
+## plot
+
+```{r}
+# Plot faceted maps
+map <- 
+  tm_shape(shp = bld_stat_sf) +
+  tm_polygons("area_pct", 
+              fill.scale = tm_scale(values = "brewer.oranges"),
+              fill.free = T) +
+  tm_facets(by = "type_name", ncol = 2) +
+  tm_layout(legend.show = TRUE,
+            legend.outside = T, 
+            component.autoscale = F, 
+            # shrink legend
+            legend.text.size  = .5,   # shrink legend labels
+            # legend.title.size = 1,   # shrink legend title
+            
+            ## continuous legends are treated as histograms/colorbars
+            # legend.hist.height = 0.4,  # for continuous color scales
+            # legend.hist.width  = 0.4,
+            # inner.margins = c(top, left, bottom, right)
+            inner.margins = c(0.01, 0.01, 0.01, 0.1),  # extra space on right
+            legend.frame = F, 
+            legend.position = c("right", "bottom"))
+# map
+
+# Save as PNG
+f <- paste0(here(), "/figures/building_stat_", ymd, "-2-pct.png"); f
+tmap_save(tm = map, filename = f, width = 7, height = 9, units = "in", dpi = 300)
+```
+
