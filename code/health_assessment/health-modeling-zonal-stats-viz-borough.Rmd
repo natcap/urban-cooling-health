@@ -4,10 +4,14 @@ output: html_document
 date: "2025-09-16"
 ---
 
+
+  Run this script first `health-modeling-zonal-stats.ipynb` to update the input data for viz.
+
+
 ```{r setup, include=FALSE}
 
-# To clear your environment 
-remove(list = ls())
+# # To clear your environment 
+# remove(list = ls())
 
 
 library(here)
@@ -42,7 +46,7 @@ aoi <- readRDS(f)
 ```
 
 
-```{r - health data}
+```{r - which health data?}
 ## load data 
 ## --> update this input data
 f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long.csv'); post_fix <- '00_2021_2050'; 

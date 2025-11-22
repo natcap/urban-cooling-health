@@ -480,6 +480,7 @@ df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df)
 
 
 ```{r - both -- function}
+
 func_combine_two_change_dfs <- function(
   df_stats_00,
   df_stats_i0
@@ -628,7 +629,7 @@ func_ggsave(f, w = 7, h = 5, dpi = 300, save_png = T)
 
 ```
 
-```{r - one - lc+climate}
+```{r - one: lc+climate-led change}
 
 stat_both_l %>%
   filter(label == 'climate+lc effect') %>%
@@ -679,7 +680,8 @@ func_ggsave(f, w = 7/2, h = 5, dpi = 300, save_png = T)
 
 
 
-```{r - one - lc - function}
+```{r - one: lc-led change - function}
+
 func_plot_change_point <- function(data, plot_avg = FALSE){
 
   stat_chg_per_lc_yr <- 
@@ -795,6 +797,12 @@ func_plot_change_point <- function(data, plot_avg = FALSE){
       alpha = .7
     ) +
     
+    geom_errorbar(
+      aes(ymin = ci_lower, ymax = ci_upper),
+      width = 0.2, alpha = 0.5, 
+      position = position_dodge(width = 0.9)
+    ) +
+    
     geom_text(
         aes(label = sprintf("%+.2f", chg)),
         position = position_dodge(width = 0.9),
@@ -815,7 +823,8 @@ func_plot_change_point <- function(data, plot_avg = FALSE){
            color = guide_legend(override.aes = list(shape = 6, fill = NA, size = 2, stroke = 0.5, alpha = 1)),
            shape = 'none') + 
   
-    labs(x = "",y = str_to_title(paste0(ind_label, " change"))) +
+    labs(x = "Land change scenarios", 
+         y = str_to_title(paste0(ind_label, " change"))) +
     ## This allows plot elements (like text) to extend beyond the plot panel boundaries without being clipped
     coord_cartesian(clip = "off") + 
     theme_bw() +
@@ -848,7 +857,7 @@ func_plot_change_point <- function(data, plot_avg = FALSE){
 ```
 
 
-```{r - one - lc}
+```{r - plot: lc-led change}
 
 func_plot_change_point(data = stat_both_l)
 
@@ -857,7 +866,7 @@ func_plot_change_point(data = stat_both_l)
 
   As the change due to lc are almost the same, we only need to present one figure using the averaged value. 
   
-```{r - one - lc - avg}
+```{r - plot: lc-led change on avg}
 
 func_plot_change_point(data = stat_both_l, plot_avg = T)
 

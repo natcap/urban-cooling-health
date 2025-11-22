@@ -26,7 +26,7 @@ conda activate geo_env
 
 cd D:\natcap\urban-cooling-health\code\health_assessment
 
-.\health-modeling_s0_s41.bat
+.\health-modeling_s0_s1_2050_2050.bat
 
 ```
 

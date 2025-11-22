@@ -6,8 +6,8 @@ date: "2025-09-26"
 
 ```{r setup, include=FALSE}
 
-# To clear your environment 
-remove(list = ls())
+# # To clear your environment 
+# remove(list = ls())
 
 library(readr)
 library(dplyr)
@@ -58,6 +58,7 @@ causes
 
 
 ```{r - re-code data }
+
 df_all_ <- df_all %>%
   mutate(
     year = str_extract(Scenario, "\\d{4}_\\d{4}"),
@@ -92,7 +93,7 @@ df_all_ <- df_all %>%
 ```{r - which data?}
 
 what_effect <- 'climate+lc effect'; year_range <- '2021_2050' ## yr_0 & lc_0
-# what_effect <- 'lc effect';         year_range <- '2050_2050' ## yr_i & lc_0
+what_effect <- 'lc effect';         year_range <- '2050_2050' ## yr_i & lc_0
 # what_effect <- 'lc effect';         year_range <- '2070_2070' ## yr_i & lc_0 # --> the result is the same as '2050_2070'
 
 df_all_filter <- df_all_ %>%
@@ -176,6 +177,7 @@ first_cols <- names(read_csv(fs[1], n_max = 0, show_col_types = FALSE)) %>%
   str_to_title()
 
 cause_order <- setdiff(first_cols, "Draw")
+
 long2 <- long2 |>
   mutate(
     cause = factor(cause, levels = cause_order),
@@ -238,22 +240,35 @@ stats_p <- stats %>%
 ## decide if to use geom_segment
 
 if (what_effect == 'climate+lc effect') {
+  
+  ## --- 1 --- plot change attributable to the combination of climate and LC ---
   hjust_label <- 0.5
   vjust_label <- 2.0
   legend_y    <- 0.8
+  
   p <- stats_p %>%
     ggplot(data = ., 
            aes(x = cause, y = mean, 
                group = lc_scenario, 
                color = lc_scenario)) +
     geom_point(
-      position = pd, shape = 1, size = 2, stroke = 1, alpha = 0.8)
+      position = pd, shape = 1, size = 2, stroke = 1, alpha = 0.8) +
+    labs(x = NULL, y = "Excess deaths (city total)")
   
+  
+  ## --- 2 --- plot change attributable to LC ONLY -----------------------------
 } else {
   hjust_label <- 1.5 
   vjust_label <- 0
   legend_y    <- 0.2
+  
   p <- stats_p %>%
+    select(1:mean, ci_lower, ci_upper, mean_text) %>%
+    ## convert "Excess deaths" to "Preventable deaths" to indicate "benefits" of nature
+    pivot_longer(names_to = 'col', values_to = 'value', cols = mean:mean_text) %>%
+    mutate(value = -value) %>%
+    pivot_wider(names_from = 'col', values_from = 'value') %>%
+    
     ggplot(data = ., 
            aes(x = cause, y = mean, 
                group = lc_scenario, 
@@ -269,9 +284,12 @@ if (what_effect == 'climate+lc effect') {
                  linewidth = 0.5) +
     geom_point(
       position = pd, shape = 1, size = 2, stroke = 1, alpha = 0.8) +
-    geom_hline(yintercept = 0, linetype = 'dashed', colour = 'gray', show.legend = FALSE)
+    geom_hline(yintercept = 0, linetype = 'dashed', colour = 'gray', show.legend = FALSE) +
+    labs(x = NULL, y = "Preventable deaths (city total)")
 }
 
+
+## --- 3 --- overall setting 
 p <- p +
   
   # geom_errorbar(
@@ -291,8 +309,6 @@ p <- p +
   scale_color_manual(
     # # remove the "scenario0" color from the named vector
     values = scenario_colors[names(scenario_colors) != "scenario0"] ) +
-  
-  labs(x = NULL, y = "Excess deaths (city total)") +
   scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) +
   
   # coord_flip() +
