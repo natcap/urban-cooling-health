@@ -88,6 +88,9 @@ def _write_geotiff(path: str, array: np.ndarray, profile_like, nodata=np.nan) ->
         nodata: Value to use for nodata (default: np.nan)
     """
     prof = profile_like.copy()
+
+    # Ensure a clean, simple GTiff profile
+    prof["driver"] = "GTiff"
     prof.update(
         dtype=rasterio.float32,
         count=1,
@@ -96,10 +99,18 @@ def _write_geotiff(path: str, array: np.ndarray, profile_like, nodata=np.nan) ->
         # nodata cannot be NaN in GeoTIFF metadata; keep unset if NaN
         # ensure we don't write NaN as nodata in metadata
     )
+
+    # Remove any tiling/blocksize that might conflict
+    for key in ("tiled", "blockxsize", "blockysize"):
+        prof.pop(key, None)
+
+    # Handle nodata in metadata
     if not (isinstance(nodata, float) and math.isnan(nodata)):
         prof["nodata"] = nodata
     else:
         prof.pop("nodata", None)
+
+    # Write the data
     with rasterio.open(path, "w", **prof) as dst:
         dst.write(array.astype(np.float32), 1)
 
