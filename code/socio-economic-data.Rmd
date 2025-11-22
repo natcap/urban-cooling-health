@@ -175,16 +175,20 @@ library(tmap)
 
 
 tmap_style = "quantile"
-tmap_style = "equal"
-tmap_style = "pretty"
+# tmap_style = "equal"
+# tmap_style = "pretty"
+tmap_style = "jenks" 
+tmap_style = "fisher" 
 
 for (c in metric_category_ls) {
   
   map <- dat_long %>%
     filter(metric_category == c) %>%
-    mutate(value = round(value, digits = 1)) %>%
+    # Add tiny noise to break ties
+    mutate(value_plot = value + runif(n(), 0, 0.00001)) %>% 
+    # mutate(value = round(value, digits = 2)) %>%
     tm_shape(.) +
-    tm_polygons("value", 
+    tm_polygons("value_plot", 
                 col_alpha = 0,  # This completely hides the borders
                 # palette = "Reds", 
                 fill.scale = tm_scale(
@@ -198,9 +202,20 @@ for (c in metric_category_ls) {
                   position = c("left", "bottom"), 
                   # border.alpha = 0,  # This removes the frame border -- Not working
                   # border.col = "transparent",  # 使用透明边框颜色    -- Not working
+                  # options = list(border.col = NA),  # -- Not working
                   # extra.ggplot2 = theme(
                   #   panel.border = element_rect(color = 'transparent'),
                   #   panel.grid.major.y = element_line(colour = "red")),
+                  
+                  # Use extra.ggplot2 to remove the box/border
+                  extra.ggplot2 = ggplot2::theme(
+                    panel.border = element_rect(color = 'transparent'),
+                    # panel.border = ggplot2::element_blank(),       # Removes the black box around the plot
+                    plot.background = ggplot2::element_blank(),    # Removes background color
+                    panel.background = ggplot2::element_blank(),   # Removes panel background
+                    axis.line = ggplot2::element_line(color = "black") # Optional: Keep x/y axis lines
+                  ),
+                  
                   height = 4),
                 fill.free = T) +
 
@@ -225,7 +240,7 @@ for (c in metric_category_ls) {
               legend.position = c("right", "bottom"))
   
   # Save as PNG
-  f <- paste0("./figures/GLA_climate_risk_selected_vars_facet_", c, '_', tmap_style, ".png")
+  f <- paste0("./figures/SVI_facet_", c, '_', tmap_style, ".png")
   tmap_save(tm = map, filename = f, 
             width = 16, height = 9, units = "in", dpi = 200)
   
