@@ -1,0 +1,520 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-12-14"
+---
+
+```{r setup}
+
+# To clear your environment 
+remove(list = ls())
+
+# load common packages
+here()
+source(here('code', 'func_packages.R'))
+
+```
+
+
+
+## Data
+
+```{r}
+metrics <- c(
+  "pIncomeDeprivation",
+  "p5under",
+  "p75over",
+  # "pNotEnglishProficient",
+  # "pSocial_housing",
+  "pBAME"
+)
+
+
+metrics_to_remove <- c(
+  "pNotEnglishProficient",
+  "pSocial_housing"
+)
+
+
+
+##' load data
+##' generated from `gcm-data-clip-stats-viz.Rmd`
+f <- here('data/temp_svi.RDS')
+temp_change_group <- readRDS(f)
+
+
+temp_svi <- temp_change_group %>%
+  ## rename
+  rename(
+    'temp_future' = 'mean', 
+    'temp_change' = 'mean_diff_avg'
+  ) %>%
+  mutate(across(
+    all_of(metrics),
+    ~ percent_rank(.x),
+    .names = "{.col}_pct"
+  )) %>%
+  rowwise() %>%
+  mutate(
+    SVI = mean(c_across(ends_with("_pct")), na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  
+  # select(-ends_with("_q")) %>%
+  select(-any_of(c("mean_Social","mean_Household","mean_Racial","mean_Housing"))) %>%  
+  
+  mutate(SVI_q = factor(ntile(SVI, 5)),
+         SVI_q = paste0('Q', SVI_q)) %>%
+  
+  select(1:overall_rank, SVI, everything())
+  
+hist(temp_svi$SVI)
+```
+
+```{r select the y variable}
+
+yi <- 'temp_change'  # change in temperature: Year 2050 - Year 2021
+yi <- 'temp_future'  # temperature in 2050
+
+```
+
+
+
+```{r continious}
+
+df_cont <- temp_svi %>%
+  st_drop_geometry() %>%
+  rename('y' = yi) %>%
+  select(y, all_of(metrics)) %>%
+  as.data.frame()
+
+df_cont_scaled <- df_cont %>%
+  mutate(across(any_of(metrics), scale))
+
+```
+
+
+
+```{r categorical }
+
+# 1. Reshape the data from Wide to Long
+df_cat <- temp_svi %>%
+  select(geoid, all_of(yi), ends_with("_q"), scenario, year) %>%   # Select 'cases' and all columns ending in '_q'
+  # rename('yi' = yi) %>%
+  pivot_longer(
+    cols = ends_with("_q"),            # Take all the quintile columns
+    names_to = "Metric",               # New column for the variable name (e.g., "pIncomeDeprivation_q")
+    values_to = "Quintile"             # New column for the values ("Q1", "Q5", etc.)
+  ) %>%
+  # Optional: Clean the Metric names by removing "_q" for nicer plot titles
+  mutate(Metric = gsub("_q", "", Metric))
+
+
+
+
+# 2. Plot
+df_cat2 <- df_cat %>%
+  filter(!Metric %in% metrics_to_remove) %>%
+  st_drop_geometry() 
+
+
+# Calculate the typical range (e.g., 5th to 95th percentile) to determine zoom limits automatically
+lower_bound <- quantile(df_cat2[[yi]], 0.05, na.rm = TRUE)
+upper_bound <- quantile(df_cat2[[yi]], 0.95, na.rm = TRUE)
+
+```
+
+
+
+
+
+## Plot
+
+```{r - cld - by sv}
+
+library(multcompView)
+library(rstatix)
+
+
+# 1. Define a helper function to generate letters for one metric
+get_cld_letters <- function(data, yi, group_var = "Quintile") {
+  
+  # keep only needed columns and remove NA rows
+  df0 <- data %>%
+    select(all_of(c(yi, group_var))) %>%
+    filter(!is.na(.data[[yi]]), !is.na(.data[[group_var]]))
+
+  # ensure grouping is factor
+  df0[[group_var]] <- factor(df0[[group_var]])
+
+  # if fewer than 2 groups, return "a" for whatever exists
+  if (nlevels(df0[[group_var]]) < 2) {
+    return(data.frame(
+      Quintile = levels(df0[[group_var]]),
+      Letter   = "a"
+    ))
+  }
+
+  
+  # Run Dunn's Test (Non-parametric pairwise)
+  dunn_res <- rstatix::dunn_test(df0, 
+                                 formula = as.formula(paste(yi, "~", group_var)), 
+                                 p.adjust.method = "bonferroni")
+  
+  # Format p-values for multcompView ("Group1-Group2" = p.val)
+  p_values <- setNames(dunn_res$p.adj, paste(dunn_res$group1, dunn_res$group2, sep = "-"))
+  
+  # Convert p-values to Letters
+  letters_vec <- multcompView::multcompLetters(p_values)$Letters
+  
+  # Return as a dataframe
+  return(data.frame(
+    Quintile = names(letters_vec),
+    Letter   = unname(letters_vec),
+    row.names = NULL
+    ))
+}
+
+# 2. Apply this function to every Metric group
+cld_data <- df_cat2 %>%
+  group_by(Metric) %>%
+  # Nest data to run the function per group
+  nest() %>%
+  # mutate(cld = purrr::map(data, get_cld_letters)) %>%
+  mutate(cld = purrr::map(data, ~ get_cld_letters(.x, yi = yi, group_var = "Quintile"))) %>%
+  unnest(cld) %>%
+  select(Metric, Quintile, Letter)
+
+# 3. Calculate Y-positions (Just above the highest outlier per group)
+# This ensures the letter sits nicely on top of the boxplot
+if (yi == 'temp_future') {
+  y_pos_scale = 1.005
+} else {
+  y_pos_scale = 1.05
+}
+
+y_positions <- df_cat2 %>%
+  group_by(Metric, Quintile) %>%
+  summarise(
+    # max_y = max(.data[[yi]], na.rm = TRUE), 
+    max_y = quantile(.data[[yi]], 0.9, na.rm = TRUE),  # 95th percentile
+    q3    = quantile(.data[[yi]], 0.75 + 0.05, na.rm = TRUE), # add a bit more for better viz
+    iqr   = IQR(.data[[yi]], na.rm = TRUE),
+    .groups = "drop") %>%
+  # Add a little buffer (5% of height) so the letter doesn't touch the whisker
+  mutate(
+    upper_cap = q3 + 1.5 * iqr,
+    max_y     = q3,
+    y_pos = max_y * y_pos_scale) 
+
+# 4. Merge Letters with Positions
+cld_labels <- left_join(cld_data, y_positions, by = c("Metric", "Quintile"))
+
+# Check the result
+head(cld_labels)
+
+
+
+## Step 3: Plot with Letters
+func_plot_cld <- function(data, data_letter) {
+  p <- 
+    data %>%
+    ggplot(., 
+           aes(x = Quintile, 
+               y = .data[[yi]], 
+               fill = Quintile)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_boxplot(
+                 outlier.shape = 1, outlier.size = 1, 
+                 outlier.alpha = 0.2) + # Show outliers lightly
+    
+    # Add the Letters
+    geom_text(data = data_letter, 
+              aes(x = Quintile, y = y_pos, label = Letter), 
+              vjust = 0, # Sits right on the y_pos line
+              color = 'gray50',hjust = -0.2,
+              size = 3, 
+              fontface = "bold") +
+    
+    facet_wrap(~Metric, scales = "free_y") +
+    
+    # Expand Y axis slightly to fit the letters
+    scale_y_continuous(expand = expansion(mult = c(0.15, 0.2))) +
+    
+    coord_cartesian(ylim = c(lower_bound, upper_bound)) + # Zooms the view without deleting data
+    
+    scale_fill_brewer(palette = "Spectral", direction = -1) +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
+  return(p)
+}
+
+
+func_plot_cld(data = df_cat2, data_letter = cld_labels) +
+  labs(
+    # title = paste0("Differences in ", yi, " by quintile"),
+    # caption = "Groups sharing the same letter are not significantly different (Dunn's Test, p < 0.05)",
+    y = str_to_title(gsub('_future', '', yi)))
+f <- paste0('./figures/', 'temp_equity_q_cld_', yi, '_', ymd, '.png')
+ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+
+
+
+```{r - cld - svi only }
+
+df_cat2_svi <- 
+  df_cat2 %>%
+  filter(Metric == 'SVI') %>%
+  mutate(Metric = as.character(Metric)) 
+
+cld_labels_svi <- cld_labels %>%
+  filter(Metric == 'SVI')
+
+func_plot_cld(data = df_cat2_svi, data_letter = cld_labels_svi) +
+  theme(strip.text = element_blank()) +
+  labs(x = 'SVI quintile', y = 'Temperature')
+f <- paste0('./figures/', 'temp_equity_q_cld_', yi, '_SVI_', ymd, '.png')
+ggsave(plot = last_plot(), filename = f, width = 3.5, height = 3, units = 'in', dpi = 300)
+
+```
+
+
+
+
+```{r - gam data}
+
+library(mgcv)
+
+
+# 1. Standardize your data (optional, but helps compare "strength" visually)
+# df_cont_scaled
+
+# ---------------------------------------------------------
+# STEP 1: Prepare Raw Data for the Rug Plot
+# ---------------------------------------------------------
+
+# We need the raw data in long format so geom_rug knows 
+# where the data points are for EACH metric.
+df_cont_raw <- df_cont_scaled %>%
+  select(any_of(metrics)) %>%
+  pivot_longer(cols = everything(), names_to = "Metric", values_to = "x_raw")
+
+
+
+# 2. Extract curve data for every metric
+plot_data_list <- list()
+
+# Initialize an empty list to store the stats
+stats_list <- list()
+
+for (m in metrics) {
+  
+  # 1. Fit the Non-Linear GAM (The Winner)
+  formula <- as.formula(paste("y ~ s(", m, ")"))
+  gam_model <- gam(formula, data = df_cont_scaled, method = "REML")
+  
+  
+  #####################################
+  ## collect stats data for later use 
+  #####################################
+  # 2. Fit the Linear Model (The Baseline Comparison)
+  formula_lm <- as.formula(paste("y ~", m))
+  lm_model <- lm(formula_lm, data = df_cont_scaled)
+  
+  
+  # 3. Extract the key numbers
+  summ <- summary(gam_model)
+  
+  # Get smooth term stats (edf, F, p-value)
+  # s.table contains the significance of smooth terms
+  edf_val <- summ$s.table[1, "edf"]
+  f_val   <- summ$s.table[1, "F"]
+  p_val   <- summ$s.table[1, "p-value"]
+  
+  # Get AICs
+  aic_gam <- AIC(gam_model)
+  aic_lm  <- AIC(lm_model)
+  
+  # 4. Store in a neat dataframe row
+  stats_list[[m]] <- data.frame(
+    Metric = m,
+    EDF = round(edf_val, 2),          # Effective Degrees of Freedom (>1 means curvy)
+    F_Statistic = round(f_val, 2),    # Strength of association
+    P_Value = p_val,                  # Significance
+    AIC_GAM = round(aic_gam, 1),
+    AIC_Linear = round(aic_lm, 1),
+    Delta_AIC = round(aic_lm - aic_gam, 1), # Positive = GAM is better
+    Adj_R_Sq = round(summ$r.sq, 3)    # How much variance explained?
+  )
+
+  #####################################
+  ## Generate data for viz 
+  #####################################
+  
+  # Generate predictions for the curve 
+  #' 1.1 Extrapolation from -2 SD to +2 SD
+  # We create a new sequence of data points to draw a smooth line
+  # pred_data <- data.frame(
+  #   Var_Value = seq(-2.5, 2.5, length.out = 100) # Range of Z-scores
+  # )
+  
+  # A. Define Range based on ACTUAL data (No Extrapolation)
+  #' 1.2 Predict only where data exists
+  actual_min <- min(df_cont_scaled[[m]], na.rm = TRUE)
+  actual_max <- max(df_cont_scaled[[m]], na.rm = TRUE)
+  
+  # Create sequence only within real data range
+  pred_data <- data.frame(
+    Var_Value = seq(actual_min, actual_max, length.out = 100)
+  )
+
+
+  # Rename column to match the current metric name so predict() works
+  colnames(pred_data) <- m 
+  
+  
+  # B. Predict "Terms" (The Critical Fix)
+  # type = "terms" returns the Centered Effect (0 = Mean). 
+  # This makes "Predicted Change" accurate and aligns with y=0 line.
+  # preds <- predict(gam_model , newdata = pred_data, type = "terms", se.fit = TRUE)
+  
+  # # Predict values (fit) and standard error (se.fit)
+  preds <- predict(gam_model , newdata = pred_data, se.fit = TRUE)
+  
+  # Store clean dataframe
+  plot_data_list[[m]] <- data.frame(
+    Metric = m,
+    x = pred_data[,1], # The Z-score
+    y = preds$fit,     # The predicted y
+    se = preds$se.fit  # The Error
+  )
+}
+
+# Combine `plot data` all into one dataframe
+df_cont_curve <- do.call(rbind, plot_data_list)
+
+
+# Combine `model stats` into one final table
+model_stats_table <- do.call(rbind, stats_list) %>%
+  # Add a "Significance" column for easier reading
+  mutate(Signif_Code = case_when(
+    P_Value < 0.001 ~ "***",
+    P_Value < 0.01  ~ "**",
+    P_Value < 0.05  ~ "*",
+    TRUE            ~ "ns"
+  )) %>%
+  # Sort by strongest non-linearity (optional)
+  arrange(desc(Delta_AIC))
+```
+
+
+Effective Degrees of Freedom (edf): This measures "how curvy" the line is.
+  edf = 1 ->  Linear (Straight line).
+  edf > 1 ->  Non-linear.
+  edf > 2 ->  Highly complex (supports your "J-shape" or "Saturation" claims).
+ 
+`F-statistic` (or Chi-sq): The test statistic for the smooth term.
+`AIC Difference`: Evidence that the non-linear GAM is better than a standard linear regression.
+  If it is positive and large (> 10), you have mathematical proof that the Linear Model was insufficient.
+
+
+```{r - gam plot + density}
+
+gam_plot_title = paste0('Non-linear between SV and ', yi)
+
+# --- 1. Filter Data First ---
+# Debug Fix: Filter before calculating floor to avoid outliers/NAs affecting position
+
+df_cont_curve <- df_cont_curve %>%
+  filter(is.finite(x), is.finite(y), is.finite(se))
+
+df_cont_raw <- df_cont_raw %>%
+  filter(is.finite(x_raw))
+
+
+# --- 2. Calculate Dynamic Scales ---
+
+# Define a scaling factor to make the density fit nicely at the bottom
+# Calculate the vertical range of your curves to scale the density proportionally
+# (This prevents the density from being too tall or too short)
+total_y_range <- max(df_cont_curve$y, na.rm=T) - min(df_cont_curve$y, na.rm=T)
+density_height <- 0.25 * total_y_range  # Density will take up 25% of the curve's height
+# Set the floor just below the lowest Confidence Interval
+# We subtract a tiny buffer (5% of range) so it doesn't touch the CI
+y_floor <- min(df_cont_curve$y - 1.96 * df_cont_curve$se, na.rm = TRUE) - (0.05 * total_y_range)
+
+
+
+
+ggplot() +
+  # # --- LAYER 1: The Density Distribution ---
+  # # scaled = density scaled to max 1. We multiply by our target height.
+  # geom_density(data = df_cont_raw,
+  #              aes(x = x_raw,
+  #                  y = after_stat(scaled) * density_scale + y_floor),
+  #              inherit.aes = FALSE,
+  #              fill = "gray50",
+  #              color = "gray40",  # Added outline for clarity
+  #              # color = NA,
+  #              outline.type = "upper", # Only draw top line of density
+  #              alpha = 0.5, na.rm = TRUE) +
+  ##' `geom_density` automatically decides where the bottom of the shape goes (usually 0). 
+  ##' `geom_ribbon` forces you to define ymin and ymax.
+  
+  
+  # --- LAYER 1: The "Floating" Density ---
+  # We use geom_ribbon with stat="density".
+  # This allows us to hard-code 'ymin' to our floor, preventing the "fill to zero" issue.
+  geom_ribbon(data = df_cont_raw, 
+              aes(x = x_raw, 
+                  ymin = y_floor,  
+                  ymax = after_stat(scaled) * density_height + y_floor),
+              stat = "density", 
+              inherit.aes = FALSE,
+              fill = "gray60", 
+              color = "gray40", # Adds a thin outline
+              linewidth = 0.2,       # Thin outline
+              alpha = 0.6) +
+  
+  # --- LAYER 2: Confidence Interval ---
+  geom_ribbon(data = df_cont_curve, aes(x = x, ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
+              inherit.aes = FALSE,
+              fill = "#2c7bb6", alpha = 0.2) +
+  
+  # --- LAYER 3: Main Curve ---
+  geom_line(data = df_cont_curve, aes(x = x, y = y), 
+            inherit.aes = FALSE,
+            color = "#2c7bb6", linewidth = 1) +
+  
+  # --- Layer 4: Reference Lines ---
+  # geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") + 
+  geom_vline(xintercept = 0, linetype = "dotted", color = "gray50") +
+  
+  # --- Aesthetics ---
+  # facet_wrap(~Metric, scales = "fixed") + 
+  facet_wrap(~Metric, scales = "free_x") + 
+  
+  labs(title = gam_plot_title,
+       caption = "Curves represent the partial effect of each metric (centered at mean); 
+       Gray area = Distribution of observed data density",
+       x = "Vulnerability Metric (Standardized Z-Score)",
+       y = "Predicted Change (Relative to Mean)") +
+  
+  coord_cartesian(clip = "off") +
+  # theme_minimal(base_size = 11) +
+  theme_light(base_size = 10) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = 'gray90', linewidth = 0.1), 
+    strip.text = element_text(face = "bold"),
+    plot.caption = element_text(color = "gray50", face = "italic")
+  )
+
+
+f <- paste0('./figures/', 'temp_equity_esGAM_', yi, '_', ymd, '_scaled.png')
+ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+```
+
+
