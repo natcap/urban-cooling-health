@@ -547,8 +547,6 @@ ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dp
 
 ```{r reg}
 
-
-
 df_cont_l <- df_cont %>%
   st_drop_geometry() %>%
   pivot_longer(cols = any_of(metrics), names_to = "Metric", values_to = "Value") 
@@ -696,7 +694,7 @@ plot(gam_model, pages = 1, scheme = 1, all.terms = TRUE, shade = TRUE,
 # ---------------------------------------------------------
 # We need the raw data in long format so geom_rug knows 
 # where the data points are for EACH metric.
-raw_data_long <- df_scaled %>%
+df_cont_raw <- df_scaled %>%
   select(all_of(metrics)) %>%
   pivot_longer(cols = everything(), names_to = "Metric", values_to = "x_raw")
 
@@ -793,7 +791,7 @@ for (m in metrics) {
 }
 
 # Combine `plot data` all into one dataframe
-curve_data <- do.call(rbind, plot_data_list)
+df_cont_curve <- do.call(rbind, plot_data_list)
 
 
 # Combine `model stats` into one final table
@@ -828,7 +826,7 @@ Effective Degrees of Freedom (edf): This measures "how curvy" the line is.
 gam_plot_title <- paste0("Non-linear associations between SV and preventable ", 
                           str_to_lower(outcome_ind), ' cases (', lc_snr, ")")
 
-ggplot(curve_data, aes(x = x, y = y)) +
+ggplot(df_cont_curve, aes(x = x, y = y)) +
   # Add the Confidence Interval Ribbon
   geom_ribbon(aes(ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
               fill = "#2c7bb6", alpha = 0.2) +
@@ -866,15 +864,16 @@ f <- paste0('./figures/', 'health_outcome_equity_esGAM_', lc_snr, '_', ymd, '_ac
 ggplot() +
   # --- Layer 1: The Rug Plot (Using RAW data) ---
   # distinct() prevents overplotting if you have ties, making the rug cleaner
-  geom_rug(data = raw_data_long, aes(x = x_raw), 
+  geom_rug(data = df_cont_raw, aes(x = x_raw), 
            sides = "b", alpha = 0.1, length = unit(0.03, "npc"), color = "gray20") +
   
   # --- Layer 2: Confidence Interval ---
-  geom_ribbon(data = curve_data, aes(x = x, ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
+  geom_ribbon(data = df_cont_curve, 
+              aes(x = x, ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
               fill = "#2c7bb6", alpha = 0.2) +
   
   # --- Layer 3: Main Curve ---
-  geom_line(data = curve_data, aes(x = x, y = y), 
+  geom_line(data = df_cont_curve, aes(x = x, y = y), 
             color = "#2c7bb6", linewidth = 1) +
   
   # --- Layer 4: Reference Lines ---
@@ -913,20 +912,42 @@ ggplot() +
 density_scale <- 0.01
 y_floor <- 0 
 
+#' --- alternatively, use `geom_ribbon`
+total_y_range <- max(df_cont_curve$y, na.rm=T) - min(df_cont_curve$y, na.rm=T)
+density_height <- 0.15 * total_y_range  # Density will take up 15% of the curve's height
+# Set the floor just below the lowest Confidence Interval
+# We subtract a tiny buffer (5% of range) so it doesn't touch the CI
+y_floor <- min(df_cont_curve$y - 1.96 * df_cont_curve$se, na.rm = TRUE) - (0.05 * total_y_range)
+
+
 ggplot() +
-  # --- LAYER 1: The Density Distribution (Replaces Rug) ---
-  geom_density(data = raw_data_long, 
-               aes(x = x_raw, 
-                   y = after_stat(scaled) * density_scale + y_floor), 
-               
-               fill = "gray50", color = NA, alpha = 0.5) +
+  # # --- LAYER 1: The Density Distribution (Replaces Rug) ---
+  # geom_density(data = df_cont_raw, 
+  #              aes(x = x_raw, 
+  #                  y = after_stat(scaled) * density_scale + y_floor), 
+  #              
+  #              fill = "gray50", color = NA, alpha = 0.5) +
+  
+  # --- LAYER 1: The "Floating" Density ---
+  # We use geom_ribbon with stat="density".
+  # This allows us to hard-code 'ymin' to our floor, preventing the "fill to zero" issue.
+  geom_ribbon(data = df_cont_raw, 
+              aes(x = x_raw, 
+                  ymin = y_floor,  
+                  ymax = after_stat(scaled) * density_height + y_floor),
+              stat = "density", 
+              inherit.aes = FALSE,
+              fill = "gray60", 
+              color = "gray40",      # Adds a thin outline
+              linewidth = 0.1,       # Thin outline
+              alpha = 0.6) +
   
   # --- LAYER 2: Confidence Interval ---
-  geom_ribbon(data = curve_data, aes(x = x, ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
+  geom_ribbon(data = df_cont_curve, aes(x = x, ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
               fill = "#2c7bb6", alpha = 0.2) +
   
   # --- LAYER 3: Main Curve ---
-  geom_line(data = curve_data, aes(x = x, y = y), 
+  geom_line(data = df_cont_curve, aes(x = x, y = y), 
             color = "#2c7bb6", linewidth = 1) +
   
   # --- Layer 4: Reference Lines ---
@@ -937,13 +958,15 @@ ggplot() +
   facet_wrap(~Metric, scales = "fixed") + 
   
   labs(title = gam_plot_title,
-       caption = "Curves represent the partial effect of each metric (centered at mean); Gray area = Distribution of observed data density",
+       caption = paste0("Curves represent the partial effect of each metric (centered at mean);",
+                        "Gray area = Distribution of observed data density"),
        x = "Vulnerability Metric (Standardized Z-Score)",
        y = "Predicted Change in Cases (Relative to Mean)") +
   
   # theme_minimal(base_size = 11) +
   theme_light(base_size = 10) +
   theme(
+    plot.title = element_text(size = 10),
     panel.grid.minor = element_blank(),
     panel.grid.major = element_line(color = 'gray90', linewidth = 0.1), 
     strip.text = element_text(face = "bold"),
@@ -951,7 +974,7 @@ ggplot() +
   )
 
 
-f <- paste0('./figures/', 'health_outcome_equity_esGAM_', lc_snr, '_', ymd, '_actual3.png')
+f <- paste0('./figures/', 'health_outcome_equity_esGAM_', lc_snr, '_', ymd, '_actual.png')
 ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
 
@@ -973,8 +996,8 @@ for (m in metrics) {
   # 1. Filter data for just THIS metric
   # We need the RAW data for the marginal density (so it's accurate)
   # and the CURVE data for the line.
-  data_subset <- raw_data_long %>% filter(Metric == m)
-  curve_subset <- curve_data %>% filter(Metric == m)
+  data_subset <- df_cont_raw %>% filter(Metric == m)
+  curve_subset <- df_cont_curve %>% filter(Metric == m)
   
   # 2. Create the Base Plot
   # Note: We keep the theme very minimal to save space in the grid
@@ -1044,15 +1067,15 @@ ggplot() +
   # --- LAYER 1: Jittered Points (Replaces Rug) ---
   # y = y_floor puts them at the bottom. 
   # position_jitter(height=...) scatters them vertically slightly so they don't overlap
-  geom_point(data = raw_data_long, 
+  geom_point(data = df_cont_raw, 
              aes(x = x_raw, y = y_floor), 
              position = position_jitter(height = 0.005, width = 0), 
              color = "black", alpha = 0.02, size = 0.3) +
              
   # --- Layers 2 & 3 (Same as before) ---
-  geom_ribbon(data = curve_data, aes(x = x, ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
+  geom_ribbon(data = df_cont_curve, aes(x = x, ymin = y - 1.96 * se, ymax = y + 1.96 * se), 
               fill = "#2c7bb6", alpha = 0.2) +
-  geom_line(data = curve_data, aes(x = x, y = y), 
+  geom_line(data = df_cont_curve, aes(x = x, y = y), 
             color = "#2c7bb6", linewidth = 1) +
             
   # --- Aesthetics ---
