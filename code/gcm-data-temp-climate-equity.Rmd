@@ -10,8 +10,11 @@ date: "2025-12-14"
 remove(list = ls())
 
 # load common packages
+library(here)
 here()
 source(here('code', 'func_packages.R'))
+
+library(sf)
 
 ```
 
@@ -19,7 +22,7 @@ source(here('code', 'func_packages.R'))
 
 ## Data
 
-```{r}
+```{r - temp data}
 metrics <- c(
   "pIncomeDeprivation",
   "p5under",
@@ -43,12 +46,22 @@ f <- here('data/temp_svi.RDS')
 temp_change_group <- readRDS(f)
 
 
-temp_svi <- temp_change_group %>%
+d_svi <- temp_change_group %>%
   ## rename
   rename(
     'temp_future' = 'mean', 
     'temp_change' = 'mean_diff_avg'
-  ) %>%
+  )
+```
+
+
+
+
+
+
+```{r}
+
+df_svi <- d_svi %>%
   mutate(across(
     all_of(metrics),
     ~ percent_rank(.x),
@@ -68,24 +81,37 @@ temp_svi <- temp_change_group %>%
   
   select(1:overall_rank, SVI, everything())
   
-hist(temp_svi$SVI)
+hist(df_svi$SVI)
 ```
 
 ```{r select the y variable}
 
-yi <- 'temp_change'  # change in temperature: Year 2050 - Year 2021
-yi <- 'temp_future'  # temperature in 2050
+yi <- 'temp_change'; ylab = 'Temperature (°C)'     # change in temperature: Year 2050 - Year 2021
+# yi <- 'temp_future'; ylab = 'Temperature (°C)'     # temperature in 2050
 
 ```
 
 
 
+```{r select the y variable - tcc data}
+
+# yi <- 'TCC';         ylab = 'Tree cover (%)'       # tree cover percentage in 2024
+
+# dir_g <- "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs"
+# f_aoi <- file.path(dir_g, 'GLA_Tree_Cover_by_LSOA.gpkg')
+# d_svi <- st_read(f_aoi, quiet = T) %>%
+#   rename('geoid' = 'id', 
+#          'TCC' = 'tree_pct')
+
+```
+
+
 ```{r continious}
 
-df_cont <- temp_svi %>%
+df_cont <- df_svi %>%
   st_drop_geometry() %>%
   rename('y' = yi) %>%
-  select(y, all_of(metrics)) %>%
+  select(y, any_of(metrics)) %>%
   as.data.frame()
 
 df_cont_scaled <- df_cont %>%
@@ -98,8 +124,8 @@ df_cont_scaled <- df_cont %>%
 ```{r categorical }
 
 # 1. Reshape the data from Wide to Long
-df_cat <- temp_svi %>%
-  select(geoid, all_of(yi), ends_with("_q"), scenario, year) %>%   # Select 'cases' and all columns ending in '_q'
+df_cat <- df_svi %>%
+  select(geoid, all_of(yi), ends_with("_q"), any_of(c('scenario', 'year'))) %>%   # Select 'cases' and all columns ending in '_q'
   # rename('yi' = yi) %>%
   pivot_longer(
     cols = ends_with("_q"),            # Take all the quintile columns
@@ -255,7 +281,7 @@ func_plot_cld(data = df_cat2, data_letter = cld_labels) +
   labs(
     # title = paste0("Differences in ", yi, " by quintile"),
     # caption = "Groups sharing the same letter are not significantly different (Dunn's Test, p < 0.05)",
-    y = str_to_title(gsub('_future', '', yi)))
+    y = ylab)
 f <- paste0('./figures/', 'temp_equity_q_cld_', yi, '_', ymd, '.png')
 ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
@@ -274,7 +300,7 @@ cld_labels_svi <- cld_labels %>%
 
 func_plot_cld(data = df_cat2_svi, data_letter = cld_labels_svi) +
   theme(strip.text = element_blank()) +
-  labs(x = 'SVI quintile', y = 'Temperature')
+  labs(x = 'SVI quintile', y = ylab)
 f <- paste0('./figures/', 'temp_equity_q_cld_', yi, '_SVI_', ymd, '.png')
 ggsave(plot = last_plot(), filename = f, width = 3.5, height = 3, units = 'in', dpi = 300)
 
