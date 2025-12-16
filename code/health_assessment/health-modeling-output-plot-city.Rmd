@@ -9,16 +9,13 @@ date: "2025-09-26"
 # # To clear your environment 
 # remove(list = ls())
 
-library(readr)
-library(dplyr)
-library(tidyr)
 library(purrr)
 library(stringr)
 library(ggplot2)
+library(here)
+source(here::here('code', 'func_packages.R'))
 
 theme_set(theme_bw(base_size = 11))
-
-ymd   <- format(Sys.time(), "%Y%m%d"); ymd
 
 
 dir_main <- "G:/Shared drives/Wellcome Trust Project Data"
@@ -89,11 +86,16 @@ df_all_ <- df_all %>%
 ```
 
 
+  There are two ways to present the results:
 
+  1. Net change (2021 → 2050): show the change in deaths between 2021 and 2050, capturing the combined effects of climate change + land-use change.
+
+  2. Land-use-only effect (within-year counterfactual): in a given year, compare deaths under each counterfactual land-use scenario against the baseline land-use for the same climate conditions, isolating the effect of land-use change alone.
+  
 ```{r - which data?}
 
 what_effect <- 'climate+lc effect'; year_range <- '2021_2050' ## yr_0 & lc_0
-what_effect <- 'lc effect';         year_range <- '2050_2050' ## yr_i & lc_0
+# what_effect <- 'lc effect';         year_range <- '2050_2050' ## yr_i & lc_0
 # what_effect <- 'lc effect';         year_range <- '2070_2070' ## yr_i & lc_0 # --> the result is the same as '2050_2070'
 
 df_all_filter <- df_all_ %>%
@@ -290,7 +292,7 @@ if (what_effect == 'climate+lc effect') {
 
 
 ## --- 3 --- overall setting 
-p <- p +
+p2 <- p +
   
   # geom_errorbar(
   #   aes(ymin = mean-sd, ymax = mean+sd),
@@ -327,15 +329,23 @@ p <- p +
     # legend.title = element_blank(),
     # axis.text.x = element_text(angle = 45, hjust = 1)
   )
-p
 
+
+p_facet <- p2 + 
+  facet_wrap(~cause, scales = 'free') +
+  scale_y_continuous(expand = expansion(mult = c(0.06, 0.08))) +
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(),
+        panel.border = element_rect(linewidth=0.5)
+        )
+p_facet
 
 #-----------------------------
 # 4) Save
 #-----------------------------
 dir.create(dir_fig, showWarnings = FALSE, recursive = TRUE)
 f <- file.path(dir_fig, paste0("health_monte_carlo_violins_by_cause_Scenario_dodged_", year_range, '_', ymd, ".png")); f
-ggsave(filename = f, plot = p, width = 7, height = 3, dpi = 300)
+ggsave(filename = f, plot = p_facet, width = 7, height = 3, dpi = 300)
 
 ```
 
