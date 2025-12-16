@@ -11,7 +11,7 @@ date: "2025-11-20"
 ```{r}
 
 ## To clear your environment
-remove(list = ls())
+# remove(list = ls())
 
 library(sf)
 library(tmap)
@@ -146,7 +146,9 @@ ggplot(p_data, aes(x = Value, fill = Quintile)) +
 
 
 ### health data
+
 ```{r}
+
 ## load data 
 
 dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
