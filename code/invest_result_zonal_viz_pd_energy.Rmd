@@ -20,6 +20,11 @@ ind <- 'avd_eng_cn'
 ind_scale <- 1/10^6  # convert to million
 ind_label <- "avoided energy cost (Million £)"
 
+
+#' load data generated from `invest_result_zonal_stats_viz_temp.Rmd`
+f <- paste0('./data/', 'ucm_output_shp_all_df.rds'); f
+shp_all_df <- readRDS(f)
+
 # 1. calculate the change from year i
 df_stats_i0 <- func_calculate_change_from_yri_lc0(data = shp_all_df)
 df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = shp_all_df, return_sf = T)
@@ -53,6 +58,11 @@ func_plot_change_point(data = stat_both_l, plot_avg = T)
 df_chg_sf_i0_input <- df_chg_sf_i0 %>% 
   filter(year > year_baseline) %>%
   mutate(year = as.factor(year)) 
+
+## save a copy for viz
+f <- paste0('./data/', 'viz_sf_', ind, '_lc_effect.rds'); f
+# "./data/viz_sf_avd_eng_cn_lc_effect.rds"
+saveRDS(df_chg_sf_i0_input, f)
 
 
 ## apply the function 

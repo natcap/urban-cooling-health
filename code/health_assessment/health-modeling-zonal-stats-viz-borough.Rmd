@@ -47,10 +47,14 @@ aoi <- readRDS(f)
 
 
 ```{r - which health data?}
+
+ind_label <- 'Mortality'
+
+
 ## load data 
 ## --> update this input data
 f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long.csv'); post_fix <- '00_2021_2050'; 
-# f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long_2050_2050.csv'); post_fix <- 'i0_2050_2050'
+f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long_2050_2050.csv'); post_fix <- 'i0_2050_2050'
 
 df <- read_csv(f, show_col_types = F) %>%
   mutate(
@@ -92,6 +96,17 @@ df_sf <- df %>%
          indicator, lc_scenario, cases) %>%
   mutate(var = indicator) %>%
   left_join(aoi, ., by = 'GSS_CODE')
+
+
+##' save a copy for viz
+##'   Here, we only save the change attributable to land use change
+if(post_fix == 'i0_2050_2050') {
+  
+  ## save a copy for viz
+  f <- here('data', paste0('viz_sf_', ind_label, '_lc_effect.rds')); print(f)
+  # "./data/viz_sf_avg_hvpd_v_lc_effect.rds"
+  saveRDS(df_sf, f)
+}
 ```
 
 
@@ -99,9 +114,6 @@ df_sf <- df %>%
 
 ```{r - data stats - average case across borough}
 str(df)
-
-
-ind_label <- 'Mortality'
 
 # Example summarisation (if df has replicates per group)
 df_summary <- df %>%

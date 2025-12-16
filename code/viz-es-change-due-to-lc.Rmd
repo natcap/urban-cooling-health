@@ -1,0 +1,174 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-12-15"
+---
+
+## load data
+
+```{r}
+
+# taking one year for illustration 
+yr <- 2050
+
+
+# load each data
+f <- "./data/viz_sf_avg_hvpd_v_lc_effect.rds"
+chg_pd <- readRDS(f) %>%
+  mutate(var = gsub('avg_hvpd_v', 'Productivity', var),
+         unit = 'Percentage.') 
+
+f <- "./data/viz_sf_avd_eng_cn_lc_effect.rds"
+chg_eng <- readRDS(f) %>%
+  mutate(var = gsub('avd_eng_cn', 'Energy saving', var),
+         unit = 'Million    £ .')
+
+f <- "./data/viz_sf_Mortality_lc_effect.rds"
+chg_mort <- readRDS(f) %>%
+  rename('value_diff' = 'cases') %>%
+  ## meaning: preventable cases
+  mutate(value_diff = -value_diff) %>%
+  mutate(year = 2050,
+         unit = 'Prev. cases') %>%
+  select(-indicator) %>%
+  select(any_of(names(chg_pd)))
+
+
+
+# combine the three datasets
+chg_comb <- rbind(chg_pd, chg_eng, chg_mort) %>%
+  mutate(year = as.character(year), 
+         year = as.numeric(year)) %>%
+  filter(year == yr)
+```
+
+
+
+## plot
+
+```{r}
+
+library(sf)
+library(purrr)
+library(patchwork) # Essential for combining rows with aligned legends
+
+# --- 1. Data Preparation ---
+data <- chg_comb %>%
+  mutate(var = factor(var, levels = rev(unique(var))))
+
+vars <- levels(data$var)
+
+# Define specific palettes
+var_palettes <- list(
+  avd_eng_cn     = c('#ffffcc','#ffeda0','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#bd0026','#800026'),
+  avg_hvpd_v     = c('#ffffff','#f0f0f0','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525','#000000'),
+  Cardiovascular = c('#f7fcf5','#e5f5e0','#c7e9c0','#a1d99b','#74c476','#41ab5d','#238b45','#006d2c','#00441b'),
+  Respiratory    = c("#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b"),
+  Suicide        = c("#fcfbfd","#efedf5","#dadaeb","#bcbddc","#9e9ac8","#807dba","#6a51a3","#54278f","#3f007d")
+)
+
+# Initialize a list to store individual row plots
+plot_list <- list()
+
+# --- 2. Loop to Create Rows ---
+for (i in seq_along(vars)) {
+  
+  v <- vars[i]
+  
+  # Filter data
+  data_subset <- data %>% filter(var == v)
+  value_unit <- unique(data_subset$unit)
+  
+  # Calculate limits
+  v_min_val <- min(data_subset$value_diff, na.rm = TRUE)
+  v_max_val <- max(data_subset$value_diff, na.rm = TRUE)
+  
+  # --- Logic for Colors & Limits ---
+  if (v_min_val >= 0) {
+    # POSITIVE ONLY: Use custom palette or default grey
+    if(v %in% names(var_palettes)) {
+      current_colors <- var_palettes[[v]] 
+    } else {
+      current_colors <- c("grey90", "grey10") 
+    }
+    current_limits <- c(v_min_val, v_max_val)
+    
+  } else {
+    # DIVERGING (Negative & Positive): 
+    # CRITICAL: To make the middle color (yellow) represent 0, 
+    # limits must be symmetric (e.g., -5 to 5).
+    limit_abs <- max(abs(c(v_min_val, v_max_val)))
+    current_limits <- c(-limit_abs, limit_abs)
+    # current_colors <- rev(c("#d7191c", "#ffffbf", "#2c7bb6"))
+    current_colors <- c("#d7191c", "#ffffbf", "#2c7bb6")
+  }
+  
+  # --- Build Single Row Plot ---
+  # We facet ONLY by columns (lc_scenario) here. The Loop handles the Rows.
+  p_layer <- ggplot() +
+    geom_sf(data = data_subset, aes(fill = value_diff), color = NA, size = 0.1) +
+    facet_grid(. ~ lc_scenario) + 
+    
+    scale_fill_gradientn(
+      colors = current_colors,
+      limits = current_limits, 
+      name = value_unit, # Legend Title
+      # name = NULL, # Legend Title
+      labels = scales::label_number(accuracy = 0.1),
+      guide = guide_colorbar(
+        title.position = "top",
+        title.hjust = 0,
+        barwidth = unit(0.3, "cm"), 
+        # Making bar height occupy most of the plot height to look "aligned"
+        barheight = unit(1.3, "cm") 
+      )
+    ) +
+    
+    # --- Theme Adjustments ---
+    theme_minimal(base_size = 9) +
+    labs(y = v) + # Use Y-axis label to mimic the row strip text
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.grid = element_blank(),
+      
+      # Legend Placement: Right side, aligned with this specific row
+      legend.position = "right",
+      legend.margin = margin(l = 0, r = 0),
+      
+      # Strip Text: Only show column headers for the FIRST plot (optional)
+      # If you want column headers on every row, remove the 'if' block below.
+      strip.text.x = if(i == 1) element_text(
+        size = 9, face = "bold", 
+        angle = -45, vjust = 0.5, hjust = 0.5,
+        margin = margin(b=0)
+        ) else element_blank(),
+      
+      
+      # Y-axis Label (acting as Row Strip): Rotate to look like a strip label
+      axis.title.y = element_text(
+        size = 9, face = "bold", 
+        angle = -45, vjust = 0.5, hjust = 0.5, 
+        margin = margin(r=0))
+    )
+  
+  # Add to list
+  plot_list[[i]] <- p_layer
+}
+
+# --- 3. Combine with Patchwork ---
+# ncol = 1 stacks them vertically
+# heights can be adjusted if rows need to be different sizes
+final_plot <- wrap_plots(plot_list, ncol = 1) 
+
+# Display
+print(final_plot)
+
+# --- 4. Save ---
+f <- file.path(dir.fig, paste0("es_change_lc_effect_map_", ymd, "-.png"))
+
+# Use ggsave on the final patchwork object
+ggsave(f, plot = final_plot, width = 7, height = 1* length(vars), units = "in", dpi = 300)
+```
+
+

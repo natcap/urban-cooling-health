@@ -171,7 +171,7 @@ extract_id <- function(path) {
 
 
 
-```{r - batch load, message=FALSE}
+```{r - batch load - taking long time ..., message=FALSE}
 
 shp_files <- list.files(
   path = dir_ucm_out, 
@@ -295,6 +295,11 @@ shp_all_ <- shp_all %>%
 shp_all_df <- shp_all_ %>%
   filter(!is.na(year))
 
+
+## save a copy for viz
+f <- paste0('./data/', 'ucm_output_shp_all_df.rds'); f
+saveRDS(shp_all_df, f)
+
 ```
 
 
@@ -404,6 +409,10 @@ func_calculate_change_from_yri_lc0 <- function(
   return(if (isTRUE(return_sf)) df_chg_sf_i0 else df_stats_i0)
   
 }
+
+
+# save this function for later use
+saveRDS(func_calculate_change_from_yri_lc0, "./code/func_calculate_change_from_yri_lc0.rds")
 ```
 
 
@@ -466,6 +475,10 @@ func_calculate_change_from_yr0_lc0 <- function(
   return(df_stats_00)
 
 }
+
+
+# save this function for later use
+saveRDS(func_calculate_change_from_yr0_lc0, "./code/func_calculate_change_from_yr0_lc0.rds")
 ```
 
 
@@ -512,7 +525,10 @@ func_combine_two_change_dfs <- function(
   
   return(stat_both_l)
   
-  }
+}
+
+# save this function for later use
+saveRDS(func_combine_two_change_dfs, "./code/func_combine_two_change_dfs.rds")
 ```
 
 
@@ -680,7 +696,7 @@ func_ggsave(f, w = 7/2, h = 5, dpi = 300, save_png = T)
 
 
 
-```{r - one: lc-led change - function}
+```{r - one: lc-led change - * function}
 
 func_plot_change_point <- function(data, plot_avg = FALSE){
 
@@ -854,6 +870,9 @@ func_plot_change_point <- function(data, plot_avg = FALSE){
   return(if (isTRUE(plot_avg)) p2 else p1)
 
 }
+
+# save this function for later use
+saveRDS(func_plot_change_point, "./code/func_plot_change_point.rds")
 ```
 
 
@@ -1380,6 +1399,9 @@ func_plot_line <- function(
 
 }
 
+
+# save this function for later use
+saveRDS(func_plot_line, "./code/func_plot_line.rds")
 ```
 
 
@@ -1452,6 +1474,9 @@ func_plot_map <- function(data) {
   func_ggsave(f, w = 7, h = 7, dpi = 500, save_png = T)
 
 }
+
+# save this function for later use
+saveRDS(func_plot_map, "./code/func_plot_map.rds")
 
 ```
 
