@@ -914,6 +914,11 @@ ggplot() +
 density_scale <- 0.01
 y_floor <- 0 
 
+# Define where you want the arrows vertically
+arrow_y <- 0  # Adjust this value to move arrows up/down
+arrow_len <- 0.1 # Length of the arrow tip
+
+
 #' --- alternatively, use `geom_ribbon`
 total_y_range <- max(df_cont_curve$y, na.rm=T) - min(df_cont_curve$y, na.rm=T)
 density_height <- 0.15 * total_y_range  # Density will take up 15% of the curve's height
@@ -953,16 +958,46 @@ ggplot() +
             color = "#2c7bb6", linewidth = 1) +
   
   # --- Layer 4: Reference Lines ---
-  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") + 
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50", linewidth = 0.3) + 
   geom_vline(xintercept = 0, linetype = "dotted", color = "gray50") +
   
   # --- Aesthetics ---
   facet_wrap(~Metric, scales = "fixed") + 
   
+  # Automatically puts a tick every 1 unit
+  scale_x_continuous(breaks = scales::breaks_width(1)) + 
+  
+  # --- 1. Arrow pointing Left (Negative / Less Vulnerable) ---
+  annotate("segment", 
+           x = -0.05, xend = -2,       # Start near 0, point to -2
+           y = arrow_y, yend = arrow_y, 
+           colour = "gray40", alpha = 0.6, 
+           arrow = arrow(length = unit(arrow_len, "cm"), type = "open")) +
+  
+  annotate("text", 
+           x = -1.5, y = arrow_y + 0.01, # Position text above arrow
+           label = "Less Vulnerable", 
+           size = 2.2, color = "gray40", fontface = "italic") +
+
+  # --- 2. Arrow pointing Right (Positive / More Vulnerable) ---
+  annotate("segment", 
+           x = 0.05, xend = 2,         # Start near 0, point to 2
+           y = arrow_y, yend = arrow_y, 
+           colour = "gray40", alpha = 0.6, 
+           arrow = arrow(length = unit(arrow_len, "cm"), type = "open")) +
+  
+  annotate("text", 
+           x = 1.5, y = arrow_y + 0.01, 
+           label = "More Vulnerable", 
+           size = 2.2, color = "gray40", fontface = "italic") + 
+
+  
+  
+  
   labs(title = gam_plot_title,
        caption = paste0("Curves represent the partial effect of each metric (centered at mean);",
                         "Gray area = Distribution of observed data density"),
-       x = "Vulnerability Metric (Standardized Z-Score)",
+       x = "Vulnerability (Standardized Z-Score)",
        y = "Predicted Change in Cases (Relative to Mean)") +
   
   # theme_minimal(base_size = 11) +
