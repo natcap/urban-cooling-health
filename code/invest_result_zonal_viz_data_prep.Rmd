@@ -297,7 +297,6 @@ saveRDS(shp_all_df, f)
 ### Energy 
 
 ```{r - batch load}
-
 dir.zonal <- file.path(dir_ucm_out, 'zonal_stats_lsoa')
 
 # batch load data
@@ -305,6 +304,12 @@ library(purrr)
 
 shp_files <- list.files(path = dir.zonal, pattern = ".*_energy_stats.gpkg$", full.names = TRUE, recursive = F)
 cat('There are', length(shp_files), 'files.')
+
+basename(shp_files)
+```
+
+
+```{r}
 
 # --- helper function for clean IDs ---
 extract_id <- function(path) {
@@ -332,10 +337,6 @@ shp_all <- map2_dfr(
   .id = NULL
 )
 
-# # result: one sf object
-# 
-# f <- file.path(dir_ucm_out, 'ucm_output_postprocess', 'uhi_results_combined_sf.rds')
-# saveRDS(object = shp_all, file = f)
 ```
   
   
@@ -369,6 +370,100 @@ shp_all_ <- shp_all %>%
     lc_scenario = case_when(
       lc_scenario == 'scenario3'  ~ 'scenario2_TR',
       lc_scenario == 'scenario2'  ~ 'scenario3_TO',
+      
+      # fix errors
+      lc_scenario == 'work_and_energy_runs' ~ str_extract(id, "scenario\\d+_\\d+"),
+      
+      TRUE                        ~ lc_scenario
+    ) 
+  ) %>%
+  as.data.frame()
+
+unique(shp_all_$lc_scenario)
+
+## filter out 20_5, and 22_5, 25_2 for now 
+shp_all_lsoa <- shp_all_ %>%
+  filter(!is.na(year))
+
+
+## save a copy for viz
+f <- paste0('./data/', 'ucm_output_shp_stats_energy_by_lsoa.rds'); f
+saveRDS(shp_all_lsoa, f)
+
+```
+
+
+
+### Productivity 
+
+```{r - batch load}
+dir.zonal <- file.path(dir_ucm_out, 'new_work_intensity/zonal_stats_lsoa')
+
+# batch load data
+library(purrr)
+
+shp_files <- list.files(path = dir.zonal, pattern = ".*_zonal_stats_lsoa.csv$", full.names = TRUE, recursive = F)
+cat('There are', length(shp_files), 'files.')
+```
+
+
+```{r - batch load}
+# --- helper function for clean IDs ---
+extract_id <- function(path) {
+  # 1) get just filename (no folder, no extension)
+  fname <- tools::file_path_sans_ext(basename(path))
+  
+  # 2) replace pieces according to your example
+  fname <- str_replace(fname, "_zonal_stats_lsoa", "")
+  
+  # 3) clean decimals
+  fname <- str_replace(fname, "(\\d+)\\.0deg", "\\1")   # 20.0deg → 20
+  fname <- str_replace(fname, "(\\d+)\\.0uhi", "\\1")   # 2.0uhi  → 2
+  
+  return(fname)
+}
+
+# --- read and combine ---
+shp_all <- map2_dfr(
+  shp_files,
+  map_chr(shp_files, extract_id),
+  ~ readr::read_csv(.x, show_col_types = F) %>% 
+    rename('GSS_CODE' = 'id') %>% # rename the GEOID column in case being overwritten 
+    mutate(id = .y),
+  .id = NULL
+)
+```
+  
+  
+  
+```{r - re-code}
+
+## pick the baseline year for later comparison 
+year_baseline <- 2021
+
+
+## tidy and re-code data 
+shp_all_ <- shp_all %>%
+  st_drop_geometry() %>%
+  select(-any_of(c("Neighborhood_name", "metric_category"))) %>%
+  mutate(
+
+    # re-code: climate condition --> year
+    year = case_when(
+      str_detect(id, "_20_2")            ~ '2020',
+      str_detect(id, "_22_2|22deg_2uhi") ~ '2021',
+      str_detect(id, "_22_5|22deg_5uhi") ~ '2030',
+      str_detect(id, "_25_5|25deg_5uhi") ~ '2050',
+      str_detect(id, "_28_5|28deg_5uhi") ~ '2070', 
+      TRUE ~ NA_character_
+    ) 
+  ) %>%
+
+  ## re-code: change scenario-3 (tree risk) as scenario-2
+  mutate(
+    lc_scenario = case_when(
+      lc_scenario == 'scenario3'  ~ 'scenario2_TR',
+      lc_scenario == 'scenario2'  ~ 'scenario3_TO',
       TRUE                        ~ lc_scenario
     ) 
   ) %>%
@@ -381,7 +476,7 @@ shp_all_lsoa <- shp_all_ %>%
 
 
 ## save a copy for viz
-f <- paste0('./data/', 'ucm_output_shp_stats_energy_by_lsoa.rds'); f
+f <- paste0('./data/', 'ucm_output_shp_stats_productivity_by_lsoa.rds'); f
 saveRDS(shp_all_lsoa, f)
 
 ```
