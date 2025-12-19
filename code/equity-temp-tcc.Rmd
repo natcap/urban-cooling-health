@@ -22,7 +22,7 @@ library(sf)
 
 ## Data
 
-```{r - temp data}
+```{r}
 metrics <- c(
   "pIncomeDeprivation",
   "p5under",
@@ -40,6 +40,27 @@ metrics_to_remove <- c(
 
 
 
+# lc_snr <- 'scenario1'
+# lc_snr <- 'scenario2_TR'
+# lc_snr <- 'scenario4_10'
+lc_snr <- 'scenario43'
+
+
+yr <- 2050
+```
+
+
+```{r}
+
+f <- './data/Social_Vulnerability_Index_london_q.gpkg'
+aoi_lsoa <- st_read(f, quiet = T) %>%
+  rename('GSS_CODE' = 'id') %>%
+  mutate(GSS_CODE = as.character(GSS_CODE)) 
+
+```
+
+
+```{r temp data}
 ##' load data
 ##' generated from `gcm-data-clip-stats-viz.Rmd`
 f <- here('data/temp_svi.RDS')
@@ -60,7 +81,6 @@ d_svi <- temp_change_group %>%
 
 
 ```{r}
-
 df_svi <- d_svi %>%
   mutate(across(
     all_of(metrics),
@@ -84,7 +104,23 @@ df_svi <- d_svi %>%
 hist(df_svi$SVI)
 ```
 
-```{r select the y variable}
+
+```{r SVI}
+
+## save a copy of SVI data
+svi <- df_svi %>%
+  select(geoid, starts_with("SVI")) %>%
+  distinct(geoid, .keep_all = T) %>%
+  mutate(geoid = as.character(geoid)) %>%
+  st_drop_geometry()
+
+saveRDS(svi, file = './data/svi_lsoa.rds')
+
+```
+
+
+
+```{r select the y - temp}
 
 yi <- 'temp_change'; ylab = 'Temperature (°C)'     # change in temperature: Year 2050 - Year 2021
 # yi <- 'temp_future'; ylab = 'Temperature (°C)'     # temperature in 2050
@@ -93,8 +129,7 @@ yi <- 'temp_change'; ylab = 'Temperature (°C)'     # change in temperature: Yea
 
 
 
-```{r select the y variable - tcc data}
-
+```{r select the y - tcc data}
 # yi <- 'TCC';         ylab = 'Tree cover (%)'       # tree cover percentage in 2024
 
 # dir_g <- "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs"
@@ -102,8 +137,53 @@ yi <- 'temp_change'; ylab = 'Temperature (°C)'     # change in temperature: Yea
 # d_svi <- st_read(f_aoi, quiet = T) %>%
 #   rename('geoid' = 'id', 
 #          'TCC' = 'tree_pct')
-
 ```
+
+
+
+
+```{r select the y - pd}
+
+yi <- 'Productivity';         ylab = 'Productivity (%)'       # 
+
+
+# dir_ucm_out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs'
+# f <- file.path(dir_ucm_out, 'new_work_intensity/zonal_stats_lsoa', 'work_productivity_42_zonal_stats_long_lsoa.csv')
+# d_pd <- readr::read_csv(f, show_col_types = F) %>%
+#   select(-raster) %>%
+#   rename('GSS_CODE' = 'id') %>%
+#   mutate(
+#     year = case_when(
+#       str_detect(scenario, "20_2") ~ 2020,
+#       str_detect(scenario, "22_2") ~ 2021,
+#       str_detect(scenario, "22_5") ~ 2030,
+#       str_detect(scenario, "25_5") ~ 2050,
+#       str_detect(scenario, "28_5") ~ 2070,
+#       TRUE ~ NA
+#     )
+#   ) %>%
+#   filter(lc_scenario == lc_snr & 
+#            year %in% c(2021, 2050))
+
+
+## the same data - path 2
+d_pd <- readRDS('./data/ucm_output_shp_stats_productivity_by_lsoa.rds') %>%
+  filter(lc_scenario == lc_snr & year %in% c(2021, 2050)) %>%
+  select(-c(2:overall_rank)) %>%
+  mutate(GSS_CODE = as.character(GSS_CODE)) %>%
+  left_join(., aoi_lsoa, by = 'GSS_CODE') %>%
+  rename('Productivity' = 'mean',
+         'geoid' = 'GSS_CODE',
+         'scenario' = 'lc_scenario') %>%
+  # add SVI data
+  left_join(., svi, by = 'geoid') %>%
+  as.data.frame()
+
+df_svi <- d_pd
+```
+
+
+
 
 
 ```{r continious}
@@ -125,7 +205,7 @@ df_cont_scaled <- df_cont %>%
 
 # 1. Reshape the data from Wide to Long
 df_cat <- df_svi %>%
-  select(geoid, all_of(yi), ends_with("_q"), any_of(c('scenario', 'year'))) %>%   # Select 'cases' and all columns ending in '_q'
+  select(geoid, any_of(yi), ends_with("_q"), any_of(c('scenario', 'year'))) %>%   # Select 'cases' and all columns ending in '_q'
   # rename('yi' = yi) %>%
   pivot_longer(
     cols = ends_with("_q"),            # Take all the quintile columns
@@ -231,7 +311,7 @@ y_positions <- df_cat2 %>%
   mutate(
     upper_cap = q3 + 1.5 * iqr,
     max_y     = q3,
-    y_pos = max_y * y_pos_scale) 
+    y_pos = ifelse(max_y>1, max_y * y_pos_scale, max_y*1.005)) 
 
 # 4. Merge Letters with Positions
 cld_labels <- left_join(cld_data, y_positions, by = c("Metric", "Quintile"))
@@ -265,7 +345,7 @@ func_plot_cld <- function(data, data_letter) {
     facet_wrap(~Metric, scales = "free_y") +
     
     # Expand Y axis slightly to fit the letters
-    scale_y_continuous(expand = expansion(mult = c(0.15, 0.2))) +
+    scale_y_continuous(expand = expansion(mult = c(0.15, .2))) + # 0.15, 0.2
     
     coord_cartesian(ylim = c(lower_bound, upper_bound)) + # Zooms the view without deleting data
     
@@ -282,7 +362,7 @@ func_plot_cld(data = df_cat2, data_letter = cld_labels) +
     # title = paste0("Differences in ", yi, " by quintile"),
     # caption = "Groups sharing the same letter are not significantly different (Dunn's Test, p < 0.05)",
     y = ylab)
-f <- paste0('./figures/', 'temp_equity_q_cld_', yi, '_', ymd, '.png')
+f <- paste0('./figures/', paste('equity', yi, lc_snr, yr, 'q_cld', ymd, sep = '_'), '.png'); f
 ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
 
@@ -301,7 +381,7 @@ cld_labels_svi <- cld_labels %>%
 func_plot_cld(data = df_cat2_svi, data_letter = cld_labels_svi) +
   theme(strip.text = element_blank()) +
   labs(x = 'SVI quintile', y = ylab)
-f <- paste0('./figures/', 'temp_equity_q_cld_', yi, '_SVI_', ymd, '.png')
+f <- paste0('./figures/', paste('equity', yi, lc_snr, yr, 'q_cld_SVI', ymd, sep = '_'), '.png'); f
 ggsave(plot = last_plot(), filename = f, width = 3.5, height = 3, units = 'in', dpi = 300)
 
 ```
@@ -539,7 +619,7 @@ ggplot() +
   )
 
 
-f <- paste0('./figures/', 'temp_equity_esGAM_', yi, '_', ymd, '_scaled.png')
+f <- paste0('./figures/', paste('equity', yi, lc_snr, yr, 'gam', ymd, sep = '_'), '_scaled.png'); f
 ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
 
