@@ -86,26 +86,31 @@ map <-
   tm_shape(shp = bld_stat_sf) +
   tm_polygons("area_pct", 
               fill.scale = tm_scale(values = "brewer.oranges"),
+              fill.legend = tm_legend(
+                title = "% of\ntype total",
+                show = TRUE
+            ),
               fill.free = T) +
-  tm_facets(by = "type_name", ncol = 2) +
+  tm_facets(by = "type_name", ncol = 3) +
   tm_layout(legend.show = TRUE,
             legend.outside = T, 
             component.autoscale = F, 
             # shrink legend
-            legend.text.size  = .5,   # shrink legend labels
-            # legend.title.size = 1,   # shrink legend title
+            legend.text.size  = .4,   # shrink legend labels
+            legend.title.size = .5,   # shrink legend title
             
             ## continuous legends are treated as histograms/colorbars
             # legend.hist.height = 0.4,  # for continuous color scales
             # legend.hist.width  = 0.4,
-            # inner.margins = c(top, left, bottom, right)
-            inner.margins = c(0.01, 0.01, 0.01, 0.1),  # extra space on right
+            # inner.margins = c(bottom, left, top, right)
+            inner.margins = c(0.01, 0.01, 0.05, 0.2),  # extra space on right
+            outer.margins = c(0, 0, 0, 0),
             legend.frame = F, 
             legend.position = c("right", "bottom"))
 # map
 
 # Save as PNG
-f <- paste0(here(), "/figures/building_stat_", ymd, "-2-pct.png"); f
-tmap_save(tm = map, filename = f, width = 7, height = 9, units = "in", dpi = 300)
+f <- paste0(here(), "/figures/building_stat_", ymd, "_pct.png"); f
+tmap_save(tm = map, filename = f, width = 7, height = 3.6, units = "in", dpi = 300)
 ```
 

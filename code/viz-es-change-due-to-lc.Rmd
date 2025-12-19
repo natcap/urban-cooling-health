@@ -4,23 +4,26 @@ output: html_document
 date: "2025-12-15"
 ---
 
-## load data
+## load data - borough level
+
+  All the input data were generated from `invest_result_zonal_viz_[].Rmd`
 
 ```{r}
 
 # taking one year for illustration 
 yr <- 2050
+# yr <- 2070
 
 
 # load each data
-f <- "./data/viz_sf_avg_hvpd_v_lc_effect.rds"
+f <- "./data/viz_sf_avg_hvpd_v_lc_effect_borough.rds"
 chg_pd <- readRDS(f) %>%
   mutate(var = gsub('avg_hvpd_v', 'Productivity', var),
          unit = 'Percentage.') 
 
-f <- "./data/viz_sf_avd_eng_cn_lc_effect.rds"
+f <- "./data/viz_sf_energy_sav_sum_lc_effect_borough.rds"
 chg_eng <- readRDS(f) %>%
-  mutate(var = gsub('avd_eng_cn', 'Energy saving', var),
+  mutate(var = gsub('avd_eng_cn|energy_sav_sum', 'Energy saving', var),
          unit = 'Million    £ .')
 
 f <- "./data/viz_sf_Mortality_lc_effect.rds"
@@ -165,7 +168,7 @@ final_plot <- wrap_plots(plot_list, ncol = 1)
 print(final_plot)
 
 # --- 4. Save ---
-f <- file.path(dir.fig, paste0("es_change_lc_effect_map_", ymd, "-.png"))
+f <- file.path(dir.fig, paste0("es_change_lc_effect_map_", yr, '_', ymd, ".png"))
 
 # Use ggsave on the final patchwork object
 ggsave(f, plot = final_plot, width = 7, height = 1* length(vars), units = "in", dpi = 300)

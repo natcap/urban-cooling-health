@@ -37,10 +37,13 @@ aoi_lsoa <- st_read(f, quiet = T) %>%
 
   `avd_eng_cn` - (optional) Avoided energy consumption (kWh or $ if optional energy cost input column was provided in the Energy Consumption Table).
 
-```{r - data stats - by borough}
+
+### Load data - borough level 
+
+```{r}
 
 sp_scale = "borough"
-ind <- 'energy_sav'
+ind <- 'energy_sav_sum' # --> sum or average
 ind_scale <- 1/10^6  # convert to million
 ind_label <- "avoided energy cost (Million £)"
 
@@ -65,7 +68,9 @@ stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
 ```
 
 
-```{r - data stats - by LSOA}
+### Load data - lsoa level 
+
+```{r}
 
 sp_scale = "lsoa"
 ind <- "energy_sav_sum"; 

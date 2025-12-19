@@ -27,7 +27,7 @@ theme_set(theme_bw(base_size = 11))
 ```
 
 
-## Borough-levle Data
+## Borough-levle: temp + energy + pd
 
 ### CVS data from zonal stats
 
@@ -297,6 +297,7 @@ saveRDS(shp_all_df, f)
 ### Energy 
 
 ```{r - batch load}
+
 dir.zonal <- file.path(dir_ucm_out, 'zonal_stats_lsoa')
 
 # batch load data
@@ -407,7 +408,7 @@ cat('There are', length(shp_files), 'files.')
 ```
 
 
-```{r - batch load}
+```{r}
 # --- helper function for clean IDs ---
 extract_id <- function(path) {
   # 1) get just filename (no folder, no extension)
