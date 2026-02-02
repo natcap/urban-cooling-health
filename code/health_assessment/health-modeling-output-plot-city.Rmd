@@ -48,6 +48,7 @@ df_all <- map_dfr(fs, ~ read_csv(.x, show_col_types = FALSE) %>%
   mutate(Scenario = str_extract(.x, "s\\d+_s\\d+(?:_\\d+_\\d+)?")))
   # mutate(Scenario = str_extract(.x, "s\\d+_s\\d+(?=/|$)")))
 causes <- setdiff(names(df_all), c("draw", "Scenario"))
+causes <- sort(causes)
 causes
 
 ```
@@ -94,8 +95,8 @@ df_all_ <- df_all %>%
   
 ```{r - which data?}
 
-what_effect <- 'climate+lc effect'; year_range <- '2021_2050' ## yr_0 & lc_0
-# what_effect <- 'lc effect';         year_range <- '2050_2050' ## yr_i & lc_0
+# what_effect <- 'climate+lc effect'; year_range <- '2021_2050' ## yr_0 & lc_0
+what_effect <- 'lc effect';         year_range <- '2050_2050' ## yr_i & lc_0
 # what_effect <- 'lc effect';         year_range <- '2070_2070' ## yr_i & lc_0 # --> the result is the same as '2050_2070'
 
 df_all_filter <- df_all_ %>%
@@ -136,7 +137,7 @@ p <- ggplot(long, aes(x = value, y = cause)) +
   
   geom_violin(aes(group = interaction(cause, lc_scenario)), fill="lightblue",
               color = NA, linewidth = 0, alpha = 0.9, trim = FALSE) +
-  facet_wrap(~ lc_scenario) +
+  facet_wrap(~ lc_scenario, scale = 'free_x') +
   
   
   # 95% interval (thin bar)
@@ -175,14 +176,19 @@ long2 <-
   mutate(cause = str_to_title(cause))
 
 # keep original cause order as in the first file
-first_cols <- names(read_csv(fs[1], n_max = 0, show_col_types = FALSE)) %>%
+cols_1 <- names(read_csv(fs[1], n_max = 0, show_col_types = FALSE)) %>%
   str_to_title()
 
-cause_order <- setdiff(first_cols, "Draw")
+cols_2 <- names(read_csv(fs[2], n_max = 0, show_col_types = FALSE)) %>%
+  str_to_title()
+
+cols_name <- union(cols_1, cols_2)
+cause_order <- setdiff(cols_name, "Draw") %>% sort()
+cause_label <- gsub('_', ' ', cause_order)
 
 long2 <- long2 |>
   mutate(
-    cause = factor(cause, levels = cause_order),
+    cause = factor(cause, levels = cause_order, labels = cause_label),
     lc_scenario   = factor(lc_scenario)
   ) %>%
   filter(year %in% year_range)
@@ -285,7 +291,7 @@ if (what_effect == 'climate+lc effect') {
                  na.rm = TRUE,
                  linewidth = 0.5) +
     geom_point(
-      position = pd, shape = 1, size = 2, stroke = 1, alpha = 0.8) +
+      position = pd, shape = 16, size = 2, stroke = 1, alpha = 0.8) +
     geom_hline(yintercept = 0, linetype = 'dashed', colour = 'gray', show.legend = FALSE) +
     labs(x = NULL, y = "Preventable deaths (city total)")
 }
@@ -336,16 +342,52 @@ p_facet <- p2 +
   scale_y_continuous(expand = expansion(mult = c(0.06, 0.08))) +
   theme(axis.text.x = element_blank(), 
         axis.ticks.x = element_blank(),
-        panel.border = element_rect(linewidth=0.5)
+        panel.border = element_rect(linewidth=0.25)
         )
 p_facet
+
+## how many rows there would be in the facet plot
+n_rows_facet <- ceiling(length(unique(stats_p$cause))/3)
 
 #-----------------------------
 # 4) Save
 #-----------------------------
 dir.create(dir_fig, showWarnings = FALSE, recursive = TRUE)
 f <- file.path(dir_fig, paste0("health_monte_carlo_violins_by_cause_Scenario_dodged_", year_range, '_', ymd, ".png")); f
-ggsave(filename = f, plot = p_facet, width = 7, height = 3, dpi = 300)
+ggsave(filename = f, plot = p_facet, width = 7, height = 2*n_rows_facet, dpi = 300)
+
+```
+
+
+```{r - plot all cause}
+
+getwd()
+
+#' load function from `invest_result_zonal_viz_1_temp.Rmd` 
+func_plot_change_point <- readRDS(file = "./code/func_plot_change_point.rds")
+
+
+sp_scale = "borough"
+year_baseline <- 2021
+ind <- 'All cause'
+ind_label <- "Preventable deaths (city total)"
+
+
+stat_both_l <- stats_p %>%
+  rename('year' = 'yr_end',
+         'chg' = 'mean',
+         'ind_label' = 'cause') %>%
+  dplyr::filter(ind_label == ind) %>%
+  ## convert "Excess deaths" to "Preventable deaths" to indicate "benefits" of nature
+  
+  select(1:sd, se, ci_lower, ci_upper, mean_text, everything()) %>%
+  ## convert "Excess deaths" to "Preventable deaths" to indicate "benefits" of nature
+  pivot_longer(names_to = 'col', values_to = 'value', cols = chg:mean_text) %>%
+  mutate(value = -value) %>%
+  pivot_wider(names_from = 'col', values_from = 'value') %>%
+  mutate(chg = round(chg))
+
+func_plot_change_point(data = stat_both_l, level = sp_scale, digits = 0, plot_h = 4, plot_avg = T)
 
 ```
 
