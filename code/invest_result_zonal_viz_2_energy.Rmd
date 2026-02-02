@@ -6,7 +6,7 @@ date: "2025-09-16"
 
 
 -->
---> Note: run the `invest_result_zonal_stats_viz_temp.Rmd` first, before run this script. 
+--> Note: run the `invest_result_zonal_viz_1_temp.Rmd` first, before run this script. 
 --> 
 
 

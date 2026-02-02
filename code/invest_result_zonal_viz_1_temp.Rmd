@@ -455,7 +455,11 @@ func_ggsave(f, w = 7/2, h = 5, dpi = 300, save_png = T)
 
 ```{r - one: lc-led change - * function}
 
-func_plot_change_point <- function(data, level = '', plot_avg = FALSE){
+func_plot_change_point <- function(data, 
+                                   level = '', 
+                                   digits = 2, 
+                                   plot_h = 5, # 'in'
+                                   plot_avg = FALSE){
 
   stat_chg_per_lc_yr <- 
     data %>%
@@ -490,7 +494,7 @@ func_plot_change_point <- function(data, level = '', plot_avg = FALSE){
     # 
     
     geom_text(
-        aes(label = sprintf("%+.2f", chg)),
+        aes(label = sprintf(paste0("%+.", digits, 'f'), chg)),
         position = position_dodge(width = 0.9),
         hjust = -0.2,
         size = 3, show.legend = F,
@@ -536,7 +540,7 @@ func_plot_change_point <- function(data, level = '', plot_avg = FALSE){
       ) 
   p1
   f <- file.path(dir.fig, paste("temp_scenarios_fromshp", "line_dif", ind, 'both02', level, ymd, ".png", sep = '_'))
-  func_ggsave(f, w = 7/2, h = 5, dpi = 300, save_png = T)
+  func_ggsave(f, w = 7/2, h = plot_h, dpi = 300, save_png = T)
   
 
   
@@ -577,7 +581,7 @@ func_plot_change_point <- function(data, level = '', plot_avg = FALSE){
     ) +
     
     geom_text(
-        aes(label = sprintf("%+.2f", chg)),
+        aes(label = sprintf(paste0("%+.", digits, 'f'), chg)),
         position = position_dodge(width = 0.9),
         # hjust = -0.2, # if using geom_point
         vjust = -0.5,
@@ -620,7 +624,7 @@ func_plot_change_point <- function(data, level = '', plot_avg = FALSE){
       panel.grid.minor = element_blank()
       ) 
   f <- file.path(dir.fig, paste("temp_scenarios_fromshp", "line_dif", ind, 'both03', level, ymd, ".png", sep = '_'))
-  ggsave(filename = f, plot = p2, width = 7/2, height = 5, dpi = 300)
+  ggsave(filename = f, plot = p2, width = 7/2, height = plot_h, dpi = 300)
   
   
   ## which plot to show in the window
