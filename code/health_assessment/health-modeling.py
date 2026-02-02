@@ -22,6 +22,8 @@ USAGE (example):
         --baseline_deaths_cardio path/to/baseline_deaths_cardio.tif \
         --baseline_deaths_resp path/to/baseline_deaths_resp.tif \
         --baseline_deaths_self_harm path/to/baseline_deaths_self_harm.tif \
+        --baseline_deaths_all_cause path/to/baseline_deaths_all_cause.tif \
+        --baseline_deaths_mental_disorder path/to/baseline_deaths_mental_disorder.tif \
         --out_dir ./outputs \
         --n_draws 1000
 
@@ -68,9 +70,11 @@ class CauseConfig:
 
 # Default cause-specific relative risks (can be customized)
 DEFAULT_CAUSES = [
+    CauseConfig("all_cause",      1.0200, 1.0140, 1.0260), 
+    CauseConfig("mental_disorder",1.0260, 1.0130, 1.0400),
     CauseConfig("cardiovascular", 1.0344, 1.0310, 1.0378),
     CauseConfig("respiratory",    1.0360, 1.0318, 1.0402),
-    CauseConfig("self_harm",      1.0100, 1.0000, 1.0200),
+    CauseConfig("self_harm",      1.0120, 1.0030, 1.0210), # this was wrong as we used (IRR) rather than RR
 ]
 
 # -----------------------------
@@ -155,7 +159,7 @@ def _looks_like_bng(crs) -> bool:
         or "Longitude of natural origin" in s and "-2" in s
         or "False easting" in s and "400000" in s
         or "False northing" in s and "-100000" in s
-    )  # <<< EDIT
+    )  
 
 def _coerce_to_ref_if_local(src_crs, ref_crs):
     """If source CRS is missing/LOCAL but looks like BNG, assume reference CRS."""
@@ -331,8 +335,13 @@ def force_align_with_reproject(aligned_files: Dict[str, str], reference_file: st
                 src_crs = _coerce_to_ref_if_local(src.crs, ref_crs)
                 dst = np.full(ref_shape, np.nan, dtype=np.float32)
                 # detect “counts” layers by key name
-                is_count = key in ("pop_baseline", "pop_scenario",
-                                   "baseline_deaths_cardio", "baseline_deaths_resp", "baseline_deaths_self_harm")  
+                is_count = key in ("pop_baseline", 
+                                   "pop_scenario",                   
+                                   "baseline_deaths_all_cause",
+                                   "baseline_deaths_mental_disorder",
+                                   "baseline_deaths_cardio", 
+                                   "baseline_deaths_resp", 
+                                   "baseline_deaths_self_harm")  
                 if is_count:
                     # Convert counts -> densities (per m²), resample densities with average, then back to counts
                     area_src = _pixel_area(src.transform)
@@ -557,6 +566,9 @@ def main(args):
         "t_scenario": args.t_scenario,
         "pop_baseline": args.pop_baseline,
         "pop_scenario": args.pop_scenario,
+        
+        "baseline_deaths_all_cause": args.baseline_deaths_all_cause,
+        "baseline_deaths_mental_disorder": args.baseline_deaths_mental_disorder,
         "baseline_deaths_cardio": args.baseline_deaths_cardio,
         "baseline_deaths_resp": args.baseline_deaths_resp,
         "baseline_deaths_self_harm": args.baseline_deaths_self_harm,
@@ -624,6 +636,10 @@ def main(args):
             baseline_deaths = arrays["baseline_deaths_resp"]
         elif cause.name == "self_harm":
             baseline_deaths = arrays["baseline_deaths_self_harm"]
+        elif cause.name == "all_cause":
+            baseline_deaths = arrays["baseline_deaths_all_cause"]
+        elif cause.name == "mental_disorder":
+            baseline_deaths = arrays["baseline_deaths_mental_disorder"]
         else:
             print(f"Warning: Unknown cause '{cause.name}', skipping")
             continue
@@ -681,6 +697,10 @@ def main(args):
                 baseline_deaths = arrays["baseline_deaths_resp"]
             elif cause.name == "self_harm":
                 baseline_deaths = arrays["baseline_deaths_self_harm"]
+            elif cause.name == "all_cause":
+                baseline_deaths = arrays["baseline_deaths_all_cause"]
+            elif cause.name == "mental_disorder":
+                baseline_deaths = arrays["baseline_deaths_mental_disorder"]
             else:
                 print(f"Warning: Unknown cause '{cause.name}', skipping Monte Carlo")
                 continue
@@ -774,9 +794,13 @@ if __name__ == "__main__":
     parser.add_argument("--t_scenario", required=True, help="Scenario temperature raster (degC)")
     parser.add_argument("--pop_baseline", required=True, help="Baseline population raster (persons/pixel)")
     parser.add_argument("--pop_scenario", required=True, help="Scenario population raster (persons/pixel)")
+    
     parser.add_argument("--baseline_deaths_cardio", required=True, help="Baseline deaths raster, cardiovascular (deaths/pixel/year)")
     parser.add_argument("--baseline_deaths_resp", required=True, help="Baseline deaths raster, respiratory (deaths/pixel/year)")
     parser.add_argument("--baseline_deaths_self_harm", required=True, help="Baseline deaths raster, self_harm (deaths/pixel/year)")
+    parser.add_argument("--baseline_deaths_all_cause", required=True, help="Baseline deaths raster, all_cause (deaths/pixel/year)")
+    parser.add_argument("--baseline_deaths_mental_disorder", required=True, help="Baseline deaths raster, mental_disorder (deaths/pixel/year)")
+       
     parser.add_argument("--out_dir", required=True, help="Output directory")
     # Optional arguments
     parser.add_argument("--align_to", default=None, help="Optional path to raster used as alignment template")

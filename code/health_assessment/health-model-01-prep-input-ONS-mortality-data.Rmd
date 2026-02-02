@@ -4,7 +4,10 @@ output: html_document
 date: "2025-09-21"
 ---
 
-```{r setup, include=FALSE}
+
+## Setup
+
+```{r include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(readr)
@@ -15,19 +18,27 @@ library(stringr)
 library(tmap)
 ```
 
-## R Markdown
+
+## Load data
 
   Download data from [UK's Office for National Statistics](https://www.nomisweb.co.uk/datasets/mortsa)
   
   Be sure to download data using "Database - Tab separated values (.tsv)"
 
 
-## Load data
-
 ```{r - df}
+
+f_data <- '387056911188607_data.tsv'
+f_geog <- '387056911188607_geog.tsv'
+
+f_data <- '842881776194293_data.tsv' # updated on 1/19/2026
+f_geog <- '842881776194293_geog.tsv'
+  
 # read TSV
-f <- file.path('./data/health-data', '387056911188607_data.tsv')
-df <- read_tsv(f, show_col_types = FALSE)
+f <- file.path('./data/health-data', f_data)
+df <- read_tsv(f, show_col_types = FALSE) %>%
+  as.data.frame() %>%
+  rename_all(tolower)
 
 df_dup <- df %>%
   group_by(geogcode) %>%
@@ -35,7 +46,6 @@ df_dup <- df %>%
   ungroup()
 
 df_sub <- df %>%
-  as.data.frame() %>%
   dplyr::filter(date == 2023) %>%
   dplyr::filter(str_starts(geogcode, "E09"))
 
@@ -46,13 +56,15 @@ df_uni <- df %>%
 
 names(df_uni)
 unique(df_uni$`cause of deat`)
+unique(df_uni$date)
+yr_min <- min(unique(df_uni$date)); yr_min
 ```
 
 
 
 
 ```{r - geo}
-f <- file.path('./data/health-data', '387056911188607_geog.tsv')
+f <- file.path('./data/health-data', f_geog)
 df_geo <- read_tsv(f, show_col_types = FALSE) %>%
   separate_wider_delim(description, delim = ":", 
                        names = c("area_code", "area_name"), 
@@ -98,7 +110,6 @@ geo_bor_sf <- gla_bor %>%
 
 
 ```{r - merge}
-
 unique(df_uni$flag)
 
 df_uni_geo_comb <- df_uni %>%
@@ -112,15 +123,18 @@ unique(df_uni_geo_comb$area_code)
 
 ## filter borough data
 dat_bor <- df_uni_geo_comb %>%
-  filter(area_code == 'lacu2023') %>%
-  pivot_wider(names_from = 'cause of deat', values_from = 'value')
+  dplyr::filter(area_code == 'lacu2023') %>%
+  pivot_wider(names_from = 'cause of death', values_from = 'value')
 
 
 
 dat_london <- df_uni_geo_comb %>%
   filter(area_code == 'gor') %>%
   as.data.frame()
+```
 
+
+```{r - merge - save}
 
 ## save data ------------------
 
@@ -140,30 +154,45 @@ saveRDS(object = dat_london, file = f)
 # yr = 2023
 
 yr_list <- unique(dat_bor$date)
+yr_list
+
+
+## filter health indicator
+names(dat_bor)
 
 
 icd10_selected <- "";            icd_postfix = ''
 icd10_selected <- "i00|j00|x60"; icd_postfix = 'selected'
+icd10_selected <- "a00|i20|i60|j00|x60"; icd_postfix = 'selected4'
+
+# Split the string by the pipe "|"
+prefixes <- unlist(strsplit(icd10_selected, "\\|"))
+
+dat_bor_select <- dat_bor %>%
+  select(1:area_name, starts_with(prefixes, ignore.case = TRUE))
 
 
+## loop 
 for (yr in yr_list) {
-  dat <- dat_bor %>%
+  dat <- dat_bor_select %>%
     filter(date == yr) %>%
     left_join(gla_bor, ., by = c('GSS_CODE' = 'geogcode'))
   
 
   # Example: pivot columns into long format
   dat_ <- dat %>%
-    pivot_longer(cols = matches("00|10|60"),
+    pivot_longer(cols = matches(icd10_selected),
                  names_to = "ind",
                  values_to = "number")
+  
+  # determine figure size
   if (nchar(icd10_selected) > 1) {
     dat_long <- dat_ %>%
       filter(str_detect(ind, regex(paste0("^(", icd10_selected, ")"), ignore_case = TRUE)))
     fig.height = 4.5
   } else {
     dat_long <- dat_
-    fig.height = 9
+    fig.height = 9/2
   }
   
   # Plot faceted maps
@@ -173,12 +202,14 @@ for (yr in yr_list) {
                 # palette = "Reds", 
                 fill.scale = tm_scale(values = "brewer.oranges"),
                 fill.free = T) +
-    tm_facets(by = "ind") +
+    tm_facets(by = "ind", columns = 2) +
     tm_layout(legend.show = TRUE,
               legend.outside = FALSE, component.autoscale = F, 
+              # overall ‘scale’ of the map (all line widths, point sizes and font sizes)
+              scale = 0.8,
               # shrink legend
-              legend.text.size  = .7,   # shrink legend labels
-              # legend.title.size = 1,   # shrink legend title
+              legend.text.size  = .6,   # shrink legend labels
+              legend.title.size = .8,   # shrink legend title
               
               ## continuous legends are treated as histograms/colorbars
               legend.hist.height = 0.4,  # for continuous color scales
@@ -187,14 +218,14 @@ for (yr in yr_list) {
               # legend.height     = 3,   # shrink legend box height
               
               # inner.margins = c(top, left, bottom, right)
-              inner.margins = c(0.01, 0.01, 0.01, 0.1),  # extra space on right
+              inner.margins = c(0.01, 0.01, 0.01, 0.2),  # extra space on right
               legend.frame = F, 
   
               legend.position = c("right", "bottom"))
   
   # Save as PNG
-  tmap_save(tm = map, filename = paste0("./figures/health_", icd_postfix, '_', yr, ".png"), 
-            width = 16, height = fig.height, units = "in", dpi = 300)
+  f <- paste0("./figures/health_", icd_postfix, '_', yr, "_v2.png")
+  tmap_save(tm = map, filename = f, width = 7, height = fig.height, units = "in", dpi = 300)
 
 }
 ```
@@ -212,7 +243,7 @@ resolution_target = 10 # meters
 dat <- dat_bor %>%
   filter(date == yr) %>%
   left_join(gla_bor, ., by = c('GSS_CODE' = 'geogcode')) %>%
-  pivot_longer(cols = 13:18, names_to = 'ind', values_to = 'death_case') %>%
+  pivot_longer(cols = 13:20, names_to = 'ind', values_to = 'death_case') %>%
   mutate(
     # 1 hectare = 10,000 m²
     cases_per_m2 = death_case / (HECTARES * 10000),
@@ -226,7 +257,7 @@ dat_w <- dat %>%
 # Check structure to verify column positions
 str(dat_w)
 names(dat_w)
-message("Columns: \n", paste(names(dat_w)[14:19], collapse = "\n"))
+message("Columns: \n", paste(names(dat_w)[14:21], collapse = "\n"))
 
 
 ## Convert to raster at 10m resolution
@@ -240,7 +271,7 @@ library(terra)
 dat_bng <- st_transform(dat_w, 27700)  # EPSG:27700
 
 # ======== Columns to rasterize (13-18) ========
-vars <- names(dat_w)[14:19]
+vars <- names(dat_w)[14:21]
 message("Rasterizing these columns:\n  - ", paste(vars, collapse = "\n  - "))
 
 # ---- Data cleaning ----
