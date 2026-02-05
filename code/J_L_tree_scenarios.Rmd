@@ -1,0 +1,276 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-02-04"
+---
+
+
+```{r}
+
+library(here)
+here()
+source(here('code', 'func_packages.R'))
+source(here('code', 'func_ggsave.R'))
+
+
+library(sf)
+library(dplyr)
+library(readr)
+library(stringr)
+
+
+dir.g   <- "G:/Shared drives/Wellcome Trust Project Data"
+dir.aoi <- file.path(dir.g, "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs")
+
+dir.raw <- 'E:/London/J&L Gibbons_tree_planting_data/'
+```
+```{r}
+
+#' borough level
+sp_scale = "borough"
+f <- file.path(dir.aoi, 'London_Borough_aoi.shp')
+aoi <- st_read(f, quiet = T) %>% select(NAME, GSS_CODE) %>%
+  filter(NAME == 'Camden')
+```
+
+
+
+## data 2
+
+```{r}
+
+n_tree = 2500
+
+dir.dat <- paste0(dir.raw, '260108_Cooling effect exporation datasets to Stanford_revised/Dataset 2_2500 no. Footway potential planting locations/')
+
+# 1. READ DATA
+# I have recreated the dataframe from your image here. 
+# If loading from a file, use: df <- read.csv("your_file.csv")
+df <- read_csv(file = paste0(dir.dat, 'Dataset 2- 2500 no. Data 2_Footway potential planting locations.csv'), show_col_types = F)
+
+# 2. CONVERT TO SPATIAL OBJECT (POINTS)
+# We define coords as x (longitude) and y (latitude).
+# We set CRS to 27700 (British National Grid) because the values are in meters/Eastings/Northings.
+points_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 27700)
+
+# 3. BUFFER POINTS
+# The function st_buffer takes a radius argument.
+# Desired Diameter = 10m -> Radius = 5m
+buffered_sf <- st_buffer(points_sf, dist = 5)
+
+# 1. RENAME the 'fid' column to avoid conflict with GeoPackage system column
+# AUTOMATIC COLUMN CHECK
+# If 'fid' exists, rename it. If not, this block does nothing.
+if ("fid" %in% names(buffered_sf)) {
+  message("Renaming reserved column 'fid' to 'original_fid'...")
+  buffered_sf <- buffered_sf %>% rename(original_fid = fid)
+}
+
+# 4. SAVE TO GEOPACKAGE (.gpkg)
+# We use delete_layer = TRUE to overwrite if the file already exists
+f <- paste0(dir.raw, "data2.gpkg")
+st_write(buffered_sf, dsn = f, delete_layer = TRUE, delete_dsn = T)
+
+```
+```{r plot}
+
+# --- 2. ALIGN COORDINATE SYSTEMS ---
+
+# Check if CRS match. If not, transform AOI to match the buffers (EPSG:27700)
+if (st_crs(aoi) != st_crs(buffered_sf)) {
+  message("Transforming AOI coordinate system to match buffers...")
+  aoi <- st_transform(aoi, st_crs(buffered_sf))
+}
+
+# --- 3. PLOT WITH GGPLOT ---
+
+func_plot_map <- function(buffered_sf, title_pre = 'data2') {
+
+  ggplot() +
+    # Layer 1: The Area of Interest (Camden)
+    geom_sf(data = aoi, 
+            fill = "grey95", 
+            color = "black", 
+            size = 0.5) +
+    
+    # Layer 2: The 10m Buffers
+    # Note: 10m is very small compared to a borough, so we use red to make them pop
+    geom_sf(data = buffered_sf, 
+            fill = "darkgreen", 
+            color = "darkgreen", 
+            alpha = 0.6) +
+    
+    # # Optional: Zoom in on the specific area where points exist
+    # # This helps visualize the small 10m buffers; remove to see the whole borough
+    # coord_sf(xlim = st_bbox(buffered_sf)[c(1,3)], 
+    #          ylim = st_bbox(buffered_sf)[c(2,4)],
+    #          expand = TRUE) + 
+    
+    # Styling
+    theme_minimal() +
+    labs(title = paste0(title_pre, " - tree planting in Camden (n = ", n_tree, ")"),
+         subtitle = "10m Diameter (EPSG:27700)")
+  
+  f <- paste0(dir.raw, title_pre, '_map.png')
+  func_ggsave(fname = f, dpi = 600, save_png = T)
+  
+}
+
+func_plot_map(buffered_sf, title_pre = 'data2')
+
+```
+
+
+
+## data 3
+
+```{r}
+
+n_tree = 650
+
+dir.dat <- paste0(dir.raw, '260108_Cooling effect exporation datasets to Stanford_revised/Dataset 3_parking to tree 650no. locations for safeguarding/')
+
+# 1. READ DATA
+# I have recreated the dataframe from your image here. 
+df <- read_csv(file = paste0(dir.dat, 'Dataset 3_parking to tree 650no. locations for safeguarding.csv'), show_col_types = F)
+
+# 2. CONVERT TO SPATIAL OBJECT (POINTS)
+# We define coords as x (longitude) and y (latitude).
+# We set CRS to 27700 (British National Grid) because the values are in meters/Eastings/Northings.
+points_sf <- st_as_sf(df, coords = c("Easting", "Northing"), crs = 27700)
+
+# 3. BUFFER POINTS
+# The function st_buffer takes a radius argument.
+# Desired Diameter = 10m -> Radius = 5m
+buffered_sf <- st_buffer(points_sf, dist = 5)
+
+# AUTOMATIC COLUMN CHECK
+# If 'fid' exists, rename it. If not, this block does nothing.
+if ("fid" %in% names(buffered_sf)) {
+  message("Renaming reserved column 'fid' to 'original_fid'...")
+  buffered_sf <- buffered_sf %>% rename(original_fid = fid)
+}
+
+# 4. SAVE TO GEOPACKAGE (.gpkg)
+# We use delete_layer = TRUE to overwrite if the file already exists
+f <- paste0(dir.raw, "data3.gpkg")
+st_write(buffered_sf, dsn = f, delete_dsn = T, delete_layer = T)
+
+
+func_plot_map(buffered_sf, title_pre = 'data3')
+```
+
+
+## data 4
+
+```{r}
+
+n_tree = 2180
+
+dir.dat <- paste0(dir.raw, '251204_Cooling effect exploration datasets to Stanford/Dataset 4/')
+
+# 1. READ DATA
+# I have recreated the dataframe from your image here. 
+points_sf <- st_read(dsn = paste0(dir.dat, 'GenParkingtoGreen.shp'))
+
+
+# 3. BUFFER POINTS
+# The function st_buffer takes a radius argument.
+# Desired Diameter = 10m -> Radius = 5m
+buffered_sf <- st_buffer(points_sf, dist = 5)
+
+# AUTOMATIC COLUMN CHECK
+# If 'fid' exists, rename it. If not, this block does nothing.
+if ("fid" %in% names(buffered_sf)) {
+  message("Renaming reserved column 'fid' to 'original_fid'...")
+  buffered_sf <- buffered_sf %>% rename(original_fid = fid)
+}
+
+# 4. SAVE TO GEOPACKAGE (.gpkg)
+# We use delete_layer = TRUE to overwrite if the file already exists
+f <- paste0(dir.raw, "data4.gpkg")
+st_write(buffered_sf, dsn = f, delete_dsn = T, delete_layer = T)
+
+
+func_plot_map(buffered_sf, title_pre = 'data4')
+```
+
+
+
+## data 5
+
+```{r}
+
+n_tree = 430
+
+dir.dat <- paste0(dir.raw, '251204_Cooling effect exploration datasets to Stanford/Dataset 5/650_Vacant tree pit in Camden/')
+
+# 1. READ DATA
+# I have recreated the dataframe from your image here. 
+df <- read_csv(file = paste0(dir.dat, 'Vacant_Tree_Pits_In_Camden_20251113.csv'), show_col_types = F)
+
+# 2. CONVERT TO SPATIAL OBJECT (POINTS)
+# We define coords as x (longitude) and y (latitude).
+# We set CRS to 27700 (British National Grid) because the values are in meters/Eastings/Northings.
+points_sf <- st_as_sf(df, coords = c("Easting", "Northing"), crs = 27700)
+
+# 3. BUFFER POINTS
+# The function st_buffer takes a radius argument.
+# Desired Diameter = 10m -> Radius = 5m
+buffered_sf <- st_buffer(points_sf, dist = 5)
+
+# AUTOMATIC COLUMN CHECK
+# If 'fid' exists, rename it. If not, this block does nothing.
+if ("fid" %in% names(buffered_sf)) {
+  message("Renaming reserved column 'fid' to 'original_fid'...")
+  buffered_sf <- buffered_sf %>% rename(original_fid = fid)
+}
+
+# 4. SAVE TO GEOPACKAGE (.gpkg)
+# We use delete_layer = TRUE to overwrite if the file already exists
+f <- paste0(dir.raw, "data5.gpkg")
+st_write(buffered_sf, dsn = f, delete_dsn = T, delete_layer = T)
+
+
+func_plot_map(buffered_sf, title_pre = 'data5')
+```
+
+
+## data 7
+
+```{r}
+
+n_tree = 18000
+
+dir.dat <- paste0(dir.raw, '260108_Cooling effect exporation datasets to Stanford_revised/Dataset 7_18000 no. Footway potential planting locations/')
+
+# 1. READ DATA
+# I have recreated the dataframe from your image here. 
+df <- read_csv(file = paste0(dir.dat, 'Dataset 7_18000 no. Footway potential planting locations.csv'), show_col_types = F)
+
+# 2. CONVERT TO SPATIAL OBJECT (POINTS)
+# We define coords as x (longitude) and y (latitude).
+# We set CRS to 27700 (British National Grid) because the values are in meters/Eastings/Northings.
+points_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 27700)
+
+# 3. BUFFER POINTS
+# The function st_buffer takes a radius argument.
+# Desired Diameter = 10m -> Radius = 5m
+buffered_sf <- st_buffer(points_sf, dist = 5)
+
+# AUTOMATIC COLUMN CHECK
+# If 'fid' exists, rename it. If not, this block does nothing.
+if ("fid" %in% names(buffered_sf)) {
+  message("Renaming reserved column 'fid' to 'original_fid'...")
+  buffered_sf <- buffered_sf %>% rename(original_fid = fid)
+}
+
+# 4. SAVE TO GEOPACKAGE (.gpkg)
+# We use delete_layer = TRUE to overwrite if the file already exists
+f <- paste0(dir.raw, "data7.gpkg")
+st_write(buffered_sf, dsn = f, delete_dsn = T, delete_layer = T)
+
+
+func_plot_map(buffered_sf, title_pre = 'data7')
+```
+
