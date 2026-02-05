@@ -11,16 +11,18 @@
 │
 ├── code/
 │   ├── lc_scenarios
-|        |__ london-climate-scenario.Rmd                # filter global tree-climate-scenario pairs for London
-|        |__ london-tree-climate-risk.Rmd               # match London tree data to the scenario pairs
-|        |__ london-tree-climate-risk-GiGL.ipynb        # link at-risk list to London tree shapefile for map
-|        |__
-|        |__
-|        |__
-|        |__ jlg_0_tree_scenarios_to_shp.Rmd            # use J&L Gibbons data for Camden to generate tree planting sceanrio rasters
-|        |__ jlg_1_lc_clip_to_aoi.py
-|        |__ jlg_2_scenario_engine.py
-|        |__ jlg_3_plot_scenarios.py
+|   |    |__ london-climate-scenario.Rmd                # filter global tree-climate-scenario pairs for London
+|   |    |__ london-tree-climate-risk.Rmd               # match London tree data to the scenario pairs
+|   |    |__ london-tree-climate-risk-GiGL.ipynb        # link at-risk list to London tree shapefile for map
+|   |    |__
+|   |    |__
+|   |    |__
+|   |    |__ jlg_0_tree_scenarios_to_shp.Rmd     # Use J&L Gibbons data for Camden to generate tree planting sceanrio rasters
+|   |    |__ jlg_1_lc_clip_to_aoi.py
+|   |    |__ jlg_2_scenario_engine.py
+|   |    |__ jlg_3_plot_scenarios.py
+|   |
+│   ├── lc_scenarioshealth_assessment            # Health outcome estimates based on lc and climate scenarios
 |
 |
 ├── 
