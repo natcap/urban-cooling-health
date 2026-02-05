@@ -22,7 +22,7 @@
 |   |    |__ jlg_2_scenario_engine.py
 |   |    |__ jlg_3_plot_scenarios.py
 |   |
-│   ├── lc_scenarioshealth_assessment            # Health outcome estimates based on lc and climate scenarios
+│   ├── health_assessment                        # Health outcome estimates based on lc and climate scenarios
 |
 |
 ├── 
