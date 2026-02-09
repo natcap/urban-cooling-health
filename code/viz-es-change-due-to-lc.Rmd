@@ -26,6 +26,8 @@ chg_eng <- readRDS(f) %>%
   mutate(var = gsub('avd_eng_cn|energy_sav_sum', 'Energy saving', var),
          unit = 'Million    £ .')
 
+
+##' data source: `health-modeling-zonal-stats-viz-borough.Rmd`
 f <- "./data/viz_sf_Mortality_lc_effect.rds"
 chg_mort <- readRDS(f) %>%
   rename('value_diff' = 'cases') %>%
@@ -43,6 +45,12 @@ chg_comb <- rbind(chg_pd, chg_eng, chg_mort) %>%
   mutate(year = as.character(year), 
          year = as.numeric(year)) %>%
   filter(year == yr)
+
+unique(chg_comb$var)
+
+var_label <- gsub('_', ' ', unique(chg_comb$var)) 
+var_label <- gsub('All cause', 'All cause mortality', var_label) 
+var_label
 ```
 
 
@@ -50,17 +58,33 @@ chg_comb <- rbind(chg_pd, chg_eng, chg_mort) %>%
 ## plot
 
 ```{r}
-
 library(sf)
 library(purrr)
 library(patchwork) # Essential for combining rows with aligned legends
 
 # --- 1. Data Preparation ---
 data <- chg_comb %>%
-  mutate(var = factor(var, levels = rev(unique(var))))
+  mutate(var = factor(var, levels = unique(var), labels = var_label))
 
-vars <- levels(data$var)
 
+
+
+# --- 1.1. include all variables --- NEED TO comment lines under -- 1.2 --
+
+# --- 1.2. include one health variable only in the main manuscript 
+var_select <- c("All cause mortality", "Energy saving", "Productivity")
+
+data <- data %>%
+  filter(var %in% var_select)
+
+
+vars <- unique(data$var); vars
+
+n_var <- length(vars); n_var
+```
+
+
+```{r}
 # Define specific palettes
 var_palettes <- list(
   avd_eng_cn     = c('#ffffcc','#ffeda0','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#bd0026','#800026'),
@@ -168,7 +192,7 @@ final_plot <- wrap_plots(plot_list, ncol = 1)
 print(final_plot)
 
 # --- 4. Save ---
-f <- file.path(dir.fig, paste0("es_change_lc_effect_map_", yr, '_', ymd, ".png"))
+f <- file.path(dir.fig, paste0("es_change_lc_effect_map_", yr, '_', ymd, '_', n_var, 'var',  ".png"))
 
 # Use ggsave on the final patchwork object
 ggsave(f, plot = final_plot, width = 7, height = 1* length(vars), units = "in", dpi = 300)

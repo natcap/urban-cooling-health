@@ -193,7 +193,6 @@ health_df <- read_csv(f, show_col_types = F) %>%
   ## convert "Excess deaths" to "Preventable deaths" to indicate "benefits" of nature
   mutate(cases = -cases) %>%
   
-  
   select(any_of(c("id", "Neighborhood_name","cases", "lc_scenario", "indicator")))
 
 names(health_df)
@@ -201,6 +200,14 @@ names(health_df)
 ## add sf 
 health_sf <- health_df %>%
   left_join(svi_lsoa_subset, ., by = 'id')
+
+
+label_map <- c(
+  p75over        = "Age ≥75",
+  pBAME          = "Ethnic minority",
+  pIncomeDeprivation = "Low income",
+  p5under        = "Age <5"
+)
 ```
 
 
@@ -541,7 +548,7 @@ ggplot(df_cat2, aes(x = Quintile, y = cases, fill = Quintile)) +
   theme_minimal() +
   theme(legend.position = "none")
 
-f <- paste0('./figures/', 'health_outcome_equity_q_cld_', lc_snr, '_', ymd, '.png')
+f <- paste0('./figures/', paste('equity_health', outcome_ind, 'q_cld', lc_snr, ymd, sep = '_'), '.png'); f
 ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
 
@@ -575,7 +582,7 @@ ggplot(df_cont_l, aes(x = Value, y = cases)) +
 
 
 
-```{r lm}
+```{r lm - coef}
 
 library(broom)
 library(purrr)
@@ -633,7 +640,7 @@ ggplot(models, aes(x = estimate, y = reorder(Metric, estimate), color = Signific
   theme_minimal() +
   theme(legend.position = c(0.8, 0.1))
 
-f <- paste0('./figures/', 'health_outcome_equity_es_', lc_snr, '_', ymd, '.png')
+f <- paste0('./figures/', paste('equity_health', outcome_ind, 'coef', lc_snr, ymd, sep = '_'), '.png'); f
 ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
 
@@ -963,7 +970,9 @@ ggplot() +
   geom_vline(xintercept = 0, linetype = "dotted", color = "gray50") +
   
   # --- Aesthetics ---
-  facet_wrap(~Metric, scales = "fixed") + 
+  facet_wrap(~Metric,
+             labeller = labeller(Metric = label_map),
+             scales = "fixed") + 
   
   # Automatically puts a tick every 1 unit
   scale_x_continuous(breaks = scales::breaks_width(1)) + 
@@ -1012,19 +1021,17 @@ ggplot() +
   )
 
 
-f <- paste0('./figures/', 'health_outcome_equity_esGAM_', lc_snr, '_', ymd, '_actual.png')
+f <- paste0('./figures/', paste('equity_health', outcome_ind, 'gam', lc_snr, ymd, sep = '_'), '_actual.png'); f
 ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
 
 
   This is not better than the above one. 
+  
 ```{r - gam plot + density-ggExtra, eval=FALSE, include=FALSE}
 
-
-library(ggplot2)
 library(ggExtra)  # For ggMarginal
 library(cowplot)  # For combining the individual plots
-library(dplyr)
 
 # List to store the final plots
 final_plots_list <- list()
@@ -1220,8 +1227,6 @@ Summary of Recommendations
 
 ```{r - glm_nb [x], eval=FALSE, include=FALSE}
 
-library(dplyr)
-library(ggplot2)
 library(broom)
 library(purrr)
 library(MASS) # Required for glm.nb
@@ -1329,17 +1334,15 @@ plot(compare_performance(model_lm, model_nb, model_gam, rank = TRUE, verbose = F
 ```
 
 
-## Map - bicolor?
-
-
- 
-  
+## Map - bicolor
 
 ```{r - one}
 # install.packages("biscale")
 
 library(biscale)
 library(cowplot)
+
+sv_i <- 'pIncomeDeprivation'
 
 # 1. Create Bivariate Classes (3x3 Grid)
 # style = "quantile" splits data into equal groups (like your quintiles)
@@ -1380,7 +1383,8 @@ final_plot <- ggdraw() +
 
 print(final_plot)
 
-f <- paste0('./figures/', 'health_outcome_equity_map_', lc_snr, '_pIncomeDeprivation--.png')
+
+f <- paste0('./figures/equity_map_biscale/', paste('equity_map_health', outcome_ind, sv_i, lc_snr, ymd, sep = '_'), '-test.png'); f
 ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
 
@@ -1421,7 +1425,7 @@ for (var in metrics) {
     draw_plot(legend, 0.7, 0.05, 0.2, 0.2)
   
   # 5. Save
-  f <- paste0('./figures/', 'health_outcome_equity_map_', lc_snr, '_', var, "-neg.png"); f
+  f <- paste0('./figures/equity_map_biscale/', paste('equity_map_health', outcome_ind, var, lc_snr, ymd, sep = '_'), '-neg.png'); f
   ggsave(filename = f, plot = final_plot, width = 7, height = 5)
 }
 ```
