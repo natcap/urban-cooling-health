@@ -10,6 +10,7 @@ date: "2025-09-16"
 remove(list = ls())
 
 # load common packages
+library(here)
 here()
 source(here('code', 'func_packages.R'))
 
@@ -56,12 +57,12 @@ aoi_lsoa <- st_read(f)
 
 ```{r - chesla - historical}
 # --- 0) Inputs ---
-dir.ch <- "E:/chelsa02/clipped_london_stats/"
-dir.wc <- "E:/GCMs/clipped/stats/"
+dir.ch <- "E:/_data/chelsa02/clipped_london_stats/"
+dir.wc <- "E:/_data/GCMs/clipped/stats/"
 
 
 spatial_unit <- 'borough'
-spatial_unit <- 'lsoa'
+# spatial_unit <- 'lsoa'
   
   
 # --- 1) Baseline (observed) CSV (read FIRST, since we join to it) ---
@@ -219,6 +220,7 @@ df_wc_summ <- df_wc_sf %>%
 ## add equity data to the result
 temp_change_group <- aoi_lsoa %>%
   rename('geoid' = 'id') %>%
+  mutate(geoid = as.character(geoid)) %>%
   left_join(., df_wc_summ %>% 
               st_drop_geometry() %>%
               rename('geoid' = 'borough'), 
@@ -261,7 +263,9 @@ df_ch_wc_w <- df_ch_wc %>%
 # Which column holds the temperature?
 value_col <- "mean"        # or "air_temperature"
 
-dodge2_width = 0.8
+dodge2_width = 0.8  # how far apart the groups are dodged
+padding_bar = 0.3   # spacing between boxes within the same year
+pd2 <- position_dodge2(width = dodge2_width, padding = padding_bar, preserve = "single")
 
 p <- 
   df_ch_wc %>%
@@ -275,18 +279,46 @@ p <-
                 # dodge by scenario within each year
                 group = interaction(year, scenario))) +
   geom_boxplot(
-    aes(fill = year >= 2030,
-        # color = scenario, # outline color by scenario
-      ),
-    
+    # aes(fill = year >= 2030,
+    #     # color = scenario, # outline color by scenario
+    #   ),
+    # 
     # position = position_dodge(width = 0.75), 
-    # position_dodge2() must be consistent across all layers (boxplot and both stat_summary calls)
-    position = position_dodge2(width = dodge2_width, padding = 0.1, preserve = "single"),
+    position = pd2,
     show.legend = FALSE,
-    outlier.shape = NA, width = 0.6, linewidth = 0.2, 
+    outlier.shape = NA, 
+    width = 0.6,        # thinner boxes read better when dodged
+    # linewidth = 0.2, 
     # fill = "grey85", 
     # color = "grey40", 
     alpha = 0.4) +
+  
+  
+  stat_summary(
+    fun = mean, 
+    geom = "point", 
+    # position = pd2,
+    position = position_dodge(width = 0.65), # it is odd that pd2 would not work well here
+    shape = 18, 
+    # color = "#f03b20", 
+    size = 2, alpha = .7) +
+  # mean label (one decimal)
+  stat_summary(
+    fun = mean, 
+    geom = "text", 
+    # position = pd2,
+    position = position_dodge(width = 0.65*3), # likewise, this allows better control 
+    # color = "#f03b20", 
+    aes(label = after_stat(sprintf("%.1f", y)),
+        hjust = case_when(
+          scenario == "baseline" ~ 1.5,        # customize hjust based on the group
+          T ~ 0.5)
+    ), 
+    show.legend = F,
+    # vjust = -4,  # above the bar 
+    # hjust = 0.5,  # Center the text
+    size = 3
+  ) +
   
   # fill colors for the condition
   scale_fill_manual(
@@ -306,26 +338,8 @@ p <-
   #            # size = 1.2, 
   #            color = "grey35") +
   # show Mean point per year/scenario
-  stat_summary(
-    position = position_dodge(width = 0.6),
-    # position = position_dodge2(width = dodge2_width, padding = 0.1, preserve = "single"),
-    fun = mean, 
-    geom = "point", 
-    shape = 18, 
-    # color = "#f03b20", 
-    size = 2, alpha = .7) +
-  # mean label (one decimal)
-  stat_summary(
-    # position = position_dodge(width = 0.75),
-    position = position_dodge2(width = dodge2_width, padding = 0.1, preserve = "single"),
-    fun = mean, 
-    geom = "text", 
-    # color = "#f03b20", 
-    aes(label = after_stat(sprintf("%.1f", y))), show.legend = F,
-    vjust = -1.2,
-    hjust = 0.8,
-    size = 3
-  ) +
+  
+  
   scale_y_continuous(expand = expansion(mult = c(0.02, 0.10))) +
   labs(
     x = "Year",
