@@ -53,8 +53,11 @@ ind_label <- 'Mortality'
 
 ## load data 
 ## --> update this input data
-f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long.csv'); post_fix <- '00_2021_2050'; 
+f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long.csv');           post_fix <- '00_2021_2050'; 
 f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long_2050_2050.csv'); post_fix <- 'i0_2050_2050'
+
+## --> updated on 2/2/2026
+f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_30_zonal_stats_long_borough_2050_2050.csv'); post_fix <- 'i0_2050_2050'
 
 df <- read_csv(f, show_col_types = F) %>%
   mutate(
@@ -86,6 +89,13 @@ df <- read_csv(f, show_col_types = F) %>%
     ) 
   ) %>%
   rename('cases' = 'sum')
+
+
+## re-code land scenario labels
+df <- df %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
 
 
 
@@ -296,8 +306,9 @@ p <- p +
     strip.clip = "off",  # avoid text being clipped
     legend.position = "bottom",
     legend.box = "horizontal",
-    legend.text = element_text(angle = 45, vjust = 1, hjust = 1),
-    legend.key.width = unit(0.6, "cm"),
+    legend.spacing.x = unit(0.2, "cm"),  # Space between colorbars horizontally
+    legend.text = element_text(angle = 45, vjust = 1, hjust = 1), 
+    legend.key.width = unit(0.5, "cm"),
     legend.key.height = unit(0.2, "cm")
   )
 

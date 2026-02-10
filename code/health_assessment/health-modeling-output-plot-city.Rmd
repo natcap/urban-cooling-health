@@ -84,6 +84,13 @@ df_all_ <- df_all %>%
     ) 
   ) %>%
   as.data.frame()
+
+
+## re-code land scenario labels
+df_all_ <- df_all_ %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
 ```
 
 
@@ -211,8 +218,8 @@ stats <- long2 |>
     p97   = quantile(value, 0.975, na.rm = TRUE),
     
     sd = sd(value, na.rm = TRUE),                 # standard deviation
-    n  = dplyr::n(),                                   # sample size
-    se = sd / sqrt(n),                                 # standard error
+    n  = dplyr::n(),                              # sample size
+    se = sd / sqrt(n),                            # standard error
     ci_lower = mean - 1.96 * se,
     ci_upper = mean + 1.96 * se, 
     .groups = "drop"
@@ -315,8 +322,9 @@ p2 <- p +
   ) +
   
   scale_color_manual(
+    name = "Land scenarios",  # Your legend title
     # # remove the "scenario0" color from the named vector
-    values = scenario_colors[names(scenario_colors) != "scenario0"] ) +
+    values = scenario_colors_new[names(scenario_colors_new) != "Baseline"] ) +
   scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) +
   
   # coord_flip() +

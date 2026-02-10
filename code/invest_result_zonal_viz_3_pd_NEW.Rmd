@@ -79,7 +79,7 @@ aoi_lsoa <- st_read(f, quiet = T) %>%
 
 
 
-
+### ? Pick one scale ---
 
   Data csv from zonal stats
   
@@ -163,10 +163,10 @@ df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = pd_sf_filter, aoi = aoi
 
 
 # 2. also calculate the change from year 0
-df_stats_00 <- func_calculate_change_from_yr0_lc0(data = pd_sf_filter)
+df_stats_00 <- func_calculate_change_from_yr0_lc0(data = pd_sf_filter, aoi = aoi)
 
 # 3. and combine the two change calculations  
-stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
+#    --> see ### `Re-code Land scenario`
 
 ```
 
@@ -174,7 +174,7 @@ stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
 
 ### Load data - lsoa level 
   
-```{r - data stats}
+```{r - data stats, eval=FALSE, include=FALSE}
 
 sp_scale = "lsoa"
 
@@ -199,11 +199,30 @@ df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = shp_all_df, aoi = aoi_l
 # 2. also calculate the change from year 0
 df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df)
 
+
 # 3. and combine the two change calculations  
-stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
+#    --> see ### `Re-code Land scenario`
 
 ```
   
+### Re-code Land scenario
+
+```{r}
+## re-code land scenario labels
+df_stats_00 <- df_stats_00 %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
+
+df_stats_i0 <- df_stats_i0 %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
+
+# 3. and combine the two change calculations  
+stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
+```
+
 
 ### Plot 
 
@@ -218,7 +237,7 @@ func_plot_line(data = df_stats_input)
 
 ## plot change from year i 
 func_plot_change_point(data = stat_both_l, level = sp_scale, plot_avg = F)
-func_plot_change_point(data = stat_both_l, level = sp_scale, plot_avg = T)
+func_plot_change_point(data = stat_both_l, level = sp_scale, plot_h = 4, plot_avg = T)
 
 ```
 
@@ -227,7 +246,10 @@ func_plot_change_point(data = stat_both_l, level = sp_scale, plot_avg = T)
 
 df_change_sf_input <- df_chg_sf_i0 %>% 
   filter(year > year_baseline) %>%
-  mutate(year = as.factor(year)) 
+  mutate(year = as.factor(year)) %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
 
 ## save a copy for viz
 f <- paste0('./data/', 'viz_sf_', ind, '_lc_effect_', sp_scale, '.rds'); f

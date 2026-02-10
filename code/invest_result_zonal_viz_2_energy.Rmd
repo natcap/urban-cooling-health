@@ -37,6 +37,7 @@ aoi_lsoa <- st_read(f, quiet = T) %>%
 
   `avd_eng_cn` - (optional) Avoided energy consumption (kWh or $ if optional energy cost input column was provided in the Energy Consumption Table).
 
+### ? Pick one scale ---
 
 ### Load data - borough level 
 
@@ -70,8 +71,7 @@ stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
 
 ### Load data - lsoa level 
 
-```{r}
-
+```{r eval=FALSE, include=FALSE}
 sp_scale = "lsoa"
 ind <- "energy_sav_sum"; 
 # ind <- "energy_sav_mean"
@@ -93,6 +93,21 @@ df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df, aoi = aoi_l
 
 # 3. and combine the two change calculations  
 stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
+```
+
+
+### Re-code Land scenario
+
+```{r}
+## re-code land scenario labels
+df_stats_i0 <- df_stats_i0 %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
+stat_both_l <- stat_both_l %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
 
 ```
 
@@ -111,17 +126,19 @@ func_plot_line(data = df_stats_i0 %>% filter(year >= year_baseline))
 
 ## plot change from year i 
 func_plot_change_point(data = stat_both_l, level = sp_scale, plot_avg = F)
-func_plot_change_point(data = stat_both_l, level = sp_scale, plot_avg = T)
+func_plot_change_point(data = stat_both_l, level = sp_scale, plot_h = 4, plot_avg = T)
 
 ```
 
 
 ```{r - plot - map}
 
-
 df_chg_sf_i0_input <- df_chg_sf_i0 %>% 
   filter(year > year_baseline) %>%
-  mutate(year = as.factor(year)) 
+  mutate(year = as.factor(year)) %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
 
 ## save a copy for viz
 f <- paste0('./data/', 'viz_sf_', ind, '_lc_effect_', sp_scale, '.rds'); f

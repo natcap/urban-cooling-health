@@ -18,6 +18,7 @@ source(here('code', 'func_get_color_scale.R'))
 source(here('code', 'func_colors.R')) # scenario_colors
 
 dir.g   <- "G:/Shared drives/Wellcome Trust Project Data"
+dir.aoi <- file.path(dir.g, "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs")
 dir.fig <- file.path(dir.g, "3_final/UCM_figures")
 dir_ucm_out <- file.path(dir.g, '2_postprocess_intermediate/UCM_official_runs')
 ```
@@ -143,9 +144,9 @@ func_calculate_change_from_yri_lc0 <- function(
   
   
   df_chg_sf_i0 <- df_change %>%
-    select(GSS_CODE, year, lc_scenario, value_diff) %>%
-    mutate(var = ind) %>%
-    left_join(aoi, ., by = 'GSS_CODE')
+    dplyr::select(GSS_CODE, year, lc_scenario, value_diff) %>%
+    dplyr::mutate(var = ind) %>%
+    dplyr::left_join(aoi, ., by = 'GSS_CODE')
   
   
   df_stats_i0 <- df_change %>%
@@ -174,8 +175,11 @@ saveRDS(func_calculate_change_from_yri_lc0, "./code/func_calculate_change_from_y
 
 ```{r}
 
-df_stats_i0 <- func_calculate_change_from_yri_lc0(data = shp_all_df)
-df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = shp_all_df, return_sf = T)
+df_stats_i0 <- func_calculate_change_from_yri_lc0(data = shp_all_df, aoi = aoi, return_sf = F)
+df_chg_sf_i0<- func_calculate_change_from_yri_lc0(data = shp_all_df, aoi = aoi, return_sf = T)
+
+df_stats_i0_copy <- df_stats_i0
+df_chg_sf_i0_copy <- df_chg_sf_i0
 
 ```
 
@@ -236,12 +240,15 @@ func_calculate_change_from_yr0_lc0 <- function(
 
 # save this function for later use
 saveRDS(func_calculate_change_from_yr0_lc0, "./code/func_calculate_change_from_yr0_lc0.rds")
+
 ```
 
 
 ```{r}
 
-df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df)
+df_stats_00 <- func_calculate_change_from_yr0_lc0(data = shp_all_df, aoi = aoi)
+
+df_stats_00_copy <- df_stats_00
 
 ```
 
@@ -289,7 +296,23 @@ saveRDS(func_combine_two_change_dfs, "./code/func_combine_two_change_dfs.rds")
 ```
 
 
-```{r}
+```{r - both -- recode factor labels}
+
+
+df_stats_00 <- df_stats_00_copy %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
+
+df_chg_sf_i0 <- df_chg_sf_i0_copy %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
+
+df_stats_i0 <- df_stats_i0_copy %>%
+  mutate(lc_scenario = factor(lc_scenario, 
+                              levels = names(scenario_labels),
+                              labels = unname(scenario_labels)))
 
 ## apply the function 
 stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
@@ -298,7 +321,7 @@ stat_both_l <- func_combine_two_change_dfs(df_stats_00, df_stats_i0)
 
 # reference values from scenario0
 base_lines <- stat_both_l %>%
-  dplyr::filter(lc_scenario == "scenario0") %>%
+  dplyr::filter(lc_scenario == "Baseline") %>%
   dplyr::transmute(label, year, y0 = chg)
 
 base_segments <- base_lines %>%
@@ -322,7 +345,7 @@ stat_both_l %>%
   facet_wrap(~label, scale = 'free_y') + 
   
   scale_color_manual(
-    values = scenario_colors,
+    values = scenario_colors_new,
     name = "Land Scenario"
   ) +
   
@@ -402,30 +425,39 @@ func_ggsave(f, w = 7, h = 5, dpi = 300, save_png = T)
 
 ```
 
-```{r - one: lc+climate-led change}
+```{r - one: lc+climate-led change - fig.3a}
 
 stat_both_l %>%
   filter(label == 'climate+lc effect') %>%
-  filter(!(year == year_baseline & lc_scenario != "scenario0")) %>%
+  filter(!(year == year_baseline & lc_scenario != "Baseline")) %>%
   ggplot(aes(x = year, 
              y = chg, 
              group = interaction(year, lc_scenario),
              color = lc_scenario
              )) +
-  geom_point(size = 2.5, 
-             shape = 1, 
+  
+  # add vertical segments (0 -> mean) as suggested by Anne
+  geom_segment(aes(x = year, y = 0, yend = chg),
+               position = position_dodge(width = 0.9),
+               show.legend = FALSE,
+               alpha = 0.6, 
+               na.rm = TRUE,
+               linewidth = 0.7) +
+  
+  geom_point(size = 2, 
+             shape = 16, 
              position = position_dodge(width = 0.9),
-             fill = NA, 
+             # fill = NA, 
              stroke = 1, 
-             alpha = .7) +
+             alpha = 0.7) +
   
   # geom_line(
   #   position = position_dodge(width = 0.9), show.legend = F,
   # ) +
 
   scale_color_manual(
-    values = scenario_colors,
-    name = "Land Scenario"
+    values = scenario_colors_new,
+    name = "Land scenario"
   ) +
   
   guides(fill = "none", shape = 'none') + 
@@ -459,6 +491,7 @@ func_plot_change_point <- function(data,
                                    level = '', 
                                    digits = 2, 
                                    plot_h = 5, # 'in'
+                                   show_x_label = F, 
                                    plot_avg = FALSE){
 
   stat_chg_per_lc_yr <- 
@@ -507,8 +540,8 @@ func_plot_change_point <- function(data,
     facet_wrap(~year, scales = 'free_x', ncol = 2) + 
   
     scale_color_manual(
-      values = scenario_colors,
-      name = "Land Scenario"
+      values = scenario_colors_new,
+      name = "Land scenario"
     ) +
     scale_shape_manual(values = c('inc' = 2, 'dec' = 6), guide = "none") +
     guides(fill = "none", 
@@ -551,9 +584,11 @@ func_plot_change_point <- function(data,
     ## add a place holder
     mutate(year = 'year')
     
+  
+  ## plot average change 
   p2 <- 
     stat_chg_avg %>%
-    ggplot(aes(x = year, 
+    ggplot(aes(x = lc_scenario, 
                y = chg, 
                group = lc_scenario,
                color = lc_scenario
@@ -569,7 +604,8 @@ func_plot_change_point <- function(data,
     
     geom_col(
       # position = position_dodge(width = 0.9),
-      position = position_dodge2(width = 0.9, padding = 0.2),
+      position = position_dodge2(width = 0.9, padding = 0.2), 
+      width = 0.8,
       fill = 'gray80', 
       alpha = .7
     ) +
@@ -592,24 +628,24 @@ func_plot_change_point <- function(data,
     geom_hline(yintercept = 0, linetype = 'dashed', colour = 'gray', show.legend = FALSE) +
    
     scale_color_manual(
-      values = scenario_colors,
-      name = "Land Scenario"
+      values = scenario_colors_new,
+      name = "Land scenario"
     ) +
     
     guides(fill = "none", 
            color = guide_legend(override.aes = list(shape = 6, fill = NA, size = 2, stroke = 0.5, alpha = 1)),
            shape = 'none') + 
   
-    labs(x = "Land change scenarios", 
+    labs(x = "Land scenarios", 
          y = str_to_title(paste0(ind_label, " change"))) +
     ## This allows plot elements (like text) to extend beyond the plot panel boundaries without being clipped
     coord_cartesian(clip = "off") + 
     theme_bw() +
     theme(
-      # axis.title.x = element_blank(),
-      # axis.text.x = element_blank(),
-      axis.text.x = element_text(color = "transparent"), 
-      axis.ticks.x = element_blank(), 
+      # axis.text.x = element_text(color = "transparent"),
+      # axis.ticks.x = element_blank(),
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      
       panel.border = element_rect(fill = "transparent", color = 'gray30', linewidth=0.2),
       strip.background = element_rect(color = "gray30", linewidth = 0.2),
       
@@ -623,6 +659,27 @@ func_plot_change_point <- function(data,
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank()
       ) 
+  
+  # if (show_x_label == T) {
+  #   p2 <- p2 + 
+  #     # theme(
+  #     #   axis.text.x = element_text(color = "transparent"),
+  #     #   axis.ticks.x = element_blank()
+  #     # ) +
+  #     geom_text(
+  #       aes(label = scenario_labels[lc_scenario]),  # Use short names
+  #       position = position_dodge2(width = 0.9, padding = 0.2),
+  #       # vjust = ifelse(stat_chg_avg$chg >= 0, -0.3, 1.3),  # Smart positioning
+  #       # y = -0.5, # Fixed y position
+  #       y = ifelse(stat_chg_avg$chg >= 0, -0.1, 0.1),  # Smart positioning
+  #       angle = 45,  # Rotate 90 degrees
+  #       hjust = 1, 
+  #       size = 2.8,
+  #       color = "black",
+  #       show.legend = FALSE
+  #     ) 
+  # }
+  
   f <- file.path(dir.fig, paste("temp_scenarios_fromshp", "line_dif", ind, 'both03', level, ymd, ".png", sep = '_'))
   ggsave(filename = f, plot = p2, width = 7/2, height = plot_h, dpi = 300)
   
@@ -646,9 +703,9 @@ func_plot_change_point(data = stat_both_l)
 
   As the change due to lc are almost the same, we only need to present one figure using the averaged value. 
   
-```{r - plot: lc-led change on avg}
+```{r - plot: lc-led change on avg - fig.3b}
 
-func_plot_change_point(data = stat_both_l, plot_avg = T)
+func_plot_change_point(data = stat_both_l, show_x_label = T, plot_avg = T)
 
 ```
 
@@ -1005,10 +1062,6 @@ p3  # Small multiples by scenario
 
 
 ```{r - test 3, eval=FALSE, include=FALSE}
-library(ggplot2)
-library(dplyr)
-
-
 
 # Option 2: Show the differences from a baseline (scenario0)
 df_diff <- df %>%
@@ -1105,7 +1158,7 @@ func_plot_line <- function(
     geom_hline(yintercept = 0, linetype = "dashed", color = "gray60") +
     scale_color_manual(
       # # remove the "scenario0" color from the named vector
-      values = scenario_colors[names(scenario_colors) != "scenario0"],
+      values = scenario_colors_new[names(scenario_colors_new) != "Baseline"],
       name = "Greening Scenario",
       # labels = c("scenario1" = "Scenario 1",
       #            "scenario2" = "Scenario 2",
@@ -1115,7 +1168,7 @@ func_plot_line <- function(
       #            "scenario4_30" = "Scenario 4_30")
     ) +
     scale_fill_manual(
-      values = scenario_colors[names(scenario_colors) != "scenario0"],
+      values = scenario_colors_new[names(scenario_colors_new) != "Baseline"],
       guide = "none"
     ) +
     geom_text(
