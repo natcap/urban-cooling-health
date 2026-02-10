@@ -8,10 +8,10 @@ date: "2025-11-20"
 
 ## Load data
 
-```{r}
+```{r include=FALSE}
 
 ## To clear your environment
-# remove(list = ls())
+remove(list = ls())
 
 library(sf)
 library(tmap)
@@ -325,7 +325,7 @@ metrics_to_remove <- c(
 )
 
 ## update the metrics list 
-metrics <- metrics[!(metrics %in% metrics_to_remove)]
+metrics <- metrics[!(metrics %in% metrics_to_remove)] %>% sort()
 
 df_cont <- df_cont %>%
   select(-any_of(metrics_to_remove))
@@ -914,7 +914,7 @@ ggplot() +
 
 
 
-```{r - gam plot + density}
+```{r - gam plot + density: fig.6}
 
 # Define a scaling factor to make the density fit nicely at the bottom
 # 0.04 is the height (adjust to make taller/shorter)
@@ -1336,24 +1336,37 @@ plot(compare_performance(model_lm, model_nb, model_gam, rank = TRUE, verbose = F
 
 ## Map - bicolor
 
+  ALL greening scenarios generated positive effect on preventing mortality, ranging from 0 to 1 at the LOSA level. 
+
 ```{r - one}
 # install.packages("biscale")
 
 library(biscale)
 library(cowplot)
 
+# reverse 'preventable cases'?
+# health_outcome_direction <- -1; outcome_d <- 'neg'; outcome_lab <- 'Mortality cases'
+health_outcome_direction <- 1;  outcome_d <- 'pos'; outcome_lab <- 'Deaths averted'
+
+
 sv_i <- 'pIncomeDeprivation'
 
 # 1. Create Bivariate Classes (3x3 Grid)
 # style = "quantile" splits data into equal groups (like your quintiles)
 # dim = 3 creates a 3x3 grid (Low/Med/High)
-data_bivariate <- bi_class(df_cont, x = pIncomeDeprivation, y = cases, style = "quantile", dim = 3)
+data_bivariate <- df_cont %>%
+  mutate(x_var = .data[[sv_i]], 
+         y_var = cases) %>%
+  bi_class(x = x_var, y = y_var, style = "quantile", dim = 3)
+
+pal_i <- 'DkBlue'
+pal_i <- 'DkCyan'
 
 # 2. Create the Map
 map <- ggplot() +
   geom_sf(data = data_bivariate, aes(fill = bi_class), color = 'gray', size = 0.05, show.legend = FALSE) +
-  bi_scale_fill(pal = "DkBlue", dim = 3) + # Palette options: "DkBlue", "DkCyan", "GrPink", etc.
-  labs(title = "Income Deprivation vs. Preventable Cases") +
+  bi_scale_fill(pal = pal_i, dim = 3) + # Palette options: "DkBlue", "DkCyan", "GrPink", etc.
+  # labs(title = "Income Deprivation vs. Preventable Cases") +
   bi_theme(base_size = 10) +
   # This removes the white box behind the square legend
   theme(
@@ -1362,10 +1375,10 @@ map <- ggplot() +
   )
 
 # 3. Create the Square Legend
-legend <- bi_legend(pal = "DkBlue",
+legend <- bi_legend(pal = pal_i,
                     dim = 3,
                     xlab = "Deprivation ",
-                    ylab = "Cases ",
+                    ylab = outcome_lab,
                     size = 8) +
   theme(
     # This sets the overall background of the legend plot to transparent
@@ -1384,50 +1397,115 @@ final_plot <- ggdraw() +
 print(final_plot)
 
 
-f <- paste0('./figures/equity_map_biscale/', paste('equity_map_health', outcome_ind, sv_i, lc_snr, ymd, sep = '_'), '-test.png'); f
-ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
+# f <- paste0('./figures/equity_map_biscale/', paste('equity_map_health', outcome_ind, sv_i, lc_snr, ymd, sep = '_'), '_test.png'); f
+# ggsave(plot = last_plot(), filename = f, width = 7, height = 5, units = 'in', dpi = 300)
 ```
 
-```{r - loop}
+
+
+```{r - loop - fig.7}
 
 # List of your metrics
 # metrics <- c("pIncomeDeprivation", "pBAME", "pSocial_housing", "p75over")
+names(df_cont)
+
+
+font_size <- 6
+
+# Create empty list to store plots
+plot_list <- list()
+
 
 # Loop through each metric
 for (var in metrics) {
   
+  # Get label with fallback
+  var_label <- if (var %in% names(label_map)) label_map[var] else var
+  
   # 1. Prepare data (Note: We rename columns dynamically for bi_class to work easier)
   temp_gdf <- df_cont %>%
     mutate(x_var = .data[[var]], 
-           y_var = -cases) %>%
+           y_var = cases * health_outcome_direction) %>%
     bi_class(x = x_var, y = y_var, style = "quantile", dim = 3)
   
   # 2. Map
   map <- ggplot() +
     geom_sf(data = temp_gdf, aes(fill = bi_class), color = NA, size = 0.05, show.legend = FALSE) +
-    bi_scale_fill(pal = "DkBlue", dim = 3) +
-    labs(title = paste0(var, " vs. Cases")) +
-    bi_theme(base_size = 10)
+    bi_scale_fill(pal = pal_i, dim = 3) +
+    # labs(title = paste0(var_label, " vs. Cases")) +
+    bi_theme(base_size = font_size) +
+    theme(
+      plot.margin = margin(0, 0, 0, 0),
+      panel.spacing = unit(0, "pt"),
+      legend.margin = margin(0, 0, 0, 0),
+      legend.box.margin = margin(0, 0, 0, 0),
+      axis.title = element_blank(),
+      axis.text = element_blank(), 
+      axis.ticks = element_blank(),
+      panel.grid = element_blank(),
+      plot.background = element_rect(fill = "transparent", color = NA),
+      panel.background = element_rect(fill = "transparent", color = NA)
+    )
+    
   
   # 3. Legend
-  legend <- bi_legend(pal = "DkBlue", dim = 3, xlab = "Vulnerability", ylab = "Cases", size = 8) +
+  legend <- bi_legend(pal = pal_i, dim = 3, xlab = "Vulnerability", ylab = outcome_lab, size = font_size) +
     theme(
       # This sets the overall background of the legend plot to transparent
       plot.background = element_rect(fill = "transparent", color = NA),
       panel.background = element_rect(fill = "transparent", color = NA),
+      plot.margin = margin(0, 0, 0, 0),
+      panel.spacing = unit(0, "pt"),
       # This ensures no other rectangle elements (like borders) have color
       rect = element_rect(fill = "transparent", color = NA)
   )
   
   # 4. Combine
-  final_plot <- ggdraw() +
+  final_plot <- 
+    # ggdraw() +
+    ggdraw(xlim = c(0, 1), ylim = c(0, 1)) +
+    theme(
+      plot.background = element_rect(fill = "transparent", color = NA),
+      panel.background = element_rect(fill = "transparent", color = NA),
+      plot.margin = margin(0, 0, 0, 0)
+  ) + 
     draw_plot(map, 0, 0, 1, 1) +
-    draw_plot(legend, 0.7, 0.05, 0.2, 0.2)
+    draw_plot(legend, x = 0.7, y = 0.06, width = 0.3, height = 0.3) +
+    draw_label(var_label, x = 0.86, y = 0.05, fontface = 'bold', size = font_size+1) 
   
-  # 5. Save
-  f <- paste0('./figures/equity_map_biscale/', paste('equity_map_health', outcome_ind, var, lc_snr, ymd, sep = '_'), '-neg.png'); f
-  ggsave(filename = f, plot = final_plot, width = 7, height = 5)
+  # Store in list
+  plot_list[[var]] <- final_plot
+  
+  # # 5. Save
+  # f <- paste0('./figures/equity_map_biscale/', 
+  #             paste('equity_map_health', outcome_ind, var, lc_snr, ymd, outcome_d, sep = '_'), '.png'); f
+  # ggsave(filename = f, plot = final_plot, bg = "transparent", dpi = 600, width = 7/2, height = 4.8/2, units = 'in', device = ragg::agg_png)
 }
+
+
+
+# Combine all plots ------------------------------------------------------------
+combined_plot <- plot_grid(
+  plotlist = plot_list,
+  ncol = 2,           # 2 columns
+  nrow = 2,           # 2 rows (adjust based on number of metrics)
+  labels = 'auto',
+  label_size = 11,
+  align = 'hv'        # align horizontally and vertically
+)
+
+# Save combined plot
+ggsave(
+  filename = paste0('./figures/equity_map_biscale/', 
+                    paste('equity_map_health', outcome_ind, 'combined', lc_snr, ymd, outcome_d, sep = '_'),
+                    '.png'),
+  plot = combined_plot,
+  bg = "transparent",
+  dpi = 600,
+  width = 7,         # Wider for 2 columns
+  height = 4.8,        # Taller for 2 rows
+  device = ragg::agg_png
+)
 ```
 
 
