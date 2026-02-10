@@ -11,7 +11,7 @@
 │
 ├── code/
 |    |
-|    |__ gcm-data-clip-stats-viz.Rmd              # figure 1a
+|    |__ gcm-data-clip-stats-viz.Rmd              # fig. 1a
 |
 │    ├── *lc_scenarios*
 |    |    |   # for the manuscript
@@ -22,7 +22,7 @@
 |    |    |__                                        # scenario 4 - InVEST Scenario Generator (Proximity Based) model rather than script 
 |    |    |
 |    |    |   # for our London collaborators
-|    |    |__ jlg_0_tree_scenarios_to_shp.Rmd            # Use J&L Gibbons data for Camden to generate tree planting sceanrio rasters
+|    |    |__ jlg_0_tree_scenarios_to_shp.Rmd        # Use J&L Gibbons data for Camden to generate tree planting sceanrio rasters
 |    |    |__ jlg_1_lc_clip_to_aoi.py
 |    |    |__ jlg_2_scenario_engine.py
 |    |    |__ jlg_3_plot_scenarios.py
@@ -32,17 +32,34 @@
 |    |    |__ health-modeling.py                                   # main code for modeling  
 |    |    |__ health-modeling_*.bat                                # batch run for each scenario
 |    |    |__ health-modeling-output-plot.ipynb                    # (not updated)
-|    |    |__ health-modeling-output-plot-city.Rmd                 # overall stats at city level 
+|    |    |__ health-modeling-output-plot-city.Rmd                 # fig.4c: overall stats at city level
 |    |    |__ health-modeling-zonal-stats.ipynb                    # zonal stats at borough or LSOA level 
 |    |    |__ health-modeling-zonal-stats-viz-borough.Rmd          # viz zonal stats: bar plots + maps
-|
+│    |
+│    ├── 
+│    ├── 
+│    |   # plot results
+│    ├── invest_result_zonal_viz_0_data_prep.Rmd
+│    ├── invest_result_zonal_viz_1_temp.Rmd           # fig.3a, fig.3b
+│    ├── invest_result_zonal_viz_2_energy.Rmd         # fig.4a
+│    ├── invest_result_zonal_viz_3_pd_NEW.Rmd         # fig.4b
+│    ├── invest_result_zonal_viz_pd_model_data.ipynb  # 
+│    ├── viz-es-change-due-to-lc.Rmd                  # fig.5 - map of borough-scale changes in co-benefits
+|    |
+|    |
+|    |   # equity analysis
+│    ├── socio-economic-data.Rmd      #
+│    ├── equity-health.Rmd            # fig.6 - Non-linear associations between SVI and prev. mortality
+|    |                                # fig.7 - bicolor maps
+│    ├── equity-temp-tcc.Rmd          #
+│    ├── 
 |
 ├── 
 │   ├── 
 │   ├── 
 │   ├── 
-│   ├── func_*.py                                  # Various data processing functions in Python
-│   └── func_*.R                                   # Various data processing functions in R
+│   ├── func_*.py                                 # Various data processing functions in Python
+│   └── func_*.R                                  # Various data processing functions in R
 │      
 
 ```
