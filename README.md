@@ -27,7 +27,7 @@
 |    |    |__ jlg_2_scenario_engine.py
 |    |    |__ jlg_3_plot_scenarios.py
 |    |
-│    ├── *health_assessment*                      # Health outcome estimates based on lc and climate scenarios
+│    ├── *health_assessment*                         # Health outcome estimates based on lc and climate scenarios
 |    |    |__ health-model-01-prep-input-ONS-mortality-data.Rmd    # baseline data
 |    |    |__ health-modeling.py                                   # main code for modeling  
 |    |    |__ health-modeling_*.bat                                # batch run for each scenario
@@ -51,7 +51,7 @@
 │    ├── socio-economic-data.Rmd      #
 │    ├── equity-health.Rmd            # fig.6 - Non-linear associations between SVI and prev. mortality
 |    |                                # fig.7 - bicolor maps
-│    ├── equity-temp-tcc.Rmd          #
+│    ├── equity-temp-tcc.Rmd          # fig.2 - spatial inequality on temp, and TCC
 │    ├── 
 |
 ├── 
