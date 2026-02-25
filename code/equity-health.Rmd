@@ -213,6 +213,8 @@ health_df <- read_csv(f, show_col_types = F) %>%
 names(health_df)
 
 
+
+# re-code scenario names again 
 scenario_labels_noBase <- scenario_labels[unname(scenario_labels) != "Baseline"]
 # scenario_colors_noBase <- scenario_colors_new[names(scenario_colors_new) != "Baseline"]
 
@@ -226,12 +228,12 @@ health_df <- health_df %>%
     cases = case_when(
       lc_scenario %in% c('AllBuilt', 'TreeRisk') ~ cases,
       ## convert "Excess deaths" to "Preventable deaths" to indicate "benefits" of nature
-      lc_scenario %in% c('TreeOpp', 'Green10', 'Green30') ~ -cases,
+      lc_scenario %in% c('TreeOpp', 'Green10', 'Green20', 'Green30') ~ -cases,
       T ~ NA
     ),
     cases_meaning = case_when(
       lc_scenario %in% c('AllBuilt', 'TreeRisk') ~ 'Excess dealths',
-      lc_scenario %in% c('TreeOpp', 'Green10', 'Green30') ~ 'Avoided dealths',
+      lc_scenario %in% c('TreeOpp', 'Green10', 'Green20', 'Green30') ~ 'Avoided dealths',
       T ~ NA
     )
   ) %>%
@@ -269,10 +271,10 @@ outcome_ind <- 'All_cause'
 
 unique(health_sf$lc_scenario)
 # lc_snr <- 'AllBuilt'
-lc_snr <- 'TreeRisk'
+# lc_snr <- 'TreeRisk'
 # lc_snr <- 'TreeOpp'
-# lc_snr <- 'Green10'
-# lc_snr <- 'Green20'
+lc_snr <- 'Green10'
+lc_snr <- 'Green20'
 # lc_snr <- 'Green30'
 
 
@@ -1581,6 +1583,22 @@ compare_performance(model_lm,
 plot(compare_performance(model_lm, 
                          # model_nb, 
                          model_gam, rank = TRUE, verbose = FALSE))
+```
+
+
+```{r - SI - Table 1}
+
+model_stats_table_format <- 
+  model_stats_table %>%
+  select(Metric, EDF, Delta_AIC, Adj_R_Sq, P_Value, Signif_Code) %>%
+  mutate(Metric = factor(x = Metric, levels = names(label_map), labels = label_map),
+         P_Value = ifelse(P_Value < 0.001, "<0.001", sprintf("%.3f", P_Value)) ) %>%
+  # rename(`∆AIC (GAM vs Linear)` = Delta_AIC) %>%
+  as.data.frame()
+
+# 1. Save as Excel
+library(writexl)
+write_xlsx(model_stats_table_format, "./figures/supplementary_table1_model_compare.xlsx")
 ```
 
 
