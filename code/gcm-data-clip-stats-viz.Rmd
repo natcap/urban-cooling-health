@@ -243,14 +243,17 @@ df_wc_summ_sub <- df_wc_summ %>%
 
 
 ## combine the two 
-df_ch_wc <- rbind(df_ch_sub, df_wc_summ_sub)
+df_ch_wc <- rbind(df_ch_sub, df_wc_summ_sub) %>%
+  dplyr::mutate(
+    scenario = if_else(scenario=='baseline', str_to_title(scenario), str_to_upper(scenario))
+  )
 
 
 library(tidyr)
 df_ch_wc_w <- df_ch_wc %>%
   as.data.frame() %>%
   filter(year > 2020) %>%
-  filter(scenario %in% c('baseline', 'ssp370') ) %>%
+  filter(scenario %in% c('Baseline', 'SSP370') ) %>%
   select(-scenario) %>%
   pivot_wider(names_from = 'year', values_from = 'mean')
 ```
@@ -311,7 +314,7 @@ p <-
     # color = "#f03b20", 
     aes(label = after_stat(sprintf("%.1f", y)),
         hjust = case_when(
-          scenario == "baseline" ~ 1.5,        # customize hjust based on the group
+          scenario == "Baseline" ~ 1.5,        # customize hjust based on the group
           T ~ 0.5)
     ), 
     show.legend = F,
@@ -330,7 +333,7 @@ p <-
   # Color scale for scenario (add your specific colors)
   scale_color_manual(
     name = NULL,
-    values = c("baseline" = "#4e79a7", "ssp370" = "#f28e2b", "ssp585" = "#e15759")) +
+    values = c("Baseline" = "#4e79a7", "SSP370" = "#f28e2b", "SSP585" = "#e15759")) +
   
   # # optional: show all borough points with jitter
   # geom_point(position = position_jitter(width = 0.15, height = 0),
@@ -662,8 +665,9 @@ ggplot(df_plot) +
     legend.title = element_text(lineheight = 0.9)
   )
 
+f <- file.path(dir.fig, paste0("T_change_", spatial_unit, "_by_model-quantile_ggplot_avg_years3-", ymd, ".png"))
 ggsave(
-  filename = file.path(dir.fig, paste0("T_change_", spatial_unit, "_by_model-quantile_ggplot_avg_years3-2.png")),
+  filename = f,
   plot = last_plot(), width = 7, height = 4, units = "in", dpi = 300
 )
 

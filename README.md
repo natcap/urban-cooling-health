@@ -5,13 +5,13 @@
 
 ```
 ├── data/
-│   ├── tree_list_GiGL_Pre2023_2050.csv            # tree specices will be at risk by 2050
-│   ├── GiGL_GLATrees_Pre2023_risk_2050.shp        # at-risk tree shapefile data
+│   ├── tree_list_GiGL_Pre2023_2050.csv              # tree specices will be at risk by 2050
+│   ├── GiGL_GLATrees_Pre2023_risk_2050.shp          # at-risk tree shapefile data
 │   └── 
 │
 ├── code/
 |    |
-|    |__ gcm-data-clip-stats-viz.Rmd              # fig. 1a
+|    |__ gcm-data-clip-stats-viz.Rmd                 # fig. 1a
 |
 │    ├── *lc_scenarios*
 |    |    |   # for the manuscript
@@ -51,6 +51,7 @@
 │    ├── socio-economic-data.Rmd      #
 │    ├── equity-health.Rmd            # fig.6 - Non-linear associations between SVI and prev. mortality
 |    |                                # fig.7 - bicolor maps
+|    |                                # SM table 1. Comparison of linear and non-linear model performance
 │    ├── equity-temp-tcc.Rmd          # fig.2 - spatial inequality on temp, and TCC
 │    ├── 
 |
