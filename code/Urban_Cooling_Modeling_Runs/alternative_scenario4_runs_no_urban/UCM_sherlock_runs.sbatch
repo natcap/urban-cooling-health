@@ -12,20 +12,17 @@
 # on Sherlock. If you are running locally,
 # please use invest_setup.sh
 
-module load physics gdal/3.5.2
-module load gcc/14.2.0
 module load python/3.9.0
+module load physics gdal/3.5.2 py-gdal-utils
+module load gcc/14.2.0
 
 TARGET_DIR='/oak/stanford/groups/gdaily/users/epavia/WellcomeTrustProjectData'
 
 # Run with correct path prefix
-# Note: scenario4_10prc was removed as it was close to opportunity trees
 #python3 execute_invest_urban_cooling_model_current_lulc.py $TARGET_DIR --eap
 #python3 execute_invest_urban_cooling_model_scenario1.py $TARGET_DIR --eap
 #python3 execute_invest_urban_cooling_model_scenario2.py $TARGET_DIR --eap
 #python3 execute_invest_urban_cooling_model_scenario3.py $TARGET_DIR --eap 
 #python3 execute_invest_urban_cooling_model_scenario4_10prc_TCC.py $TARGET_DIR --eap
 #python3 execute_invest_urban_cooling_model_scenario4_20prc_TCC.py $TARGET_DIR --eap
-python3 execute_invest_urban_cooling_model_scenario4_30prc_TCCno_urban.py $SCRATCH_DIR --eap 
-
-cp 
+python3 execute_invest_urban_cooling_model_scenario4_30prc_TCCno_urban.py $TARGET_DIR
