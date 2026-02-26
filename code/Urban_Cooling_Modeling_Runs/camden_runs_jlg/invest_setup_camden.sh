@@ -10,11 +10,6 @@
 # script in full: sh invest_setup_camden.sh or the
 # code for each scenario below:
 
-# Set prefix to GDrive or Oak path
-path_prefix = 'G:\Shared drives\Wellcome Trust Project Data'
-# Make sure to cd into the following directory:
-cd ~/code/Urban_Cooling_Modeling_Runs/
-
 # Run the python script to run the model.
 # To change which scenarios are run, you will need to edit the python script directly
-python execute_invest_urban_cooling_model_camden.py $path_prefix
+python execute_invest_urban_cooling_model_camden.py 'G:\Shared drives\Wellcome Trust Project Data'

@@ -25,18 +25,21 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 
+# Arguments for work productivity if needed:
+# building vector: os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/bld_with_attr_compact_ucm2_camden_clip_500m.shp')
+# energy consumption table: os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/_UCM_Energy Consumption Table.csv')
 
 args = {
     'aoi_vector_path': os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/borough_level/camden_borough.shp'),
     'biophysical_table_path': os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/Biophysical_table_ukech_2021_london_with_TCC.csv'),
-    'building_vector_path': os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/bld_with_attr_compact_ucm2_camden_clip_500m.shp'),
+    'building_vector_path': '',
     'cc_method': 'factors',
     'cc_weight_albedo': '',
     'cc_weight_eti': '',
     'cc_weight_shade': '',
-    'do_energy_valuation': True,
-    'do_productivity_valuation': True,
-    'energy_consumption_table_path': os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/_UCM_Energy Consumption Table.csv'),
+    'do_energy_valuation': False,
+    'do_productivity_valuation': False,
+    'energy_consumption_table_path': '',
     'green_area_cooling_distance': '450',
     'lulc_raster_path': '',
     'ref_eto_raster_path': os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/evapotranspiration/et0_V3_07_clipped_reprojected_camden_clip_1000m.tif'),
@@ -49,10 +52,10 @@ args = {
 
 if __name__ == '__main__':
     # Set the different scenario lulc inputs and scenario name
-    scenario_lulc = [('scenario0', 'LULC_Scenario_0.tif')]
-    #scenario_lulc = [('scenario0', 'LULC_Scenario_0.tif'),
-    #                   ('scenario2',), ('scenario3',),
-    #                 ('scenario4',), ('scenario5',), ('scenario7',)]
+    scenario_lulc = [('scenario0', 'LULC_Scenario_0.tif'),
+                       ('scenario2', 'LULC_Scenario_2.tif'), ('scenario3', 'LULC_Scenario_3.tif'),
+                     ('scenario4', 'LULC_Scenario_4.tif'), ('scenario5', 'LULC_Scenario_5.tif'), 
+                       ('scenario7', 'LULC_Scenario_7.tif')]
     # create an array with groups of temps, UHI values and humidity
     variables = np.array([[22, 2, 55], [25, 5, 45]])
     #variables = np.array([[20, 2, 66.9],[20, 5, 66.9], [22, 2, 55],
@@ -65,8 +68,8 @@ if __name__ == '__main__':
             # set the temperatures and UHI values
             args['t_ref'] = temp
             args['uhi_max'] = uhi
-            args['avg_rel_humidity'] = hum
+            #args['avg_rel_humidity'] = hum
             # set the suffix to have correct temp and uhi
-            args['results_suffix'] = f'camden_{scenario}_{temp}deg_{uhi}uhi_{hum}hum_energy_productivity'
+            args['results_suffix'] = f'camden_{scenario}_{temp}deg_{uhi}uhi'
             natcap.invest.urban_cooling_model.execute(args)
 
