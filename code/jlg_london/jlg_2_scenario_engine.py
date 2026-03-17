@@ -190,7 +190,7 @@ def create_scenario_raster(baseline_raster_path, opportunity_vector_path, output
 if __name__ == "__main__":
     
     # --- 1. SETUP PATHS ---
-    BASE_DIR = r"E:/London/jlg_tree_planting"
+    BASE_DIR = r"D:\natcap\urban-cooling-health\data\jlg_tree_planting"
     BASELINE_RASTER = os.path.join(BASE_DIR, "LCM2023_London_10m_clip2aoi_tcc24_clip2aoi_Camden.tif")
     OUTPUT_DIR = os.path.join(BASE_DIR, "lc_scenarios_output")
     

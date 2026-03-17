@@ -1,0 +1,313 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-12-14"
+---
+
+```{r setup}
+
+# To clear your environment 
+remove(list = ls())
+
+# load common packages
+library(here)
+here()
+source(here('code', 'func_packages.R'))
+
+library(sf)
+
+
+# Find where proj.db lives (usually inside R's rgdal/terra installation)
+proj_path <- dirname(Sys.which("gdal_translate"))  # or search manually
+Sys.setenv(PROJ_LIB = "C:/path/to/proj/share/proj")  # set before loading terra/sf
+
+
+g.jl <- 'G:/My Drive/NatCap/projects/KCL_Welcome/jlg-london/tree_planting'
+
+g.aoi <- "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs"
+
+g.invest.out <- 'G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/camden_JL_runs/intermediate/'
+
+
+```
+
+
+
+
+
+```{r aoi data}
+
+bor_i <- 'Camden'
+
+
+
+## aoi at borough level 
+f <- file.path(g.aoi, 'London_Borough_aoi.shp')
+aoi.bor_i <- st_read(f, quiet = T) %>% select(NAME, GSS_CODE) %>%
+  filter(NAME == bor_i)
+
+
+## aoi at lsoa level 
+f_aoi <- file.path(g.aoi, 'GLA_Tree_Cover_by_LSOA.gpkg')
+aoi.lsoa <- st_read(f_aoi, quiet = T) %>%
+  rename('geoid' = 'id', 'TCC' = 'tree_pct') %>%
+  mutate(geoid = as.character(geoid)) 
+
+aoi.lsoa_i <- aoi.lsoa %>%
+  filter(Neighborhood_name == bor_i)
+
+
+f <- file.path(g.aoi, paste0('GLA_Tree_Cover_by_LSOA_', bor_i, '.gpkg') ); f
+st_write(aoi.lsoa_i, dsn = f, layer = bor_i, delete_layer = T, delete_dsn = T)
+```
+
+
+
+## zonal stats
+
+
+```{r test run }
+
+library(terra)
+library(sf)
+library(exactextractr)
+library(dplyr)
+
+# ---------------------------
+# 1. Read data
+# ---------------------------
+f.r <- 'T_air_camden_scenario0_22deg_2uhi.tif'
+# f.r <- 'T_air_camden_scenario7_22deg_2uhi.tif'
+r   <- rast(paste0(g.invest.out, f.r))
+
+snr_text <- gsub('T_air_camden_|_22deg_2uhi.tif', '', f.r); snr_text
+
+aoi <- aoi.lsoa_i
+
+crs(r) <- crs(vect(aoi))   # fix broken raster CRS
+
+# ---------------------------
+# 2. Zonal stats — entire AOI in one call
+# ---------------------------
+aoi$mean_T_air <- exact_extract(r, aoi, 'mean')
+
+# Multiple stats at once if needed:
+# stats <- exact_extract(r, aoi, c('mean', 'median', 'stdev', 'min', 'max'))
+# aoi   <- bind_cols(aoi, stats)
+
+# ---------------------------
+# 3. City-level aggregation
+# ---------------------------
+city_summary <- aoi %>%
+  st_drop_geometry() %>%
+  group_by(Neighborhood_name) %>%
+  summarise(across(mean_T_air, list(mean=mean, min=min, max=max, sd=sd), na.rm=TRUE))
+
+# ---------------------------
+# 4. Save
+# ---------------------------
+# f_out <- paste0(g.jl, '/', 'T_air_mean_lsoa_', bor_i, '_', snr_text, '.gpkg')
+# st_write(aoi, f_out, layer = "T_air_mean_lsoa", delete_layer = TRUE)
+
+
+# ---------------------------
+# 4. Visualize
+# ---------------------------
+
+# 4a. Map: spatial distribution of mean T_air per LSOA
+p <- 
+  aoi %>%
+  ggplot(.) +
+  geom_sf(aes(fill = mean_T_air), colour = NA) +
+  facet_wrap(~Neighborhood_name) +            # one panel per city
+  theme_minimal() +
+  labs(title = "Mean Air Temperature by LSOA", subtitle = snr_text)
+
+
+library(scico)      # perceptually uniform, colorblind-safe
+library(colorspace) # diverging palettes
+
+# ---------------------------
+# OPTION 4: Built-in — viridis "turbo" for max contrast across range
+# ---------------------------
+p + scale_fill_distiller(palette = "YlOrBr", direction = 1)
+
+```
+
+
+
+```{r batch }
+
+library(terra)
+library(sf)
+library(exactextractr)
+library(dplyr)
+library(ggplot2)
+library(scico)
+library(purrr)
+
+# ---------------------------
+# 1. Find all matching rasters
+# ---------------------------
+raster_files <- list.files(
+  g.invest.out,
+  pattern = "^T_air_camden_scenario.*_22deg_2uhi\\.tif$",
+  full.names = TRUE
+)
+
+# ---------------------------
+# 2. First pass: compute stats for all scenarios
+#    and determine global T_air range for shared scale
+# ---------------------------
+aoi_base <- aoi.lsoa_i   # base AOI (no mean_T_air yet)
+
+all_results <- map(raster_files, function(f) {
+  
+  snr_text <- gsub("T_air_camden_|_22deg_2uhi\\.tif", "", basename(f))
+  message("Processing: ", snr_text)
+  
+  r <- rast(f)
+  crs(r) <- crs(vect(aoi_base))    # fix broken raster CRS
+  
+  aoi_i <- aoi_base
+  aoi_i$mean_T_air <- exact_extract(r, aoi_i, "mean")
+  aoi_i$scenario   <- snr_text
+  
+  # Save per-scenario gpkg
+  f_out <- file.path(g.jl, paste0("T_air_mean_lsoa_", bor_i, "_", snr_text, ".gpkg"))
+  st_write(aoi_i, f_out, layer = "T_air_mean_lsoa", delete_layer = TRUE, quiet = TRUE)
+  
+  return(aoi_i)
+  
+}) %>% bind_rows()
+
+```
+
+
+```{r plot maps}
+# ---------------------------
+# 3. Global color scale (same across all maps)
+# ---------------------------
+t_range <- range(all_results$mean_T_air, na.rm = TRUE)
+
+# ---------------------------
+# 4. Plot all scenarios on shared scale
+# ---------------------------
+p_all <- all_results %>%
+  ggplot() +
+  geom_sf(aes(fill = mean_T_air), colour = "white", linewidth = 0.05) +
+  facet_wrap(~scenario, ncol = 3) +
+  # scale_fill_scico(
+  #   palette  = "roma",
+  #   limits   = t_range,            # ← shared scale key line
+  #   name     = "T_air (°C)",
+  #   breaks   = scales::breaks_pretty(n = 5)
+  # ) +
+  scale_fill_distiller(palette = "YlOrBr", 
+                       name = "T_air (°C)", 
+                       type = 'seq',
+                       direction = 1) +
+  theme_minimal(base_size = 10) +
+  theme(
+    legend.position  = "bottom",
+    legend.key.width = unit(2, "cm"), 
+    panel.grid       = element_blank(),
+    axis.text        = element_blank(),
+    strip.text       = element_text(face = "bold")
+  ) +
+  labs(
+    title    = paste("Mean Air Temperature by LSOA —", bor_i),
+    subtitle = "All scenarios, shared colour scale"
+  )
+
+ggsave(
+  filename = file.path(g.jl, 'figures', paste0("T_air_mean_lsoa_", bor_i, "_all_scenarios.png")),
+  plot     = p_all,
+  width    = 7, height = ceiling(length(raster_files) / 3) * 3,
+  units    = "in", dpi = 300
+)
+
+```
+
+
+
+```{r sumamry table + plot}
+
+
+library(openxlsx)
+library(ggplot2)
+library(tidyr)
+library(forcats)
+
+# ---------------------------
+# 1. Build summary table
+# ---------------------------
+summary_tbl <- all_results %>%
+  st_drop_geometry() %>%
+  group_by(scenario) %>%
+  summarise(
+    n_lsoa  = n(),
+    mean_T  = round(mean(mean_T_air, na.rm = TRUE), 3),
+    min_T   = round(min(mean_T_air,  na.rm = TRUE), 3),
+    max_T   = round(max(mean_T_air,  na.rm = TRUE), 3),
+    sd_T    = round(sd(mean_T_air,   na.rm = TRUE), 3),
+    range_T = round(max(mean_T_air,  na.rm = TRUE) -
+                    min(mean_T_air,  na.rm = TRUE), 3)
+  ) %>%
+  arrange(scenario)
+
+# ---------------------------
+# 2. Save as formatted xlsx
+# ---------------------------
+
+f_xlsx <- file.path(g.jl, paste0("T_air_summary_", bor_i, ".xlsx"))
+writexl::write_xlsx(x = summary_tbl, path = f_xlsx)
+message("Saved: ", f_xlsx)
+
+
+
+# ---------------------------
+# 3. Plot summary table as figure
+# ---------------------------
+
+# 3a. Dot-range plot: mean ± sd, with min-max range
+p_summary <- summary_tbl %>%
+  mutate(scenario = fct_reorder(scenario, mean_T)) %>%
+  ggplot(aes(y = scenario)) +
+  # min–max range bar
+  geom_linerange(aes(xmin = min_T, xmax = max_T),
+                 linewidth = 3, colour = "#BDC3C7") +
+  # ±1 SD bar
+  geom_linerange(aes(xmin = mean_T - sd_T, xmax = mean_T + sd_T),
+                 linewidth = 3, colour = "#2980B9", alpha = 0.7) +
+  # mean point
+  geom_point(aes(x = mean_T), size = 4, colour = "#C0392B") +
+  # mean label
+  geom_text(aes(x = mean_T, label = sprintf("%.3f", mean_T)),
+            vjust = -1, size = 3, colour = "#C0392B", fontface = "bold") +
+  theme_minimal(base_size = 10) +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor   = element_blank(),
+    axis.text.y        = element_text(face = "bold")
+  ) +
+  labs(
+    x        = "Mean T_air (°C)",
+    y        = NULL,
+    title    = paste("Air Temperature by Scenario —", bor_i),
+    subtitle = "Red dot = mean  |  Blue bar = ±1 SD  |  Grey bar = min–max range"
+  )
+
+
+# ---------------------------
+# 4. Save figures
+# ---------------------------
+ggsave(file.path(g.jl, 'figures', paste0("T_air_summary_dotrange_", bor_i, ".png")),
+       plot = p_summary, width = 7, height = 0.5 * nrow(summary_tbl) + 2,
+       units = "in", dpi = 300)
+
+```
+
+
+
+
