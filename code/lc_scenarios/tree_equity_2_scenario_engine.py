@@ -294,19 +294,10 @@ if __name__ == "__main__":
     # --- 2. DEFINE SCENARIOS ---
     # Dictionary format: "Name": {"file": "filename.shp", "code": pixel_value}
     SCENARIO_CONFIG = {
-        # "Scenario710": {
-        #     "file": "tree_equity_scenario710.gpkg",
-        #     "lc_code": 100 
-        # },
-        # "Scenario720": {
-        #     "file": "tree_equity_scenario720.gpkg",
-        #     "lc_code": 100
-        # },
-        "Scenario730": {
-            "file": "tree_equity_scenario730.gpkg",
-            "lc_code": 100
-        },
-   
+        "Scenario715": {"file": "tree_equity_scenario715.gpkg", "lc_code": 100},
+        # "Scenario710": {"file": "tree_equity_scenario710.gpkg", "lc_code": 100},
+        # "Scenario720": {"file": "tree_equity_scenario720.gpkg", "lc_code": 100},
+        # "Scenario730": {"file": "tree_equity_scenario730.gpkg", "lc_code": 100},
     }
 
     # --- 3. RUN THE LOOP ---

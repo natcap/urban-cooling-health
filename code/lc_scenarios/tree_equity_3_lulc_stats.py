@@ -203,9 +203,14 @@ if __name__ == "__main__":
     LULC_PATH = r"G:\Shared drives\Wellcome Trust Project Data\1_preprocess\UrbanCoolingModel\OfficialWorkingInputs\LULC"
     RASTER_PATHS = [
         # Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24.tif"),
+        # Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_10prc_canopy_increase.tif"),
+        Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_20prc_canopy_increase.tif"),
+        Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_30prc_canopy_increase.tif"),
         # Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario710.tif"),
+        # Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario715.tif"),
         # Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario720.tif"),
-        Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario730.tif"),
+        # Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario730.tif"),
+        
     ]
     OUTPUT_DIR  = Path(LULC_PATH, "lc_stats_output")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
