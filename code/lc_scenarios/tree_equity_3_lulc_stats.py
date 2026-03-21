@@ -204,15 +204,27 @@ if __name__ == "__main__":
     RASTER_PATHS = [
         # Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24.tif"),
         # Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_10prc_canopy_increase.tif"),
-        Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_20prc_canopy_increase.tif"),
-        Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_30prc_canopy_increase.tif"),
-        # Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario710.tif"),
-        # Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario715.tif"),
-        # Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario720.tif"),
-        # Path(LULC_PATH, "lc_scenarios_output", "LULC_Scenario730.tif"),
+        # Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_20prc_canopy_increase.tif"),
+        # Path(LULC_PATH, "LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_30prc_canopy_increase.tif"),
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario710.tif"),
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario715.tif"),
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario720.tif"),
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario730.tif"),
+
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario710v2.tif"),
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario720v2.tif"),
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario730v2.tif"),
+
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario710v3.tif"),
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario720v3.tif"),
+        # Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario730v3.tif"),
+
+        Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario510.tif"),
+        Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario520.tif"),
+        Path(LULC_PATH, "lc_tree_equity_scenarios_output", "LULC_Scenario530.tif"),
         
     ]
-    OUTPUT_DIR  = Path(LULC_PATH, "lc_stats_output")
+    OUTPUT_DIR  = Path(LULC_PATH, "lc_tree_equity_stats_output")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     # --- Process each raster

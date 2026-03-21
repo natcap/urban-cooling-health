@@ -273,10 +273,10 @@ if __name__ == "__main__":
     
     # --- 1. SETUP PATHS ---
     BASE_DIR = Path(r"G:\Shared drives\Wellcome Trust Project Data\1_preprocess\UrbanCoolingModel\OfficialWorkingInputs\LULC")
-    VEC_DIR  = BASE_DIR
+    VEC_DIR  = BASE_DIR / "lc_tree_equity_scenarios_output"
     BASELINE_RASTER = BASE_DIR / "LCM2023_London_10m_clip2aoi_tcc24.tif"
     # OUTPUT_DIR = os.path.join(BASE_DIR, "lc_scenarios_output")
-    OUTPUT_DIR = BASE_DIR / "lc_scenarios_output"
+    OUTPUT_DIR = BASE_DIR / "lc_tree_equity_scenarios_output"
     
     # Create output folder if it doesn't exist
     if not os.path.exists(OUTPUT_DIR):
@@ -294,10 +294,18 @@ if __name__ == "__main__":
     # --- 2. DEFINE SCENARIOS ---
     # Dictionary format: "Name": {"file": "filename.shp", "code": pixel_value}
     SCENARIO_CONFIG = {
-        "Scenario715": {"file": "tree_equity_scenario715.gpkg", "lc_code": 100},
+        # "Scenario715": {"file": "tree_equity_scenario715.gpkg", "lc_code": 100},
         # "Scenario710": {"file": "tree_equity_scenario710.gpkg", "lc_code": 100},
         # "Scenario720": {"file": "tree_equity_scenario720.gpkg", "lc_code": 100},
         # "Scenario730": {"file": "tree_equity_scenario730.gpkg", "lc_code": 100},
+
+        # "Scenario710v2": {"file": "tree_equity_scenario710v2.gpkg", "lc_code": 100},
+        # "Scenario720v2": {"file": "tree_equity_scenario720v2.gpkg", "lc_code": 100},
+        # "Scenario730v2": {"file": "tree_equity_scenario730v2.gpkg", "lc_code": 100},
+
+        "Scenario710v3": {"file": "tree_equity_scenario710v3.gpkg", "lc_code": 100},
+        "Scenario720v3": {"file": "tree_equity_scenario720v3.gpkg", "lc_code": 100},
+        "Scenario730v3": {"file": "tree_equity_scenario730v3.gpkg", "lc_code": 100},
     }
 
     # --- 3. RUN THE LOOP ---

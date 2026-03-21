@@ -162,9 +162,15 @@ RADIUS   = DIAMETER / 2
 
 SCENARIOS = {
     # "tree_equity_scenario710":  842_100,    # 10%
-    "tree_equity_scenario715":  1_263_150,  # 15%
+    # "tree_equity_scenario715":  1_263_150,  # 15%
     # "tree_equity_scenario720":  1_684_200,  # 20%
     # "tree_equity_scenario730":  2_526_300,  # 30%
+    # "tree_equity_scenario710v2":  565_000,    # 10%
+    # "tree_equity_scenario720v2":  847_000,    # 20%
+    # "tree_equity_scenario730v2":  1_129_000,  # 30%
+    "tree_equity_scenario710v3":  701_000,      # 10%
+    "tree_equity_scenario720v3":  1_750_000,    # 20%
+    "tree_equity_scenario730v3":  1_819_000,    # 30%
 }
 
 # ============================================================
@@ -210,7 +216,7 @@ for scenario_name, n_tree in SCENARIOS.items():
 
     t3 = time.time()
 
-    out_gpkg = DIR_LULC / f"{scenario_name}.gpkg"
+    out_gpkg = DIR_LULC / 'lc_tree_equity_scenarios_output' / f"{scenario_name}.gpkg"
 
     # ⚡ OPTIMIZATION 4: pyogrio writer
     buffered_gdf.to_file(
