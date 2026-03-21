@@ -1,0 +1,173 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-05"
+---
+
+
+  * Maisie shared an updated version of the GPS coordinates CSV, including the date and time of each assessment. The tasks are to 
+  
+    - generate NDVI for each coordinate within the month of the assessment date, using a 100m buffer
+    - generate NDVI for each coordinate within the month of the assessment date, using a 200m buffer 
+    - generate NDVI for each coordinate within the month of the assessment date, using a 300m buffer 
+    - generate NDVI for each coordinate matched to the season and year, using a 300m buffer 
+    
+    
+  * Steps: 
+
+    - create buffer zones and save as polygons
+    - upload polygons to GEE to extract NDVI values
+  
+
+```{r include=FALSE}
+
+library(readr)
+library(dplyr)
+library(sf)
+library(lubridate)
+library(writexl)
+library(ggplot2)
+
+library(purrr)
+library(tidyr)
+library(stringr)
+
+ymd <- format(Sys.time(), "%Y%m%d"); ymd
+```
+
+
+
+## Load data and pre-cleaning
+
+```{r social mind data}
+
+dir <- "G:/Shared drives/Wellcome Trust Project Data/0_source_data/"
+
+
+```
+
+
+```{r}
+
+## 1. load NDVI data from GEE
+dir.ndvi <- 'D:/SocialMind-NDVI-coords'
+
+# ## test
+# ndvi <- read_csv(file = file.path(dir.ndvi, 'sm_coords_ndvi_2020_Fall_200m.csv'), show_col_types = F) 
+# names(ndvi)
+
+
+
+## 1.2 load all
+
+
+all_files <- list.files(dir.ndvi, pattern = "^sm_coords_ndvi.*\\.csv$", full.names = TRUE)
+
+# ---------------------------
+# Seasonal: Spring, Summer, Fall, Winter
+# ---------------------------
+seasonal_files <- all_files[grepl("Spring|Summer|Fall|Winter",
+                                  basename(all_files))]
+
+# ---------------------------
+# Monthly: Jan, Feb, Mar ... Dec
+# ---------------------------
+months <- paste(month.abb, collapse = "|")   # "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec"
+
+monthly_files <- all_files[grepl(months, basename(all_files))]
+
+# ---------------------------
+# Check
+# ---------------------------
+message("Seasonal files: ", length(seasonal_files)) # season * year * buffer =  4*5*3 = 60
+message("Monthly files:  ", length(monthly_files))  # month  * year * buffer = 12*5*3 = 180
+
+# basename(seasonal_files)
+# basename(monthly_files)
+```
+
+
+```{r - season}
+
+ndvi.s <- seasonal_files %>%
+  map_dfr(~ read_csv(.x, show_col_types = FALSE) %>%
+            select(uid, everything())
+          ) %>%
+  mutate(adate = as.Date(as.POSIXct(adate/1000, origin = "1970-01-01", tz = "UTC")) )
+
+
+## test on one example ---
+# ndvi.s.i <- ndvi.s %>%
+#   filter(uid == 2) %>% 
+#   # filter(buffer_m == 200) %>%
+#   # match date and season 
+#   filter(adate >= date_ini & adate <= date_end) %>%
+#   # if duplicates exist, keep the season with the closest date_ini
+#   group_by(uid, buffer_m) %>%
+#   slice_min(abs(as.numeric(adate - date_ini))) %>%
+#   ungroup() %>%
+#   as.data.frame()
+
+
+
+
+ndvi_season <- ndvi.s %>%
+  # match date and season 
+  filter(adate >= date_ini & adate <= date_end) %>%
+  # if duplicates exist, keep the season with the closest date_ini
+  group_by(uid, buffer_m) %>%
+  slice_min(abs(as.numeric(adate - date_ini))) %>%
+  ungroup() %>%
+  as.data.frame()
+  
+length(unique(ndvi_season$uid))
+
+4540*3
+```
+
+
+```{r - month}
+
+ndvi.m <- monthly_files %>%
+  map_dfr(~ read_csv(.x, show_col_types = FALSE) %>%
+            select(uid, everything())
+          ) %>%
+  mutate(adate = as.Date(as.POSIXct(adate/1000, origin = "1970-01-01", tz = "UTC")) )
+
+ndvi_month <- ndvi.m %>%
+  # match date and season 
+  filter(adate >= date_ini & adate <= date_end) %>%
+  # if duplicates exist, keep the season with the closest date_ini
+  group_by(uid, buffer_m) %>%
+  slice_min(abs(as.numeric(adate - date_ini))) %>%
+  ungroup() %>%
+  select(-month_name) %>%
+  as.data.frame()
+
+
+length(unique(ndvi_month$uid))
+
+
+nrow(sm_sf_m)*12*3
+
+```
+
+
+```{r - save}
+
+## 3. save and share with collaborator 
+
+## - season
+f <- file.path(dir, 'SocialMind', 'output_coords', paste0('sm_coords_NDVI_season_', ymd, '.csv')); f
+readr::write_csv(x = ndvi_season, file = f)
+
+## - monthly
+f <- file.path(dir, 'SocialMind', 'output_coords', paste0('sm_coords_NDVI_monthly_', ymd, '.csv')); f
+readr::write_csv(x = ndvi_month, file = f)
+
+union(names(ndvi_season), names(ndvi_month))
+
+```
+
+
+

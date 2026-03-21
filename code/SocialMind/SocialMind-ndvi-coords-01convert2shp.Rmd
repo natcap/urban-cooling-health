@@ -1,0 +1,195 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-09-05"
+---
+
+
+  * Maisie shared an updated version of the GPS coordinates CSV, including the date and time of each assessment. The tasks are to 
+  
+    - generate NDVI for each coordinate within the month of the assessment date, using a 100m buffer
+    - generate NDVI for each coordinate within the month of the assessment date, using a 200m buffer 
+    - generate NDVI for each coordinate within the month of the assessment date, using a 300m buffer 
+    - generate NDVI for each coordinate matched to the season and year, using a 300m buffer 
+    
+    
+  * Steps: 
+
+    - create buffer zones and save as polygons
+    - upload polygons to GEE to extract NDVI values
+  
+
+```{r include=FALSE}
+
+## To clear your environment
+remove(list = ls())
+
+library(readr)
+library(dplyr)
+library(sf)
+library(lubridate)
+library(writexl)
+library(ggplot2)
+
+library(purrr)
+library(tidyr)
+library(stringr)
+
+ymd <- format(Sys.time(), "%Y%m%d"); ymd
+```
+
+
+
+## Load data and pre-cleaning
+
+```{r social mind data}
+
+dir <- "G:/Shared drives/Wellcome Trust Project Data/0_source_data/"
+
+dir.sm <- file.path(dir, 'SocialMind', 'UPDATED GPS coordinates Social Mind.csv') # 3/20/2026
+dir.postcode <- file.path(dir, 'Geolocation Data', 'london_postcode.csv')
+
+sm_raw <- read_csv(dir.sm, show_col_types = F) %>%
+  rename('lat' = 'startlatitude',
+         'lon' = 'startlongitude') %>%
+  mutate(adate = as.Date(actualstarttime)) %>%
+  mutate(uid = row.names(.)) 
+
+names(sm_raw)
+
+sm_ <- sm_raw %>%
+  filter(!is.na(lat)) %>%
+  filter(!is.na(lon)) %>%
+  select(-actualstarttime) %>%
+  rename('pid' = 'participantid',
+         'aid' = 'assessmentnumber') %>%
+  as.data.frame()
+
+
+sm <- sm_ %>%
+  filter(lat > 50 & lat < 53) %>%
+  filter(lon > -2 & lon < 2) %>%
+  as.data.frame()
+
+names(sm)
+```
+
+
+```{r summary}
+
+# ---------------------------
+# Summary: missing values + basic stats
+# ---------------------------
+sm_summary_missing <- sm_raw %>%
+  summarise(across(everything(), list(
+    n_total   = ~n(),
+    n_missing = ~sum(is.na(.)),
+    pct_missing = ~round(mean(is.na(.)) * 100, 1)
+  ))) %>%
+  pivot_longer(
+    cols      = everything(),
+    names_to  = c("variable", ".value"),
+    names_pattern = "^(.+)_(n_total|n_missing|pct_missing)$"  # ← explicit suffixes
+    # names_sep = "_(?=[^_]+$)"          # split on last underscore
+  ) %>%
+  mutate(n_complete = n_total - n_missing) %>%
+  select(variable, n_total, n_complete, n_missing, pct_missing)
+
+
+# ---------------------------
+# Save
+# ---------------------------
+f_summary <- gsub("\\.csv$", "_data_summary.csv", dir.sm)   # saves alongside raw file
+write_csv(sm_summary_missing, f_summary)
+message("Saved: ", f_summary)
+```
+
+
+
+
+```{r df to sf}
+# Convert to sf
+sm_sf <- sm %>%
+  st_as_sf(., coords = c("lon", "lat"), crs = 4326, remove = FALSE)  # WGS84
+
+# plot(sm_sf[1])
+
+## save data - only shp format can be uploaded to GEE
+f <- file.path(dir, 'SocialMind', 'output_coords', paste0('sm_coords.shp')); f
+st_write(sm_sf, f, delete_layer = TRUE)
+
+
+# 1. Reproject to a CRS in meters (here: British National Grid, EPSG:27700)
+sm_sf_m <- st_transform(sm_sf, 27700)
+
+```
+
+
+```{r sf with buffer, eval=FALSE, include=FALSE}
+
+# 2. Create x m buffer
+buffer_m <- 100
+# buffer_m <- 200
+# buffer_m <- 300
+
+buffers <- st_buffer(sm_sf_m, dist = buffer_m) %>%
+  mutate(buffer_m = buffer_m)
+
+# 3. (Optional) Transform back to WGS84 for mapping
+##'   Warning: All vector data in Earth Engine is stored in a spherical coordinate system (specifically, EPSG:4326).To minimize the possibility of unintended changes, first reproject vector data to EPSG:4326 before uploading.
+buffers_wgs84 <- st_transform(buffers, 4326)
+
+
+## save data
+## --> only shp format can be uploaded to GEE
+f <- file.path(dir, 'SocialMind', 'output_coords', paste0('sm_coords_', buffer_m, 'm.shp')); f
+st_write(buffers_wgs84, f, delete_layer = TRUE)
+
+```
+
+```{r batch buffer}
+
+library(purrr)
+
+# 2. Create buffers for all sizes, transform, and save in one pass
+buffer_sizes <- c(100, 200, 300)
+
+walk(buffer_sizes, function(buffer_m) {
+  
+  f <- file.path(dir, 'SocialMind', 'output_coords',
+                 paste0('sm_coords_', buffer_m, 'm.shp'))
+  
+  sm_sf_m %>%
+    st_buffer(dist = buffer_m) %>%
+    mutate(buffer_m = buffer_m) %>%
+    st_transform(4326) %>%                        # reproject to WGS84 for GEE
+    st_write(f, delete_layer = TRUE)
+  
+  message("Saved: ", basename(f))
+})
+
+```
+
+
+
+
+
+The seasonal division is consistent with Yougeng’s earlier approach
+
+  Spring: 3/1 - 6/1
+  Summer: 6/1 - 9/1
+  Fall:   9/1 - 12/1
+  Winter: 12/1 - 3/1
+  
+  
+## For GEE
+
+Then upload the shapefile data to GEE, and use GEE to calculate NDVI by postcode region 
+
+The GEE script name is `london_urban_cooling/SocialMind_NDVI_coords`
+
+```{r}
+
+```
+
+
