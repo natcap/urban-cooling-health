@@ -17,7 +17,7 @@ module load gcc/14.2.0
 module load python/3.9.0
 
 
-TARGET_DIR='/oak/stanford/groups/gdaily/users/epavia/WellcomeTrustProjectData'
+TARGET_DIR='/oak/stanford/projects/natcap/users/epavia/WellcomeTrustProjectData'
 
 # Run with correct path prefix
 # Note: scenario4_10prc was removed as it was close to opportunity trees
