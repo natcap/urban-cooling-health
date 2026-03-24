@@ -29,16 +29,16 @@ args = {
     'cc_weight_albedo': '',
     'cc_weight_eti': '',
     'cc_weight_shade': '',
-    'do_energy_valuation': False,
-    'do_productivity_valuation': False,
+    'do_energy_valuation': True,
+    'do_productivity_valuation': True,
     'energy_consumption_table_path': '',
     'green_area_cooling_distance': '450',
     'lulc_raster_path': '',
     'ref_eto_raster_path': '',
     'results_suffix': '',
     't_air_average_radius': '500',
-    't_ref': '20',
-    'uhi_max': '2',
+    't_ref': '',
+    'uhi_max': '',
     'workspace_dir': '',
 }
 
@@ -53,27 +53,17 @@ if __name__ == '__main__':
     variables = np.array([[22, 2, 55], [25, 5, 45], [28, 5, 45]])
     #variables = np.array([[20, 2, 66.9],[20, 5, 66.9], [22, 2, 55],
     #                      [22, 5, 55], [25, 2, 45], [25, 5, 45]])
-    climate = ('current')
-    #climate = ('current', 'future')
-    for c in climate:
-        print(args['workspace_dir'])
-        if c == 'future':
-            args['ref_eto_raster_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/evapotranspiration/pet_all_modal_2041_2060_07_245_london_clipped.tif')
-        else:
-            None
-        # Loops through the different temperatures and degrees:
-        for temp, uhi, hum in variables:
-            # set the temperatures and UHI values
-            args['t_ref'] = temp
-            args['uhi_max'] = uhi
-            args['do_energy_valuation'] = True
-            args['do_productivity_valuation'] = True
-            args['avg_rel_humidity'] = hum
-            args['biophysical_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/Biophysical_table_ukech_2021_london_with_TCC.csv')
-            args['building_vector_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/bld_with_attr_compact_ucm2.gpkg')
-            args['energy_consumption_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/_UCM_Energy Consumption Table.csv')
-            # Loop through current and future scenarios
-            # set the suffix to have correct temp and uhi
-            args['workspace_dir'] = os.path.join(path_prefix, '2_postprocess_intermediate/UCM_official_runs/updated_scenario_no_urban/scenario43')
-            args['results_suffix'] = f'london_scenario4_30prc_{temp}deg_{uhi}uhi_{hum}hum_energy_productivity'
-            natcap.invest.urban_cooling_model.execute(args)
+    # Loops through the different temperatures and degrees:
+    for temp, uhi, hum in variables:
+        # set the temperatures and UHI values
+        args['t_ref'] = temp
+        args['uhi_max'] = uhi
+        args['avg_rel_humidity'] = hum
+        args['biophysical_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/Biophysical_table_ukech_2021_london_with_TCC.csv')
+        args['building_vector_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/bld_with_attr_compact_ucm2.gpkg')
+        args['energy_consumption_table_path'] = os.path.join(path_prefix, '1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/energy_buildings/_UCM_Energy Consumption Table.csv')
+        # Loop through current and future scenarios
+        # set the suffix to have correct temp and uhi
+        args['workspace_dir'] = os.path.join(path_prefix, '2_postprocess_intermediate/UCM_official_runs/updated_scenario_no_urban/scenario43')
+        args['results_suffix'] = f'london_scenario4_30prc_{temp}deg_{uhi}uhi_{hum}hum_energy_productivity'
+        natcap.invest.urban_cooling_model.execute(args)
