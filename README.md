@@ -1,9 +1,12 @@
-## This repository contains scripts pertaining to the Wellcome Trust Project (Extreme heat, green space and mental health).
+---
+---
+---
 
+## This repository contains scripts pertaining to the Wellcome Trust Project (Extreme heat, green space and mental health).
 
 ## Directory Structure
 
-```
+```         
 ├── data/
 │   ├── tree_list_GiGL_Pre2023_2050.csv              # tree specices will be at risk by 2050
 │   ├── GiGL_GLATrees_Pre2023_risk_2050.shp          # at-risk tree shapefile data
@@ -12,22 +15,23 @@
 ├── code/
 |    |
 |    |__ gcm-data-clip-stats-viz.Rmd                 # fig. 1a
-|
-│    ├── *lc_scenarios*
+|    |
+|    |
+│    ├── lc_scenarios/
 |    |    |   # for the manuscript
 |    |    |__ scenario_1_pavement_and_2_opportunity_trees.ipynb  # scenario 1 and 2
 |    |    |__ london-climate-scenario.Rmd            # scenario 3 - filter global tree-climate-scenario pairs for London
 |    |    |__ london-tree-climate-risk.Rmd           # scenario 3 - match London tree data to the scenario pairs
 |    |    |__ london-tree-climate-risk-GiGL.ipynb    # scenario 3 - link at-risk list to London tree shapefile for map
-|    |    |__                                        # scenario 4 - InVEST Scenario Generator (Proximity Based) model rather than script 
+|    |    |__                                               # scenario 4 - InVEST Scenario Generator (Proximity Based) model rather than script 
+|    |    |__ tree_equity_1_number_of_trees_to_polygon.py   # scenario 5 - planting equity trees (10%, 20%, 30% relative increase in TCC)
+|    |    |__ tree_equity_2_scenario_engine.py
+|    |    |__ tree_equity_3_lulc_stats.py
 |    |    |
-|    |    |   # for our London collaborators
-|    |    |__ jlg_0_tree_scenarios_to_shp.Rmd        # Use J&L Gibbons data for Camden to generate tree planting sceanrio rasters
-|    |    |__ jlg_1_lc_clip_to_aoi.py
-|    |    |__ jlg_2_scenario_engine.py
-|    |    |__ jlg_3_plot_scenarios.py
+|    |    |
 |    |
-│    ├── *health_assessment*                         # Health outcome estimates based on lc and climate scenarios
+|    |
+│    ├── health_assessment/                         # Health outcome estimates based on lc and climate scenarios
 |    |    |__ health-model-01-prep-input-ONS-mortality-data.Rmd    # baseline data
 |    |    |__ health-modeling.py                                   # main code for modeling  
 |    |    |__ health-modeling_*.bat                                # batch run for each scenario
@@ -36,9 +40,14 @@
 |    |    |__ health-modeling-zonal-stats.ipynb                    # zonal stats at borough or LSOA level 
 |    |    |__ health-modeling-zonal-stats-viz-borough.Rmd          # viz zonal stats: bar plots + maps
 │    |
-│    ├── 
-│    ├── 
-│    |   # plot results
+|    |
+│    |   # visualize results
+│    |   ## --- step 1. zonal stats ---
+│    ├── invest_result_zonal_stats_temp.ipynb
+│    ├── invest_result_zonal_stats_energy.ipynb       # stats by borough vs lsoa
+│    ├── invest_result_zonal_stats_productivity.ipynb # stats by borough vs lsoa (be sure to run a separate updated productivity function)
+│    | 
+│    |   ## --- step 2. viz ---
 │    ├── invest_result_zonal_viz_0_data_prep.Rmd
 │    ├── invest_result_zonal_viz_1_temp.Rmd           # fig.3a, fig.3b
 │    ├── invest_result_zonal_viz_2_energy.Rmd         # fig.4a
@@ -54,13 +63,10 @@
 |    |                                # SM table 1. Comparison of linear and non-linear model performance
 │    ├── equity-temp-tcc.Rmd          # fig.2 - spatial inequality on temp, and TCC
 │    ├── 
-|
-├── 
-│   ├── 
-│   ├── 
-│   ├── 
-│   ├── func_*.py                                 # Various data processing functions in Python
-│   └── func_*.R                                  # Various data processing functions in R
+│    ├── 
+│    |
+│    |   # functions 
+│    ├── func_*.py                                 # Various data processing functions in Python
+│    ├── func_*.R                                  # Various data processing functions in R
 │      
-
 ```
