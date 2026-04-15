@@ -19,12 +19,12 @@
 |    |
 │    ├── lc_scenarios/
 |    |    |   # for the manuscript
-|    |    |__ scenario_1_pavement_and_2_opportunity_trees.ipynb  # scenario 1 and 2
-|    |    |__ london-climate-scenario.Rmd            # scenario 3 - filter global tree-climate-scenario pairs for London
-|    |    |__ london-tree-climate-risk.Rmd           # scenario 3 - match London tree data to the scenario pairs
-|    |    |__ london-tree-climate-risk-GiGL.ipynb    # scenario 3 - link at-risk list to London tree shapefile for map
-|    |    |__                                               # scenario 4 - InVEST Scenario Generator (Proximity Based) model rather than script 
-|    |    |__ tree_equity_1_number_of_trees_to_polygon.py   # scenario 5 - planting equity trees (10%, 20%, 30% relative increase in TCC)
+|    |    |__ scenario_1_pavement_and_2_opportunity_trees.ipynb # scenario 1 and 2
+|    |    |__ london-climate-scenario.Rmd                       # scenario 3 - filter global tree-climate-scenario pairs for London
+|    |    |__ london-tree-climate-risk.Rmd                      # scenario 3 - match London tree data to the scenario pairs
+|    |    |__ london-tree-climate-risk-GiGL.ipynb               # scenario 3 - link at-risk list to London tree shapefile for map
+|    |    |__                                                   # scenario 4 - InVEST Scenario Generator (Proximity Based) model rather than script 
+|    |    |__ tree_equity_1_number_of_trees_to_polygon.py       # scenario 5 - planting equity trees (10%, 20%, 30% relative increase in TCC)
 |    |    |__ tree_equity_2_scenario_engine.py
 |    |    |__ tree_equity_3_lulc_stats.py
 |    |    |
@@ -35,7 +35,7 @@
 |    |    |__ health-model-01-prep-input-ONS-mortality-data.Rmd    # baseline data
 |    |    |__ health-modeling.py                                   # main code for modeling  
 |    |    |__ health-modeling_*.bat                                # batch run for each scenario
-|    |    |__ health-modeling-output-plot.ipynb                    # (not updated)
+|    |    |__ ~~health-modeling-output-plot.ipynb                  # (not updated)~~
 |    |    |__ health-modeling-output-plot-city.Rmd                 # fig.4c: overall stats at city level
 |    |    |__ health-modeling-zonal-stats.ipynb                    # zonal stats at borough or LSOA level 
 |    |    |__ health-modeling-zonal-stats-viz-borough.Rmd          # viz zonal stats: bar plots + maps
