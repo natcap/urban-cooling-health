@@ -25,7 +25,7 @@ library(stringr)
 dir.g   <- "G:/Shared drives/Wellcome Trust Project Data"
 dir.aoi <- file.path(dir.g, "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs")
 
-dir.raw <- 'E:/London/jlg_tree_planting/'
+dir.raw   <- 'D:/natcap/urban-cooling-health/data/jlg_tree_planting/'
 dir.share <- 'G:/My Drive/NatCap/projects/KCL_Welcome/jlg-london/tree_planting/'
 ```
 ```{r}

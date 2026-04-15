@@ -1,0 +1,232 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-04-14"
+---
+
+
+# Setup 
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(readr)
+library(sf)
+```
+
+
+
+# Data 
+
+  PCD, LSOA, and LAD are hierarchical geographic units used in the UK to organize, report, and analyze statistical data, particularly from the Census. They differ primarily in scale, purpose, and population size, typically structured as: `PCD -> LSOA -> MSOA -> LAD`. 
+
+  *PCD (Postcode)*: The smallest unit, representing individual postcodes (e.g., SW1A 1AA) used for mail delivery, containing a small number of addresses.
+  *LSOA* (Lower Layer Super Output Area): Mid-level statistical areas with a consistent population size (~1,500 people or 650 households), designed for comparing small areas.
+  *LAD* (Local Authority District): A high-level administrative area (e.g., city council or borough) containing multiple LSOAs, used for local government administration. 
+
+```{r csv data}
+
+dir.clim <- './data/01_raw/Camden temperature data/ncpstanf_data/'
+
+
+f <- file.path(dir.clim, 'daily_temp_6LAD_lsoa_May_Sep_2013_2023.csv')
+clim <- readr::read_csv(f, show_col_types = F)
+
+# # the finest data - too large
+# f <- file.path(dir.clim, 'daily_temp_CamdIsl_pcds_May_Sep_2013_2023.csv')
+# d2 <- readr::read_csv(f, show_col_types = F)
+```
+
+
+```{r geo data}
+
+f <- file.path(dir.clim, 'lookup_lsoas_gl.gpkg')
+sf.lsoa <- st_read(f, quiet = T)
+
+plot(sf.lsoa['LSOA11NM'])
+
+
+sf.i <- sf.lsoa %>%
+  filter(LAD11NM %in% c('Camden'))
+
+plot(sf.i['LSOA11NM'])
+```
+
+
+```{r subset climate data}
+
+
+clim.i <- clim %>%
+  filter(LSOA11CD %in% unique(sf.i$LSOA11CD)) %>%
+  mutate(date = as.Date(date),
+         month = month(date)) %>%
+  arrange(date) %>%
+  filter(year(date) >= 2020) %>%
+  filter(year(date) == 2022)
+  
+  
+
+names(clim.i)
+```
+
+
+
+```{r viz}
+
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+
+clim.i %>%
+  ggplot(., aes(x = as.Date(date), y = temp_mean, color = LSOA11CD)) +
+  geom_line(linewidth = 0.6, show.legend = F) +
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text       = element_text(face = "bold")
+  ) +
+  labs(
+    x     = NULL,
+    y     = "Mean Temperature (°C)",
+    title = "Daily Mean Temperature by LSOA"
+  )
+
+```
+
+
+
+```{r}
+df_monthly <- clim.i %>%
+  mutate(
+    year  = year(as.Date(date)),
+    month = month(as.Date(date))
+  ) %>%
+  group_by(LSOA11CD, year, month) %>%
+  summarise(
+    temp_mean_monthly = mean(temp_mean, na.rm = TRUE),
+    temp_max_monthly  = mean(temp_max,  na.rm = TRUE),
+    temp_min_monthly  = mean(temp_min,  na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(date = as.Date(paste(year, month, "01", sep = "-")))  # first day of month for plotting
+
+
+
+# Option 1: move text aes into geom_point only
+p <- 
+  ggplot(df_monthly, aes(x = date, y = temp_mean_monthly, 
+                       group = LSOA11CD, colour = LSOA11CD)) +
+  geom_line(linewidth = 0.7, show.legend = F) +
+  geom_point(size = 1.5, colour = "#457b9d", show.legend = F) +
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text       = element_text(face = "bold")
+  ) +
+  labs(
+    x     = NULL,
+    y     = "Mean Temperature (°C)",
+    title = "Monthly Mean Temperature by LSOA"
+  )
+p
+```
+
+
+```{r}
+# ---------------------------
+# Option 2: native plotly (most robust, avoids ggplotly bugs entirely)
+# ---------------------------
+library(plotly)
+
+plot_ly(df_monthly,
+        x      = ~date,
+        y      = ~temp_mean_monthly,
+        color  = ~LSOA11CD,
+        type   = "scatter",
+        mode   = "lines+markers",
+        text   = ~paste0("LSOA: ", LSOA11CD, "<br>",
+                         "Date: ", format(date, "%b %Y"), "<br>",
+                         "Temp: ", round(temp_mean_monthly, 2), "°C"),
+        hoverinfo = "text") %>%
+  layout(
+    title      = "Monthly Mean Temperature by LSOA",
+    xaxis      = list(title = ""),
+    yaxis      = list(title = "Mean Temperature (°C)"),
+    showlegend = FALSE,
+    hovermode  = "x unified"
+  )
+```
+
+
+
+```{r}
+clim.i.summer <- clim.i %>%
+  filter(month %in% c(7,8))
+
+
+clim.i.summer %>%
+  plot_ly(.,
+        x      = ~date,
+        y      = ~temp_mean,
+        color  = ~LSOA11CD,
+        type   = "scatter",
+        mode   = "lines+markers",
+        text   = ~paste0("LSOA: ", LSOA11CD, "<br>",
+                         "Date: ", format(date, "%b %Y %d"), "<br>",
+                         "Temp: ", round(temp_mean, 2), "°C"),
+        hoverinfo = "text") %>%
+  layout(
+    title      = "Monthly Mean Temperature by LSOA",
+    xaxis      = list(title = ""),
+    yaxis      = list(title = "Mean Temperature (°C)"),
+    showlegend = FALSE,
+    hovermode  = "x unified"
+  )
+```
+
+
+
+```{r}
+clim.i.max <- clim.i %>%
+  filter(date == '2022-07-19')
+
+
+
+library(tidyr)
+digits <- 2
+
+summary_tbl <- 
+  clim.i.max %>%
+  summarise(
+    n          = n(),
+    across(
+      c(temp_mean, temp_max),
+      list(
+        mean = ~round(mean(.,          na.rm = TRUE), digits),
+        # sd   = ~round(sd(.,            na.rm = TRUE), 4),
+        min  = ~round(min(.,           na.rm = TRUE), digits),
+        p25  = ~round(quantile(., .25, na.rm = TRUE), digits),
+        p50  = ~round(quantile(., .50, na.rm = TRUE), digits),
+        p75  = ~round(quantile(., .75, na.rm = TRUE), digits),
+        p90  = ~round(quantile(., .90, na.rm = TRUE), digits),
+        p95  = ~round(quantile(., .95, na.rm = TRUE), digits),
+        max  = ~round(max(.,           na.rm = TRUE), digits)
+      ),
+      .names = "{.col}_{.fn}"
+    )
+  ) %>%
+  pivot_longer(-n,
+               names_to  = c("variable", "stat"),
+               names_sep = "_(?=[^_]+$)") %>%
+  pivot_wider(names_from  = variable,
+              values_from = value) %>%
+  select(stat, temp_mean, temp_max) %>%
+  print()
+
+
+# f_out <- file.path(dir.clim, paste0("clim_summary_", unique(clim.i.max$date), ".csv"))
+# write_csv(summary_tbl, f_out)
+```
+
