@@ -13,8 +13,9 @@ remove(list = ls())
 library(here)
 here()
 source(here('code', 'func_packages.R'))
-
 library(sf)
+
+ymd <- format(Sys.time(), "%Y%m%d"); ymd
 
 
 # Find where proj.db lives (usually inside R's rgdal/terra installation)
@@ -136,6 +137,18 @@ p + scale_fill_distiller(palette = "YlOrBr", direction = 1)
 
 
 
+```{r climate input}
+
+t_i <- "22deg";    uhi_i <- "2uhi"; 
+t_i <- "29.56deg"; uhi_i <- "5.0uhi";
+# t_i <- "39.12deg"; uhi_i <- "5.0uhi";
+
+
+clim_lab <- paste0(t_i, "_", uhi_i); clim_lab
+```
+
+
+
 ```{r batch }
 
 library(terra)
@@ -151,7 +164,7 @@ library(purrr)
 # ---------------------------
 raster_files <- list.files(
   g.invest.out,
-  pattern = "^T_air_camden_scenario.*_22deg_2uhi\\.tif$",
+  pattern = paste0("^T_air_camden_scenario.*_", t_i, "_", uhi_i, "\\.tif$"),
   full.names = TRUE
 )
 
@@ -163,7 +176,8 @@ aoi_base <- aoi.lsoa_i   # base AOI (no mean_T_air yet)
 
 all_results <- map(raster_files, function(f) {
   
-  snr_text <- gsub("T_air_camden_|_22deg_2uhi\\.tif", "", basename(f))
+  snr_text <- gsub("T_air_camden_", "", basename(f))
+  snr_text <- gsub(pattern = paste0("_", t_i, "_", uhi_i, "\\.tif"), "", snr_text)
   message("Processing: ", snr_text)
   
   r <- rast(f)
@@ -174,7 +188,7 @@ all_results <- map(raster_files, function(f) {
   aoi_i$scenario   <- snr_text
   
   # Save per-scenario gpkg
-  f_out <- file.path(g.jl, paste0("T_air_mean_lsoa_", bor_i, "_", snr_text, ".gpkg"))
+  f_out <- file.path(g.jl, paste0("T_air_mean_lsoa_", bor_i, "_", snr_text, "_", clim_lab , ".gpkg"))
   st_write(aoi_i, f_out, layer = "T_air_mean_lsoa", delete_layer = TRUE, quiet = TRUE)
   
   return(aoi_i)
@@ -220,8 +234,9 @@ p_all <- all_results %>%
     subtitle = "All scenarios, shared colour scale"
   )
 
+f <- file.path(g.jl, 'figures', paste0("T_air_mean_lsoa_", bor_i, "_", clim_lab, "_all_scenarios_", ymd, ".png")); f
 ggsave(
-  filename = file.path(g.jl, 'figures', paste0("T_air_mean_lsoa_", bor_i, "_all_scenarios.png")),
+  filename = f,
   plot     = p_all,
   width    = 7, height = ceiling(length(raster_files) / 3) * 3,
   units    = "in", dpi = 300
@@ -260,7 +275,7 @@ summary_tbl <- all_results %>%
 # 2. Save as formatted xlsx
 # ---------------------------
 
-f_xlsx <- file.path(g.jl, paste0("T_air_summary_", bor_i, ".xlsx"))
+f_xlsx <- file.path(g.jl, paste0("T_air_summary_", bor_i, "_", clim_lab, "_", ymd, ".xlsx")); f_xlsx
 writexl::write_xlsx(x = summary_tbl, path = f_xlsx)
 message("Saved: ", f_xlsx)
 
@@ -302,7 +317,8 @@ p_summary <- summary_tbl %>%
 # ---------------------------
 # 4. Save figures
 # ---------------------------
-ggsave(file.path(g.jl, 'figures', paste0("T_air_summary_dotrange_", bor_i, ".png")),
+f <- file.path(g.jl, 'figures', paste0("T_air_summary_dotrange_", bor_i, "_", clim_lab, "_", ymd, ".png")); f
+ggsave(f,
        plot = p_summary, width = 7, height = 0.5 * nrow(summary_tbl) + 2,
        units = "in", dpi = 300)
 
