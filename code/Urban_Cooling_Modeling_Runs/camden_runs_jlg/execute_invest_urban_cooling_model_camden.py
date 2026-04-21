@@ -57,9 +57,7 @@ if __name__ == '__main__':
                      ('scenario4', 'LULC_Scenario_4.tif'), ('scenario5', 'LULC_Scenario_5.tif'), 
                        ('scenario7', 'LULC_Scenario_7.tif')]
     # create an array with groups of temps, UHI values and humidity
-    variables = np.array([[22, 2, 55], [25, 5, 45]])
-    #variables = np.array([[20, 2, 66.9],[20, 5, 66.9], [22, 2, 55],
-    #                      [22, 5, 55], [25, 2, 45], [25, 5, 45]])
+    variables = np.array([[22, 2, 55], [25, 5, 45], [29.56, 5, 36], [39.12, 5, 21]])
     # Run each scenario lulc
     for scenario, lulc in scenario_lulc:
         args['lulc_raster_path'] = f'{path_prefix}/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/jlg_lc_scenarios_output/{lulc}'
