@@ -12,10 +12,10 @@ remove(list = ls())
 # load common packages
 library(here)
 here()
-source(here('code', 'func_packages.R'))
+source(here('code', 'func_packages.R'))   # ymd
 source(here('code', 'func_ggsave.R'))
 source(here('code', 'func_get_color_scale.R'))
-source(here('code', 'func_colors.R')) # scenario_colors
+source(here('code', 'func_colors.R'))     # scenario_colors, scenario_labels
 
 dir.g   <- "G:/Shared drives/Wellcome Trust Project Data"
 dir.aoi <- file.path(dir.g, "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs")
@@ -57,6 +57,8 @@ aoi_lsoa <- st_read(f, quiet = T) %>%
 
 ## pick the baseline year for later comparison 
 year_baseline <- 2021
+
+#' the input data was generated from `invest_result_zonal_viz_0_data_prep.Rmd`
 
 f <- paste0('./data/', 'ucm_output_shp_stats_outcomes_by_borough.rds'); f
 shp_all_df <- readRDS(f)
@@ -114,10 +116,10 @@ func_calculate_change_from_yri_lc0 <- function(
   df_change <- data %>%
     rename('value' = ind) %>%
     mutate(value = value * ind_scale) %>%
-    group_by(year) %>%
-    mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
     mutate(year = as.numeric(year)) %>%
     filter(year >= year_baseline) %>%
+    group_by(year) %>%
+    mutate(value_diff = value - value[lc_scenario == "scenario0"]) %>%
     filter(lc_scenario != "scenario0") %>%
     as.data.frame() 
   
@@ -705,7 +707,13 @@ func_plot_change_point(data = stat_both_l)
   
 ```{r - plot: lc-led change on avg - fig.3b}
 
-func_plot_change_point(data = stat_both_l, show_x_label = T, plot_avg = T)
+# func_plot_change_point(data = stat_both_l, show_x_label = T, plot_avg = T)
+
+
+# for presentation 
+stat_both_l_pres <- stat_both_l %>%
+  filter(str_detect(string = lc_scenario, pattern = 'Target', negate = T))
+func_plot_change_point(data = stat_both_l_pres, show_x_label = T, plot_avg = T, plot_h = 4)
 
 ```
 
@@ -813,7 +821,7 @@ ggsave(
 
 
 
-```{r - heatmap, eval=FALSE, include=FALSE}
+```{r - heatmap [x], eval=FALSE, include=FALSE}
 
 # install.packages(c("dplyr","tidyr","ggplot2","scico","forcats"))
 library(dplyr)
@@ -857,7 +865,7 @@ p
 ```
 
 
-```{r - heatmap - grid, eval=FALSE, include=FALSE}
+```{r - heatmap [x] - grid, eval=FALSE, include=FALSE}
 
 library(ggplot2)
 
@@ -888,7 +896,7 @@ ggsave(
 )
 ```
 
-```{r - test, eval=FALSE, include=FALSE}
+```{r - test 1 [x], eval=FALSE, include=FALSE}
 
 library(ggplot2)
 library(dplyr)
@@ -949,7 +957,7 @@ ggsave(
 
 
 
-```{r - test 2, eval=FALSE, include=FALSE}
+```{r - test 2 [x], eval=FALSE, include=FALSE}
 
 library(ggplot2)
 library(dplyr)
@@ -1061,7 +1069,7 @@ p3  # Small multiples by scenario
 
 
 
-```{r - test 3, eval=FALSE, include=FALSE}
+```{r - test 3 [x], eval=FALSE, include=FALSE}
 
 # Option 2: Show the differences from a baseline (scenario0)
 df_diff <- df %>%

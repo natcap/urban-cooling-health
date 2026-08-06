@@ -10,6 +10,32 @@ date: "2025-09-16"
 --> 
 
 
+  Re-use the paths and functions in the script
+
+## Packages and functions 
+
+```{r}
+# load functions 
+f <- here("code", "func_calculate_change_from_yri_lc0.rds");
+func_calculate_change_from_yri_lc0 <- readRDS(f)
+
+f <- here('code', 'func_calculate_change_from_yr0_lc0.rds');
+func_calculate_change_from_yr0_lc0 <- readRDS(f)
+
+f <- here('code', 'func_combine_two_change_dfs.rds')
+func_combine_two_change_dfs <- readRDS(f) 
+
+f <- here('code', 'func_plot_line.rds')
+func_plot_line <- readRDS(f)
+
+f <- here('code', 'func_plot_change_point.rds')
+func_plot_change_point <- readRDS(f)
+
+f <- here('code', 'func_plot_map.rds')
+func_plot_map <- readRDS(f)
+```
+
+
 ## AOI
 
 ```{r - borough}
@@ -49,7 +75,7 @@ ind_scale <- 1/10^6  # convert to million
 ind_label <- "avoided energy cost (Million £)"
 
 
-#' load data generated from `invest_result_zonal_stats_viz_temp.Rmd`
+#' load data generated from `invest_result_zonal_viz_0_data_prep.Rmd`
 # f <- paste0('./data/', 'ucm_output_shp_all_df.rds'); f # old name
 f <- paste0('./data/', 'ucm_output_shp_stats_outcomes_by_borough.rds'); f # new name
 shp_all_df <- readRDS(f) %>%

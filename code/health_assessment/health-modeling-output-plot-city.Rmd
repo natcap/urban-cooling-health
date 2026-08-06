@@ -80,6 +80,9 @@ df_all_ <- df_all %>%
       lc_scenario == 's41' ~ 'scenario4_10',
       lc_scenario == 's42' ~ 'scenario4_20',
       lc_scenario == 's43' ~ 'scenario4_30',
+      lc_scenario == 's510' ~ 'scenario510',
+      lc_scenario == 's520' ~ 'scenario520',
+      lc_scenario == 's530' ~ 'scenario530',
       TRUE                 ~ NA_character_
     ) 
   ) %>%
@@ -91,14 +94,17 @@ df_all_ <- df_all_ %>%
   mutate(lc_scenario = factor(lc_scenario, 
                               levels = names(scenario_labels),
                               labels = unname(scenario_labels)))
+
+
+unique(df_all_$lc_scenario)
 ```
 
 
   There are two ways to present the results:
 
-  1. Net change (2021 → 2050): show the change in deaths between 2021 and 2050, capturing the combined effects of climate change + land-use change.
+  1. Net change (2021 → 2050): show the change in deaths between 2021 and 2050, capturing the *combined effects of climate change + land-use change*.
 
-  2. Land-use-only effect (within-year counterfactual): in a given year, compare deaths under each counterfactual land-use scenario against the baseline land-use for the same climate conditions, isolating the effect of land-use change alone.
+  2. Land-use-only effect (within-year counterfactual): in a given year, compare deaths under each counterfactual land-use scenario against the baseline land-use for the same climate conditions, isolating the *effect of land-use change alone*.
   
 ```{r - which data?}
 

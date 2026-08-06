@@ -7,7 +7,11 @@ scenario_colors = c(
   "scenario3_TO" = "#d9f0a3", # tree opportunity
   "scenario4_10" = "#78c679",
   "scenario4_20" = "#238443",
-  "scenario4_30" = "#004529")
+  "scenario4_30" = "#004529",
+  "scenario510"  = "#8c96c6",
+  "scenario520"  = "#8856a7",
+  "scenario530"  = "#810f7c"
+  )
 
 
 scenario_abbr <- c(
@@ -17,7 +21,10 @@ scenario_abbr <- c(
   'TreeOpp',
   'Green10',
   'Green20',
-  'Green30'
+  'Green30',
+  'Target10',
+  'Target20',
+  'Target30'
 )
 
 
@@ -34,5 +41,8 @@ scenario_labels <- c(
   'scenario3_TO' = 'TreeOpp',
   'scenario4_10' = 'Green10',
   'scenario4_20' = 'Green20',
-  'scenario4_30' = 'Green30'
+  'scenario4_30' = 'Green30',
+  "scenario510"  = "Target10",
+  "scenario520"  = "Target20",
+  "scenario530"  = "Target30"
 )

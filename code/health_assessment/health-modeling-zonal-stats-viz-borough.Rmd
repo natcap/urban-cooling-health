@@ -56,8 +56,9 @@ ind_label <- 'Mortality'
 f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long.csv');           post_fix <- '00_2021_2050'; 
 f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_18_zonal_stats_long_2050_2050.csv'); post_fix <- 'i0_2050_2050'
 
-## --> updated on 2/2/2026
-f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_30_zonal_stats_long_borough_2050_2050.csv'); post_fix <- 'i0_2050_2050'
+f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_30_zonal_stats_long_borough_2050_2050.csv'); post_fix <- 'i0_2050_2050' # 02/02/2026
+f <- file.path(dir_ucm_out, 'health_output_stats', 'health_london_45_zonal_stats_long_borough_2050_2050.csv'); post_fix <- 'i0_2050_2050' # 04/15/2026
+
 
 df <- read_csv(f, show_col_types = F) %>%
   mutate(
@@ -85,6 +86,9 @@ df <- read_csv(f, show_col_types = F) %>%
       lc_scenario == 's41' ~ 'scenario4_10',
       lc_scenario == 's42' ~ 'scenario4_20',
       lc_scenario == 's43' ~ 'scenario4_30',
+      lc_scenario == 's510' ~ 'scenario510',
+      lc_scenario == 's520' ~ 'scenario520',
+      lc_scenario == 's530' ~ 'scenario530',
       TRUE                 ~ NA_character_
     ) 
   ) %>%
