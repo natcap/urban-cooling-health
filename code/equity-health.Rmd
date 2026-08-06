@@ -1874,7 +1874,7 @@ stat_bi_viz <- stat_bi %>%
 ```
 
 
-```{r - stat - change - viz}
+```{r - stat - change - viz, eval=FALSE, include=FALSE}
 library(dplyr)
 library(ggplot2)
 
@@ -1886,31 +1886,31 @@ df_plot <- stat_bi_viz %>%
                    "Other")
   )
 
-ggplot(df_plot,
-       aes(x = lc_snr,
-           y = n,
-           fill = bi_class)) +
-  geom_col(
-    position = position_stack()
-  ) +
-  facet_wrap(~group, scales = "free_x") +
-  scale_fill_manual(
-    values = c(
-      "1_3" = "#bdd7e7",
-      "2_3" = "#6baed6",
-      "3_1" = "#de2d26",
-      "3_3" = "#31a354"
-    )
-  ) +
-  labs(
-    x = NULL,
-    y = "Count",
-    fill = "Bivariate class"
-  ) +
-  theme_bw() +
-  theme(
-    legend.position = "bottom"
-  )
+# ggplot(df_plot,
+#        aes(x = lc_snr,
+#            y = n,
+#            fill = bi_class)) +
+#   geom_col(
+#     position = position_stack()
+#   ) +
+#   facet_wrap(~group, scales = "free_x") +
+#   scale_fill_manual(
+#     values = c(
+#       "1_3" = "#bdd7e7",
+#       "2_3" = "#6baed6",
+#       "3_1" = "#de2d26",
+#       "3_3" = "#31a354"
+#     )
+#   ) +
+#   labs(
+#     x = NULL,
+#     y = "Count",
+#     fill = "Bivariate class"
+#   ) +
+#   theme_bw() +
+#   theme(
+#     legend.position = "bottom"
+#   )
 
 ```
 
