@@ -1,0 +1,341 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-08-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Quantitative upgrade for Fig. 7c
+#
+# Run after `health_sf` has been created in equity-health.Rmd.
+# The analysis pairs the same LSOAs under Green30 and Target30 and uses
+# Green30 benefit tertiles as fixed reference thresholds for both scenarios.
+
+library(sf)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(ggplot2)
+library(scales)
+library(cowplot)
+
+outcome_keep <- "All_cause"
+scenario_keep <- c("Green30", "Target30")
+vulnerability_vars <- c(
+  "pIncomeDeprivation",
+  "p75over",
+  "pBAME"
+)
+
+vulnerability_labels <- c(
+  pIncomeDeprivation = "Income deprivation",
+  p75over = "Age ≥75",
+  pBAME = "Ethnic minority"
+)
+
+# Identify an optional LSOA population field. Add the exact field name here if
+# the source GeoPackage uses a different name. The core analysis remains valid
+# without it and will then report LSOA percentages only.
+population_candidates <- c(
+  "population", "Population", "population_2021", "Population_2021",
+  "total_population", "pop_2021", "pop"
+)
+population_matches <- intersect(population_candidates, names(health_sf))
+population_var <- if (length(population_matches) > 0) {
+  population_matches[[1]]
+} else {
+  character(0)
+}
+has_population <- length(population_var) == 1
+
+required_vars <- c(
+  "id", "indicator", "lc_scenario", "cases", vulnerability_vars
+)
+missing_vars <- setdiff(required_vars, names(health_sf))
+if (length(missing_vars) > 0) {
+  stop("Missing required columns in health_sf: ", paste(missing_vars, collapse = ", "))
+}
+
+select_vars <- c(required_vars, if (has_population) population_var)
+
+equity_long <- health_sf %>%
+  st_drop_geometry() %>%
+  filter(
+    indicator == outcome_keep,
+    as.character(lc_scenario) %in% scenario_keep
+  ) %>%
+  select(all_of(select_vars)) %>%
+  mutate(lc_scenario = as.character(lc_scenario)) %>%
+  distinct(id, lc_scenario, .keep_all = TRUE)
+
+duplicate_check <- equity_long %>%
+  count(id, lc_scenario) %>%
+  filter(n != 1)
+if (nrow(duplicate_check) > 0) {
+  stop("Each id must have exactly one row per scenario.")
+}
+
+pair_check <- equity_long %>%
+  count(id) %>%
+  filter(n != length(scenario_keep))
+if (nrow(pair_check) > 0) {
+  warning(nrow(pair_check), " LSOAs do not have both scenarios and will be excluded.")
+}
+
+equity_wide <- equity_long %>%
+  select(
+    id, lc_scenario, cases, all_of(vulnerability_vars),
+    any_of(population_var)
+  ) %>%
+  pivot_wider(
+    id_cols = c(id, all_of(vulnerability_vars), any_of(population_var)),
+    names_from = lc_scenario,
+    values_from = cases,
+    names_prefix = "cases_"
+  ) %>%
+  filter(!is.na(cases_Green30), !is.na(cases_Target30)) %>%
+  mutate(
+    population = if (has_population) .data[[population_var]] else 1,
+    delta_cases = cases_Target30 - cases_Green30
+  )
+
+# Use Green30 as the fixed benefit reference. This avoids redefining "low
+# benefit" within each scenario and makes scenario transitions interpretable.
+green30_ecdf <- ecdf(equity_wide$cases_Green30)
+
+classify_benefit <- function(x) {
+  p <- green30_ecdf(x)
+  case_when(
+    p <= 1 / 3 ~ "Low",
+    p <= 2 / 3 ~ "Moderate",
+    TRUE ~ "High"
+  )
+}
+
+benefit_levels <- c("Low", "Moderate", "High")
+
+metric_data <- map_dfr(vulnerability_vars, function(metric_name) {
+  equity_wide %>%
+    transmute(
+      id,
+      metric = metric_name,
+      metric_label = unname(vulnerability_labels[metric_name]),
+      vulnerability = .data[[metric_name]],
+      vulnerability_percentile = percent_rank(vulnerability),
+      high_vulnerability = vulnerability_percentile >= 2 / 3,
+      population,
+      cases_Green30,
+      cases_Target30,
+      delta_cases,
+      benefit_Green30 = factor(
+        classify_benefit(cases_Green30), levels = benefit_levels
+      ),
+      benefit_Target30 = factor(
+        classify_benefit(cases_Target30), levels = benefit_levels
+      )
+    ) %>%
+    filter(!is.na(vulnerability), !is.na(high_vulnerability))
+})
+
+# Headline table: prevalence of the blue class, paired transitions, magnitude
+# of additional benefit, and citywide benefit retention.
+headline_results <- metric_data %>%
+  filter(high_vulnerability) %>%
+  group_by(metric, metric_label) %>%
+  summarise(
+    n_high_vulnerability = n(),
+    population_high_vulnerability = sum(population, na.rm = TRUE),
+    n_blue_Green30 = sum(benefit_Green30 == "Low"),
+    n_blue_Target30 = sum(benefit_Target30 == "Low"),
+    pct_blue_Green30 = 100 * mean(benefit_Green30 == "Low"),
+    pct_blue_Target30 = 100 * mean(benefit_Target30 == "Low"),
+    change_blue_percentage_points = pct_blue_Target30 - pct_blue_Green30,
+    n_blue_resolved = sum(
+      benefit_Green30 == "Low" & benefit_Target30 != "Low"
+    ),
+    pct_Green30_blue_resolved = 100 * n_blue_resolved / n_blue_Green30,
+    n_new_blue = sum(
+      benefit_Green30 != "Low" & benefit_Target30 == "Low"
+    ),
+    additional_deaths_averted = sum(delta_cases, na.rm = TRUE),
+    pct_change_deaths_averted = 100 *
+      (sum(cases_Target30, na.rm = TRUE) / sum(cases_Green30, na.rm = TRUE) - 1),
+    population_pct_blue_Green30 = 100 * weighted.mean(
+      benefit_Green30 == "Low", population, na.rm = TRUE
+    ),
+    population_pct_blue_Target30 = 100 * weighted.mean(
+      benefit_Target30 == "Low", population, na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    weighting = if (has_population) population_var else "LSOA counts",
+    population_change_blue_percentage_points =
+      population_pct_blue_Target30 - population_pct_blue_Green30
+  )
+
+citywide_results <- equity_wide %>%
+  summarise(
+    deaths_averted_Green30 = sum(cases_Green30, na.rm = TRUE),
+    deaths_averted_Target30 = sum(cases_Target30, na.rm = TRUE),
+    difference = deaths_averted_Target30 - deaths_averted_Green30,
+    Target30_retention_pct = 100 * deaths_averted_Target30 / deaths_averted_Green30
+  )
+
+# Exact paired transitions among high-vulnerability LSOAs.
+transition_results <- metric_data %>%
+  filter(high_vulnerability) %>%
+  count(
+    metric, metric_label, benefit_Green30, benefit_Target30,
+    name = "n_LSOA"
+  ) %>%
+  group_by(metric, metric_label, benefit_Green30) %>%
+  mutate(
+    pct_within_Green30_class = 100 * n_LSOA / sum(n_LSOA)
+  ) %>%
+  ungroup()
+
+# Focused transition summary for LSOAs that were blue under Green30.
+blue_transitions <- metric_data %>%
+  filter(high_vulnerability, benefit_Green30 == "Low") %>%
+  count(metric, metric_label, benefit_Target30, name = "n_LSOA") %>%
+  group_by(metric, metric_label) %>%
+  complete(
+    benefit_Target30 = factor(benefit_levels, levels = benefit_levels),
+    fill = list(n_LSOA = 0)
+  ) %>%
+  mutate(pct = 100 * n_LSOA / sum(n_LSOA)) %>%
+  ungroup()
+
+# Panel C1: the blue-class gap. A downward slope indicates improvement.
+blue_plot_data <- headline_results %>%
+  select(
+    metric_label,
+    Green30 = pct_blue_Green30,
+    Target30 = pct_blue_Target30
+  ) %>%
+  pivot_longer(
+    cols = c(Green30, Target30),
+    names_to = "scenario",
+    values_to = "pct_blue"
+  ) %>%
+  mutate(
+    scenario = factor(scenario, levels = scenario_keep),
+    metric_label = factor(
+      metric_label,
+      levels = unname(vulnerability_labels[vulnerability_vars])
+    )
+  )
+
+p_blue_gap <- ggplot(
+  blue_plot_data,
+  aes(x = scenario, y = pct_blue, group = metric_label)
+) +
+  geom_line(color = "grey65", linewidth = 0.7) +
+  geom_point(aes(color = scenario), size = 3) +
+  geom_text(
+    aes(label = sprintf("%.1f%%", pct_blue)),
+    nudge_y = 2.5,
+    size = 3,
+    show.legend = FALSE
+  ) +
+  facet_wrap(~ metric_label, nrow = 1) +
+  scale_color_manual(values = c(Green30 = "#4D4D4D", Target30 = "#007C91")) +
+  scale_y_continuous(
+    labels = label_number(suffix = "%"),
+    limits = c(0, NA),
+    expand = expansion(mult = c(0, 0.15))
+  ) +
+  labs(
+    x = NULL,
+    y = "High-vulnerability LSOAs\nreceiving relatively low benefit",
+    color = NULL
+  ) +
+  theme_classic(base_size = 10) +
+  theme(
+    legend.position = "top",
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(face = "bold")
+  )
+
+# Panel C2: what happened to the same blue LSOAs after targeting?
+p_blue_transition <- ggplot(
+  blue_transitions,
+  aes(x = metric_label, y = pct, fill = benefit_Target30)
+) +
+  geom_col(width = 0.65, color = "white", linewidth = 0.3) +
+  geom_text(
+    aes(label = if_else(pct >= 7, paste0(round(pct), "%\n(n=", n_LSOA, ")"), "")),
+    position = position_stack(vjust = 0.5),
+    size = 2.8,
+    lineheight = 0.9
+  ) +
+  scale_fill_manual(
+    values = c(Low = "#3B77A6", Moderate = "#86C5B5", High = "#006D5B"),
+    labels = c(
+      Low = "Remained low benefit",
+      Moderate = "Shifted to moderate benefit",
+      High = "Shifted to high benefit"
+    ),
+    drop = FALSE
+  ) +
+  scale_y_continuous(labels = percent_format(scale = 1), expand = c(0, 0)) +
+  labs(
+    x = NULL,
+    y = "Outcome under Target30 among\nGreen30 blue-class LSOAs",
+    fill = NULL
+  ) +
+  theme_classic(base_size = 10) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_text(face = "bold")
+  )
+
+fig7c_upgraded <- plot_grid(
+  p_blue_gap,
+  p_blue_transition,
+  labels = c("c", "d"),
+  ncol = 1,
+  rel_heights = c(1, 1.15),
+  label_size = 11
+)
+
+dir.create("./figures/equity_map_biscale", recursive = TRUE, showWarnings = FALSE)
+
+write.csv(
+  headline_results,
+  "./figures/equity_map_biscale/fig7_quantitative_headline_results.csv",
+  row.names = FALSE
+)
+write.csv(
+  transition_results,
+  "./figures/equity_map_biscale/fig7_paired_transition_matrix.csv",
+  row.names = FALSE
+)
+write.csv(
+  citywide_results,
+  "./figures/equity_map_biscale/fig7_citywide_tradeoff.csv",
+  row.names = FALSE
+)
+
+ggsave(
+  "./figures/equity_map_biscale/fig7c_upgraded.png",
+  fig7c_upgraded,
+  width = 7,
+  height = 6.2,
+  dpi = 600,
+  bg = "white",
+  device = ragg::agg_png
+)
+
+print(headline_results)
+print(citywide_results)
+print(fig7c_upgraded)
+
+```
+

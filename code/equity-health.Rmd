@@ -273,6 +273,10 @@ label_map <- c(
   pIncomeDeprivation = "Income deprivation",
   p5under        = "Age <5"
 )
+
+
+# save data
+saveRDS(object = health_sf, file = "./figures/equity_map_biscale/health_sf.rds")
 ```
 
 
@@ -1863,6 +1867,10 @@ stat_bi <- list.files(
     ~ read_csv(.x, show_col_types = F) %>%
       mutate(file = basename(.x))
   )
+
+
+# save data
+saveRDS(object = stat_bi, file = "./figures/equity_map_biscale/stat_bi.rds")
 
 
 stat_bi_viz <- stat_bi %>%

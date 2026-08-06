@@ -1,6 +1,19 @@
 
-data/
-figures/
+data/*
+docs/*
+
+
+# Ignore all figures
+figures/*
+
+# Allow access to this folder
+!figures/equity_map_biscale/
+
+# Ignore everything inside except RDS
+figures/equity_map_biscale/*
+!figures/equity_map_biscale/*.rds
+
+
 __pycache__/
 *.pyc
 
@@ -9,7 +22,6 @@ __pycache__/
 *api_key.*
 Yougeng*
 *.lnk
-.RDS
 
 ## code
 deploy_on_shinyapps.io.R
@@ -56,8 +68,6 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# pkgdown site
-docs/
 
 # translation temp files
 po/*~
