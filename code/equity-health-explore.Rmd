@@ -1,0 +1,546 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-02-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+
+data_age_under5 <- df_scaled %>%
+  # filter(Metric == 'p5under') %>%
+  select(1, p5under)
+
+names(data_age_under5)
+
+names(data_age_under5) <- c('cases', 'vulnerability')
+ 
+```
+
+```{r}
+
+library(mgcv)
+library(gratia)
+library(dplyr)
+
+# Check sample sizes by vulnerability quartiles
+data_age_under5 %>%
+  mutate(vuln_quartile = cut(vulnerability, 
+                             breaks = quantile(vulnerability, probs = 0:4/4),
+                             include.lowest = TRUE)) %>%
+  group_by(vuln_quartile) %>%
+  summarise(
+    n = n(),
+    n_cases = sum(cases),
+    mean_vuln = mean(vulnerability)
+  )
+
+# Visualize data distribution
+hist(data_age_under5$vulnerability, breaks = 50,
+     main = "Distribution of Vulnerability Scores (Age <5)")
+
+# Check influence of extreme values
+plot(cooks.distance(model))
+
+```
+```{r gam}
+
+m <- 'vulnerability'
+
+# 1. Fit the Non-Linear GAM (The Winner)
+formula <- as.formula(paste("cases ~ s(", m, ")"))
+# gam_model <- gam(formula, data = df_scaled, method = "REML")
+  
+  
+library(mgcv)
+
+library(mgcv)
+library(dplyr)
+
+# Check data
+summary(data_age_under5$cases)
+sum(data_age_under5$cases <= 0)  # Check for zeros/negatives
+
+# Model with log link (appropriate for positive continuous data)
+model_age_under5 <- gam(
+  cases ~ s(vulnerability, bs = "tp", k = 6),
+  family = gaussian(link = "log"),  # Log link for positive data
+  data = data_age_under5,
+  method = "REML"
+)
+
+# Check model
+summary(model_age_under5)
+gam.check(model_age_under5)
+  
+
+```
+
+
+
+```{r pub}
+library(mgcv)
+library(dplyr)
+library(ggplot2)
+library(gratia)
+
+# ============================================================================
+# 1. DATA PREPARATION
+# ============================================================================
+
+# Check data structure
+cat("Sample size:", nrow(data_age_under5), "\n")
+cat("Response variable summary:\n")
+summary(data_age_under5$cases)
+
+# Check for zeros or negatives
+cat("\nZeros/negatives:", sum(data_age_under5$cases <= 0), "\n")
+
+# Distribution check
+hist(data_age_under5$cases, breaks = 50, 
+     main = "Distribution of Cases (Age <5)",
+     xlab = "Cases")
+
+# Check vulnerability distribution by quantiles
+quantile(data_age_under5$vulnerability, probs = seq(0, 1, 0.1))
+```
+
+
+```{r pub}
+# ============================================================================
+# 2. MODEL FITTING & SELECTION
+# ============================================================================
+
+# Fit competing models
+m1_gaussian_log <- gam(
+  cases ~ s(vulnerability, bs = "tp", k = 6),
+  family = gaussian(link = "log"),
+  data = data_age_under5,
+  method = "REML"
+)
+
+m2_gamma <- gam(
+  cases ~ s(vulnerability, bs = "tp", k = 6),
+  family = Gamma(link = "log"),
+  data = data_age_under5,
+  method = "REML"
+)
+
+m3_gaussian_identity <- gam(
+  cases ~ s(vulnerability, bs = "tp", k = 6),
+  family = gaussian(link = "identity"),
+  data = data_age_under5,
+  method = "REML"
+)
+
+# Model comparison
+model_comparison <- data.frame(
+  Model = c("Gaussian (log)", "Gamma (log)", "Gaussian (identity)"),
+  AIC = c(AIC(m1_gaussian_log), AIC(m2_gamma), AIC(m3_gaussian_identity)),
+  Deviance = c(deviance(m1_gaussian_log), deviance(m2_gamma), 
+               deviance(m3_gaussian_identity)),
+  EDF = c(sum(m1_gaussian_log$edf), sum(m2_gamma$edf), 
+          sum(m3_gaussian_identity$edf))
+) %>%
+  arrange(AIC)
+
+print(model_comparison)
+
+
+```
+
+
+```{r model selection}
+
+# ============================================================================
+# DEFINITIVE MODEL COMPARISON
+# ============================================================================
+
+# ============================================================================
+# DEFINITIVE MODEL COMPARISON
+# ============================================================================
+
+cat(strrep("=", 70), "\n")
+cat("DEFINITIVE AIC COMPARISON\n")
+cat(strrep("=", 70), "\n\n")
+
+# Get AIC values directly
+aic1 <- AIC(m1_gaussian_log)
+aic2 <- AIC(m2_gamma)
+aic3 <- AIC(m3_gaussian_identity)
+
+cat("Model 1 - Gaussian (log):\n")
+cat("  AIC = ", aic1, "\n")
+cat("  Formula:", deparse(formula(m1_gaussian_log)), "\n")
+cat("  Family:", family(m1_gaussian_log)$family, "\n")
+cat("  Link:", family(m1_gaussian_log)$link, "\n\n")
+
+cat("Model 2 - Gamma (log):\n")
+cat("  AIC = ", aic2, "\n")
+cat("  Formula:", deparse(formula(m2_gamma)), "\n")
+cat("  Family:", family(m2_gamma)$family, "\n")
+cat("  Link:", family(m2_gamma)$link, "\n\n")
+
+cat("Model 3 - Gaussian (identity):\n")
+cat("  AIC = ", aic3, "\n")
+cat("  Formula:", deparse(formula(m3_gaussian_identity)), "\n")
+cat("  Family:", family(m3_gaussian_identity)$family, "\n")
+cat("  Link:", family(m3_gaussian_identity)$link, "\n\n")
+
+# Create comparison table with explicit values
+model_comparison_verified <- data.frame(
+  Model = c("Gaussian (log)", "Gamma (log)", "Gaussian (identity)"),
+  AIC = c(aic1, aic2, aic3),
+  Deviance = c(deviance(m1_gaussian_log), 
+               deviance(m2_gamma), 
+               deviance(m3_gaussian_identity)),
+  EDF = c(sum(m1_gaussian_log$edf), 
+          sum(m2_gamma$edf), 
+          sum(m3_gaussian_identity$edf)),
+  N = c(nobs(m1_gaussian_log), 
+        nobs(m2_gamma), 
+        nobs(m3_gaussian_identity))
+) %>%
+  arrange(AIC) %>%
+  mutate(
+    Delta_AIC = AIC - min(AIC),
+    RelativeLikelihood = exp(-0.5 * Delta_AIC)
+  )
+
+print(model_comparison_verified)
+
+# Identify winner
+winner_idx <- which.min(model_comparison_verified$AIC)
+cat("\n", strrep("*", 50), "\n")
+cat("WINNER:", model_comparison_verified$Model[winner_idx], "\n")
+cat(strrep("*", 50), "\n")
+cat("AIC =", model_comparison_verified$AIC[winner_idx], "\n")
+cat("Delta AIC from next best =", 
+    round(model_comparison_verified$Delta_AIC[2], 2), "\n\n")
+
+# Select best model programmatically
+if(model_comparison_verified$Model[winner_idx] == "Gaussian (log)") {
+  best_model <- m1_gaussian_log
+  cat("Selected: m1_gaussian_log\n")
+} else if(model_comparison_verified$Model[winner_idx] == "Gamma (log)") {
+  best_model <- m2_gamma
+  cat("Selected: m2_gamma\n")
+} else {
+  best_model <- m3_gaussian_identity
+  cat("Selected: m3_gaussian_identity\n")
+}
+
+# Summary of best model
+cat("\n", strrep("-", 70), "\n")
+cat("BEST MODEL SUMMARY\n")
+cat(strrep("-", 70), "\n")
+summary(best_model)
+
+# Export for reproducibility
+write.csv(model_comparison_verified, 
+          "Model_Comparison_Verified.csv", 
+          row.names = FALSE)
+
+cat("\nResults exported to: Model_Comparison_Verified.csv\n")
+
+```
+```{r}
+
+# ============================================================================
+# CRITICAL DIAGNOSTICS FOR GAMMA MODEL
+# ============================================================================
+
+# 1. Check model diagnostics
+par(mfrow = c(2, 2))
+gam.check(m2_gamma)
+par(mfrow = c(1, 1))
+
+# 2. More detailed diagnostics
+library(gratia)
+appraise(m2_gamma)
+
+# 3. Check for extreme values/outliers
+cat("\n=== DATA SUMMARY ===\n")
+summary(data_age_under5$cases)
+
+cat("\n=== CHECK FOR ZEROS ===\n")
+cat("Number of zeros:", sum(data_age_under5$cases == 0), "\n")
+cat("Proportion zeros:", mean(data_age_under5$cases == 0), "\n")
+
+cat("\n=== CHECK FOR VERY SMALL VALUES ===\n")
+cat("Values < 0.0001:", sum(data_age_under5$cases < 0.0001), "\n")
+cat("Min value:", min(data_age_under5$cases), "\n")
+
+# 4. Check residuals
+cat("\n=== RESIDUAL DIAGNOSTICS ===\n")
+resids <- residuals(m2_gamma, type = "deviance")
+cat("Residual range:", range(resids), "\n")
+cat("Residual mean:", mean(resids), "\n")
+cat("Residual SD:", sd(resids), "\n")
+
+# 5. Check fitted values
+fitted_vals <- fitted(m2_gamma)
+cat("\n=== FITTED VALUES ===\n")
+cat("Fitted range:", range(fitted_vals), "\n")
+cat("Observed range:", range(data_age_under5$cases), "\n")
+
+# 6. Plot residuals
+par(mfrow = c(2, 2))
+
+# Residuals vs fitted
+plot(fitted(m2_gamma), residuals(m2_gamma, type = "deviance"),
+     xlab = "Fitted values", ylab = "Deviance residuals",
+     main = "Residuals vs Fitted")
+abline(h = 0, col = "red", lty = 2)
+
+# Q-Q plot
+qqnorm(residuals(m2_gamma, type = "deviance"))
+qqline(residuals(m2_gamma, type = "deviance"))
+
+# Histogram of residuals
+hist(residuals(m2_gamma, type = "deviance"), breaks = 50,
+     main = "Histogram of Deviance Residuals")
+
+# Scale-location
+plot(fitted(m2_gamma), sqrt(abs(residuals(m2_gamma, type = "deviance"))),
+     xlab = "Fitted values", ylab = "√|Deviance residuals|",
+     main = "Scale-Location")
+
+par(mfrow = c(1, 1))
+
+# 7. Check dispersion parameter
+cat("\n=== DISPERSION ===\n")
+cat("Scale parameter:", summary(m2_gamma)$scale, "\n")
+cat("Should be around 1 for well-fitted Gamma model\n")
+```
+
+```{r}
+# Is the relationship actually non-linear?
+# Try simpler model first
+m_linear <- gam(cases ~ vulnerability,
+                family = Gamma(link = "log"),
+                data = data_age_under5,
+                method = "REML")
+
+cat("Linear model R²:", summary(m_linear)$r.sq, "\n")
+cat("Linear model deviance explained:", 
+    summary(m_linear)$dev.expl * 100, "%\n")
+
+# Compare
+AIC(m_linear, m2_gamma)
+```
+
+```{r model selection}
+# Select best model (lowest AIC)
+best_model <- m2_gamma  # Adjust based on your results
+
+
+# ============================================================================
+# 3. MODEL DIAGNOSTICS
+# ============================================================================
+
+# Comprehensive diagnostics
+par(mfrow = c(2, 2))
+```
+
+
+```{r pub}
+gam.check(best_model)
+dev.off()
+
+# Additional diagnostics with gratia
+appraise(best_model, method = "simulate")
+
+# Check concurvity (collinearity for smooth terms)
+concurvity(best_model, full = TRUE)
+```
+
+
+```{r pub}
+# ============================================================================
+# 4. IDENTIFY DATA SUPPORT RANGE
+# ============================================================================
+
+# Sample size by vulnerability bins
+data_support <- data_age_under5 %>%
+  mutate(vuln_bin = cut(vulnerability, 
+                        breaks = seq(-3, 8, by = 0.5))) %>%
+  group_by(vuln_bin) %>%
+  summarise(
+    n = n(),
+    mean_vuln = mean(vulnerability),
+    mean_cases = mean(cases)
+  ) %>%
+  print()
+
+# Define plotting range (1st-99th percentile)
+vuln_limits <- quantile(data_age_under5$vulnerability, 
+                        probs = c(0.01, 0.99))
+cat("\nPlotting range:", vuln_limits, "\n")
+
+# ============================================================================
+# 5. PREDICTIONS
+# ============================================================================
+
+# Create prediction grid within data support
+pred_data <- data.frame(
+  vulnerability = seq(vuln_limits[1], vuln_limits[2], length.out = 200)
+)
+
+# Get predictions on response scale
+pred_list <- predict(best_model, 
+                     newdata = pred_data, 
+                     se.fit = TRUE,
+                     unconditional = TRUE,
+                     type = "response")  # Back-transform from log scale
+
+pred_data <- pred_data %>%
+  mutate(
+    fit = pred_list$fit,
+    se = pred_list$se.fit,
+    lower = fit - 1.96 * se,
+    upper = fit + 1.96 * se
+  )
+
+# Calculate relative to mean (as shown in your plot)
+mean_cases <- mean(data_age_under5$cases)
+
+pred_data <- pred_data %>%
+  mutate(
+    fit_relative = fit - mean_cases,
+    lower_relative = lower - mean_cases,
+    upper_relative = upper - mean_cases
+  )
+
+# ============================================================================
+# 6. VISUALIZATION
+# ============================================================================
+
+# Calculate data density for background
+dens_data <- density(data_age_under5$vulnerability, 
+                     from = vuln_limits[1], 
+                     to = vuln_limits[2],
+                     n = 512)
+
+dens_df <- data.frame(x = dens_data$x, y = dens_data$y) %>%
+  mutate(y_scaled = scales::rescale(y, to = c(-0.1, 0)))
+
+# Create publication-quality plot
+p <- ggplot(pred_data, aes(x = vulnerability, y = fit_relative)) +
+  # Data distribution background
+  geom_ribbon(data = dens_df, 
+              aes(x = x, ymin = y_scaled, ymax = -0.1),
+              fill = "grey70", alpha = 0.5, inherit.aes = FALSE) +
+  # Confidence interval
+  geom_ribbon(aes(ymin = lower_relative, ymax = upper_relative), 
+              alpha = 0.3, fill = "#0072B2") +
+  # Point estimate
+  geom_line(color = "#0072B2", size = 1.2) +
+  # Reference lines
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+  geom_vline(xintercept = 0, linetype = "dotted", color = "grey50") +
+  # Annotations
+  annotate("text", x = -2, y = 0.02, 
+           label = "Less Vulnerable", 
+           hjust = 0, size = 3.5, color = "grey30", fontface = "italic") +
+  annotate("text", x = 2, y = 0.02, 
+           label = "More Vulnerable", 
+           hjust = 1, size = 3.5, color = "grey30", fontface = "italic") +
+  # Axes and labels
+  scale_x_continuous(
+    "Vulnerability (Standardized Z-Score)",
+    breaks = seq(-2, 8, 2),
+    limits = c(vuln_limits[1], vuln_limits[2])
+  ) +
+  scale_y_continuous(
+    "Change in deaths averted\n(relative to mean)",
+    breaks = seq(-0.1, 0.1, 0.05)
+  ) +
+  coord_cartesian(ylim = c(-0.1, 0.1), expand = FALSE) +
+  # Theme
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(size = 11, face = "bold"),
+    axis.title = element_text(size = 10),
+    plot.margin = margin(10, 15, 10, 10)
+  ) +
+  labs(title = "Age <5",
+       caption = paste0("n = ", nrow(data_age_under5), 
+                       "; Curves represent partial effects centered at 0"))
+
+print(p)
+
+# # Save high-resolution version
+# ggsave("age_under5_vulnerability_analysis.pdf", 
+#        plot = p, width = 6, height = 5, dpi = 300)
+```
+
+
+```{r pub}
+# ============================================================================
+# 7. SENSITIVITY ANALYSIS
+# ============================================================================
+
+# Test different basis dimensions
+sensitivity_models <- list()
+for(k_val in 4:8) {
+  m_temp <- gam(
+    cases ~ s(vulnerability, bs = "tp", k = k_val),
+    family = Gamma(link = "log"),
+    data = data_age_under5,
+    method = "REML"
+  )
+  sensitivity_models[[paste0("k", k_val)]] <- m_temp
+}
+
+# Compare AICs
+sens_comparison <- data.frame(
+  k = 4:8,
+  AIC = sapply(sensitivity_models, AIC),
+  EDF = sapply(sensitivity_models, function(m) sum(m$edf))
+)
+print(sens_comparison)
+
+# ============================================================================
+# 8. EXPORT RESULTS FOR SUPPLEMENTARY MATERIALS
+# ============================================================================
+
+# Table S1: Sample size by vulnerability quartiles
+supp_table_1 <- data_age_under5 %>%
+  mutate(vuln_quartile = cut(vulnerability, 
+                             breaks = quantile(vulnerability, 
+                                             probs = 0:4/4),
+                             include.lowest = TRUE,
+                             labels = c("Q1 (Least)", "Q2", "Q3", 
+                                       "Q4 (Most)"))) %>%
+  group_by(vuln_quartile) %>%
+  summarise(
+    N = n(),
+    `Mean Cases` = mean(cases),
+    `SD Cases` = sd(cases),
+    `Mean Vulnerability` = mean(vulnerability),
+    `SD Vulnerability` = sd(vulnerability)
+  )
+
+write.csv(supp_table_1, "supplementary_table_sample_sizes.csv", 
+          row.names = FALSE)
+
+# Table S2: Model comparison
+write.csv(model_comparison, "supplementary_table_model_selection.csv", 
+          row.names = FALSE)
+
+# Export diagnostic plots
+pdf("supplementary_diagnostics_age_under5.pdf", width = 10, height = 8)
+par(mfrow = c(2, 2))
+gam.check(best_model)
+dev.off()
+
+```
+
+

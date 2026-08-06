@@ -215,6 +215,43 @@ saveRDS(object = aoi, file = f)
 ```
 
 
+  To compare the different results between "converting urban" and "not converting urban" by the InVEST Scenario Generator. 
+  
+```{r - check, eval=FALSE, include=FALSE}
+
+f <- file.path(dir_ucm_out, "scenario43/work_and_energy_runs/tcc_30prc/uhi_results_london_scenario4_30prc_28deg_5uhi_45hum_energy_productivity.shp")
+
+d43_1 <- st_read(f, quiet = T) %>%
+  select(1:2, avg_tmp_v, avg_hvls_v) %>%
+  mutate(urb_convert = 'T') %>%
+  st_drop_geometry() %>%
+  pivot_longer(cols = c('avg_tmp_v', 'avg_hvls_v'), 
+               names_to = 'var', values_to = 'value')
+
+f <- file.path(dir_ucm_out, "scenario43_updated_no_urban/scenario43/uhi_results_london_scenario4_30prc_28deg_5uhi_45hum_energy_productivity.shp")
+
+d43_2 <- st_read(f, quiet = T) %>%
+  select(1:2, avg_tmp_v, avg_hvls_v) %>%
+  mutate(urb_convert = 'F') %>%
+  st_drop_geometry() %>%
+  pivot_longer(cols = c('avg_tmp_v', 'avg_hvls_v'), 
+               names_to = 'var', values_to = 'value')
+
+
+d43_comp <- rbind(d43_1, d43_2) %>%
+  pivot_wider(names_from = 'urb_convert', values_from = 'value')
+
+d43_comp %>%
+  ggplot(aes(x = `T`, y = `F`, color = var)) + 
+  geom_point(show.legend = F) +
+  geom_abline(intercept = 0, slope = 1, color = 'blue') + 
+  facet_wrap(~var, scales = 'free') +
+  theme(
+    legend.position = c(.9, .15)
+    )
+
+```
+
 
 ### Reload data
 
@@ -244,6 +281,14 @@ shp_all_ <- shp_all %>%
   mutate(
     id = gsub('work_and_energy_runs_uhi_results_london_', '', id),
     
+    #' update to test if excluding "urban" as one of resulting land cover in the scenario generator 
+    #'  would lead to different results
+    generator_tag = ifelse(grepl("no_urban", id), "no_urban", NA_character_),
+    id = gsub('scenario43_updated_no_urban_uhi_results_london_', '', id),
+    
+    #' to accommodate the new scenarios 510, 520, 530
+    id = gsub('UCM_official_runs_uhi_results_london_', '', id),
+    
     # re-code: climate condition --> year
     year = case_when(
       str_detect(id, "_20_2")            ~ '2020',
@@ -264,6 +309,7 @@ shp_all_ <- shp_all %>%
   tidyr::separate(id, into = c("lc_scenario", "rest"), sep = "_uhi_results|prc", remove = FALSE) %>%
   select(-rest) %>%
   mutate(lc_scenario = gsub('_20_2|_22_2|_25_5', '', lc_scenario) ) %>%
+  mutate(lc_scenario = gsub('_22deg_2uhi|_22deg_5uhi|_25deg_2uhi|_25deg_5uhi|_28deg_2uhi|_28deg_5uhi', '', lc_scenario) ) %>%
   
   ## re-code: change scenario-3 (tree risk) as scenario-2
   mutate(
@@ -276,12 +322,16 @@ shp_all_ <- shp_all %>%
   ) %>%
   as.data.frame()
 
-
+unique(shp_all_$lc_scenario)
 
 ## filter out 20_5, and 22_5, 25_2 for now 
 
 shp_all_df <- shp_all_ %>%
-  filter(!is.na(year))
+  filter(!is.na(year)) %>%
+  add_count(NAME, lc_scenario, year, name = "n") %>%
+  filter(is.na(generator_tag)) %>%
+  add_count(NAME, lc_scenario, name = "n_yr_persnr") %>%
+  add_count(NAME, year, name = "n_snr_peryr")
 
 
 ## save a copy for viz
@@ -296,6 +346,8 @@ saveRDS(shp_all_df, f)
 
 ### Energy 
 
+  !! Need to run `invest_result_zonal_stats_energy.ipynb` to generate the input data here. 
+
 ```{r - batch load}
 
 dir.zonal <- file.path(dir_ucm_out, 'zonal_stats_lsoa')
@@ -304,7 +356,7 @@ dir.zonal <- file.path(dir_ucm_out, 'zonal_stats_lsoa')
 library(purrr)
 
 shp_files <- list.files(path = dir.zonal, pattern = ".*_energy_stats.gpkg$", full.names = TRUE, recursive = F)
-cat('There are', length(shp_files), 'files.')
+cat('There are', length(shp_files), 'files.\n')
 
 basename(shp_files)
 ```
@@ -397,6 +449,11 @@ saveRDS(shp_all_lsoa, f)
 
 ### Productivity 
 
+  !! Need to run `invest_result_zonal_stats_productivity.ipynb` to generate the input data here. 
+  
+  Double-check to use output from a separate updated script for work productivity analysis, rather than using the output from UCM. 
+
+
 ```{r - batch load}
 dir.zonal <- file.path(dir_ucm_out, 'new_work_intensity/zonal_stats_lsoa')
 
@@ -474,6 +531,16 @@ shp_all_ <- shp_all %>%
 ## filter out 20_5, and 22_5, 25_2 for now 
 shp_all_lsoa <- shp_all_ %>%
   filter(!is.na(year))
+
+
+shp_all_lsoa_summary <- 
+  shp_all_lsoa %>%
+  group_by(lc_scenario, year) %>%
+  tally() %>%
+  group_by(lc_scenario) %>%
+  add_count(name = 'n_yr') %>%
+  group_by(year) %>%
+  add_count(name = 'n_snr')
 
 
 ## save a copy for viz

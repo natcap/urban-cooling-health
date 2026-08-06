@@ -1,6 +1,7 @@
 # gis_setup.py
 import os
 import sys
+from pathlib import Path
 import pyproj
 import rasterio
 from rasterio.crs import CRS
@@ -27,23 +28,69 @@ def configure_proj_environment():
         print(f"--- GIS SETUP ERROR: Could not configure PROJ environment: {e} ---")
         return False
 
-def ensure_raster_crs(raster_path, target_epsg=27700):
-    """
-    Checks if a raster has a valid EPSG CRS. 
-    If it is 'LOCAL_CS' or missing, it overwrites it with the target EPSG.
-    """
-    try:
-        with rasterio.open(raster_path, 'r+') as src:
-            # Check if CRS is valid and matches target
-            if src.crs is None or not src.crs.is_valid or src.crs.to_epsg() != target_epsg:
-                print(f"Fixing CRS for: {os.path.basename(raster_path)}")
-                print(f"   Was: {src.crs.wkt[:50]}...")
-                
-                # Define the correct CRS
-                new_crs = CRS.from_epsg(target_epsg)
-                src.crs = new_crs
-                print(f"   Now: EPSG:{target_epsg}")
-                return True
-    except Exception as e:
-        print(f"Error checking/fixing raster CRS: {e}")
-        return False
+def ensure_raster_crs(raster_path: str, target_epsg: int, overwrite: bool = True) -> str:
+    import subprocess
+    import shutil
+    import rasterio
+
+    raster_path = Path(raster_path)
+    if not raster_path.exists():
+        raise FileNotFoundError(f"Raster not found: {raster_path}")
+
+    # --- Find gdalwarp — check PATH first, then common conda locations ---
+    gdalwarp = shutil.which("gdalwarp")
+    if gdalwarp is None:
+        # Common conda-forge location on Windows
+        candidates = [
+            Path(sys.prefix) / "Library" / "bin" / "gdalwarp.exe",
+            Path(sys.prefix) / "bin" / "gdalwarp",
+        ]
+        for c in candidates:
+            if c.exists():
+                gdalwarp = str(c)
+                break
+
+    if gdalwarp is None:
+        raise FileNotFoundError(
+            "gdalwarp not found. Run: conda install -c conda-forge gdal"
+        )
+
+    print(f"[gis_setup] Using gdalwarp: {gdalwarp}")
+
+    with rasterio.open(raster_path) as src:
+        current_epsg = src.crs.to_epsg() if src.crs else None
+
+    if current_epsg == target_epsg:
+        print(f"[gis_setup] Already EPSG:{target_epsg} — no action needed.")
+        return str(raster_path)
+
+    print(f"[gis_setup] Reprojecting {raster_path.name}: EPSG:{current_epsg} → EPSG:{target_epsg}")
+
+    if overwrite:
+        out_path = raster_path.with_suffix(".tmp.tif")
+    else:
+        out_path = raster_path.with_name(f"{raster_path.stem}_EPSG{target_epsg}.tif")
+
+    cmd = [
+        gdalwarp,              # ✅ full path instead of bare "gdalwarp"
+        "-t_srs",  f"EPSG:{target_epsg}",
+        "-r",      "bilinear",
+        "-co",     "COMPRESS=LZW",
+        "-co",     "TILED=YES",
+        "-overwrite",
+        str(raster_path),
+        str(out_path)
+    ]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"gdalwarp failed:\n{result.stderr}")
+
+    if overwrite:
+        raster_path.unlink()
+        out_path.rename(raster_path)
+        print(f"[gis_setup] Saved (overwritten): {raster_path}")
+        return str(raster_path)
+    else:
+        print(f"[gis_setup] Saved alongside original: {out_path}")
+        return str(out_path)

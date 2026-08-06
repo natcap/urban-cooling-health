@@ -1,6 +1,4 @@
----
----
----
+
 
 ## This repository contains scripts pertaining to the Wellcome Trust Project (Extreme heat, green space and mental health).
 
@@ -35,19 +33,19 @@
 |    |    |__ health-model-01-prep-input-ONS-mortality-data.Rmd    # baseline data
 |    |    |__ health-modeling.py                                   # main code for modeling  
 |    |    |__ health-modeling_*.bat                                # batch run for each scenario
-|    |    |__ ~~health-modeling-output-plot.ipynb                  # (not updated)~~
+|    |    |__ health-modeling-output-plot.ipynb                    # (not updated)
 |    |    |__ health-modeling-output-plot-city.Rmd                 # fig.4c: overall stats at city level
-|    |    |__ health-modeling-zonal-stats.ipynb                    # zonal stats at borough or LSOA level 
+|    |    |__ health-modeling-zonal-stats.ipynb                    # zonal stats at borough or LSOA level for viz
 |    |    |__ health-modeling-zonal-stats-viz-borough.Rmd          # viz zonal stats: bar plots + maps
 │    |
 |    |
 │    |   # visualize results
-│    |   ## --- step 1. zonal stats ---
+│    |   # --- step 1. zonal stats ---
 │    ├── invest_result_zonal_stats_temp.ipynb
 │    ├── invest_result_zonal_stats_energy.ipynb       # stats by borough vs lsoa
 │    ├── invest_result_zonal_stats_productivity.ipynb # stats by borough vs lsoa (be sure to run a separate updated productivity function)
 │    | 
-│    |   ## --- step 2. viz ---
+│    |   # --- step 2. viz ---
 │    ├── invest_result_zonal_viz_0_data_prep.Rmd
 │    ├── invest_result_zonal_viz_1_temp.Rmd           # fig.3a, fig.3b
 │    ├── invest_result_zonal_viz_2_energy.Rmd         # fig.4a
