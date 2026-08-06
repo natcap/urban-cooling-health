@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-
-
-## This repository contains scripts pertaining to the Wellcome Trust Project (Extreme heat, green space and mental health).
-=======
->>>>>>> 202eafcf8ad80c1f6c1cc7f3c11967086ad0533f
 
 ## Directory Structure
 
