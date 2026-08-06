@@ -1,0 +1,55 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-03-21"
+---
+
+
+```{r}
+library(sf)
+library(dplyr)
+library(stringr)
+
+dir.raw <- 'C:/Users/yingjiel/gdrive/Shared drives/Wellcome Trust Project Data/0_source_data/GiGL land use data/GiGL_Trees_font_point/'
+
+f <- paste0(dir.raw, 'GiGL_Trees_font_point.shp')
+df_tree <- st_read(f)
+```
+```{r}
+
+# dt_tree <- df_tree %>%
+#   mutate(Age = as.numeric(Age))
+
+names(df_tree)
+
+# head(df_tree)
+unique(df_tree$Age)
+unique(df_tree$Condition)
+# unique(df_tree$Date) %>% sort()
+
+df_tree_condition <- df_tree %>%
+  distinct(Age, Condition)
+
+
+```
+```{r}
+
+age_dying <- c("over mature", "dead")
+con_dying <- c("poor", 'vandalised', "dead", "dead stump", "felled", "dead/dying")
+df_tree_age_con <- df_tree %>%
+  mutate(
+    Age = str_to_lower(Age),
+    Condition = str_to_lower(Condition),
+    Condition = ifelse(Condition %in% c("Not applicable", "See comments", "pk"), NA, Condition) ) %>%
+  filter(!(is.na(Age) & is.na(Condition))) %>%
+  mutate(
+    scenario = case_when(
+      Age %in% age_dying | Condition %in% con_dying ~ 'dying',
+      T ~ 'not dying'
+  ))
+
+# Write to shapefile
+file <- paste0(dir.raw, 'GiGL_Trees_font_point_scenario.shp')
+st_write(df_tree_age_con, file, delete_layer = TRUE)
+```
+

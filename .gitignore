@@ -1,10 +1,15 @@
 
 data/
 figures/
+__pycache__/
+*.pyc
 
 *.docx
 *.xlsx
 *api_key.*
+Yougeng*
+*.lnk
+.RDS
 
 ## code
 deploy_on_shinyapps.io.R
