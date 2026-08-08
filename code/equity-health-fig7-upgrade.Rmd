@@ -6,9 +6,7 @@ date: "2026-08-06"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r}
 # Quantitative upgrade for Fig. 7c
 #
 # Run after `health_sf` has been created in equity-health.Rmd.
@@ -27,15 +25,26 @@ outcome_keep <- "All_cause"
 scenario_keep <- c("Green30", "Target30")
 vulnerability_vars <- c(
   "pIncomeDeprivation",
+  "p5under",
   "p75over",
-  "pBAME"
+  "pBAME",
+  "SVI"
 )
 
 vulnerability_labels <- c(
   pIncomeDeprivation = "Income deprivation",
+  p5under  = "Age <5", 
   p75over = "Age ≥75",
-  pBAME = "Ethnic minority"
+  pBAME = "Ethnic minority",
+  SVI = "SVI"
 )
+```
+
+
+```{r load data}
+health_sf <- readRDS(file = "./figures/equity_map_biscale/health_sf.rds")
+stat_bi   <- readRDS(file = "./figures/equity_map_biscale/stat_bi.rds")
+
 
 # Identify an optional LSOA population field. Add the exact field name here if
 # the source GeoPackage uses a different name. The core analysis remains valid
@@ -230,7 +239,10 @@ blue_plot_data <- headline_results %>%
       levels = unname(vulnerability_labels[vulnerability_vars])
     )
   )
+```
 
+
+```{r plot}
 p_blue_gap <- ggplot(
   blue_plot_data,
   aes(x = scenario, y = pct_blue, group = metric_label)
@@ -304,7 +316,10 @@ fig7c_upgraded <- plot_grid(
   rel_heights = c(1, 1.15),
   label_size = 11
 )
+```
 
+
+```{r save data}
 dir.create("./figures/equity_map_biscale", recursive = TRUE, showWarnings = FALSE)
 
 write.csv(

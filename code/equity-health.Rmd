@@ -54,10 +54,10 @@ metrics <- c(
   "pIncomeDeprivation",
   "p5under",
   "p75over",
-  "pNotEnglishProficient",
-  "pSocial_housing",
+  "pNotEnglishProficient", # removed later
+  "pSocial_housing",       # removed later
   "pBAME",
-  "SVI" # "overall_score"
+  "SVI"                    # "overall_score"
 )
 
 
@@ -1875,6 +1875,13 @@ saveRDS(object = stat_bi, file = "./figures/equity_map_biscale/stat_bi.rds")
 
 stat_bi_viz <- stat_bi %>%
   select(-file) %>%
+  group_by(outcome_ind, svi_var, lc_snr) %>%
+  mutate(
+    total_tracts = sum(n),
+    pct = round(n / total_tracts * 100, 1)
+  ) %>%
+  ungroup() %>%
+
   filter(bi_class %in% c('3_1', '1_3', '2_3', '3_3')) %>%
   filter(lc_snr %in% lc_snr_i) %>%
   arrange(outcome_ind, svi_var, bi_class, lc_snr) %>%
@@ -1923,7 +1930,6 @@ df_plot <- stat_bi_viz %>%
 ```
 
 ```{r - viz 2}
-
 library(dplyr)
 library(ggplot2)
 
@@ -1989,11 +1995,24 @@ bi_cols_select <- c(
 #   scale_fill_manual(values = bi_cols_select) +
 #   theme_bw()
 
-ggplot(df_plot,
+names(df_plot)
+```
+
+
+```{r - viz 2 - plot n}
+df_plot %>%
+  #filter(svi_var == 'SVI') %>%
+  ggplot(.,
        aes(x = interaction(lc_snr, bar),
            y = n,
            fill = bi_class)) +
   geom_col(show.legend = F) +
+  geom_text(
+    aes(label = n),
+    position = position_stack(vjust = 0.5),
+    size = 3,
+    color = "white"
+  ) +
   facet_wrap(~svi_var, 
              ncol = 5,
              axes = "all_x", 
@@ -2039,3 +2058,65 @@ ggsave(
 ```
 
 
+
+```{r - viz 2 - plot %}
+df_plot %>%
+  #filter(svi_var == 'SVI') %>%
+  ggplot(.,
+       aes(x = interaction(lc_snr, bar),
+           y = pct,
+           fill = bi_class)) +
+  geom_col(show.legend = F) +
+  geom_text(
+    aes(label = paste0(pct, "%")),
+    position = position_stack(vjust = 0.5),
+    size = 3,
+    color = "white"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent_format(scale = 1)
+  ) + 
+
+  facet_wrap(~svi_var, 
+             ncol = 5,
+             axes = "all_x", 
+    axis.labels = "all") +
+  scale_fill_manual(values = bi_cols_select) +
+ 
+  #  scale_x_discrete(
+  #   labels = function(x) {
+  #     gsub("\\.", "\n", x)
+  #   }
+  # ) +
+  
+  scale_x_discrete(
+  labels = function(x) sub("\\..*$", "", x)
+) +
+  
+  labs(
+    x = NULL,
+    y = "Count"
+  ) +
+  theme_bw() +
+  theme(
+  axis.text.x = element_text(
+    angle = 45,
+    hjust = 1,
+    vjust = 1
+  )
+)
+
+
+# Save combined plot
+f <- paste0('./figures/equity_map_biscale/', 
+            paste('equity_map_health_stat_bivar', outcome_ind, sep = '_'), '_h_pct.png')
+ggsave(
+  filename = f,
+  plot = last_plot(),
+  bg = "transparent",
+  dpi = 300,
+  width = 5/2*5,         # Wider for 2 columns
+  height = 6/2,      # Taller for 2 rows
+  device = ragg::agg_png
+)
+```
