@@ -1850,7 +1850,12 @@ ggsave(
 )
 ```
 
-```{r - stat - change - load data}
+### Legacy Fig. 7c summary (retained for audit only)
+
+The class-count plots below used scenario-specific quantiles and incomplete
+stacks, so they are excluded from the manuscript figure.
+
+```{r - stat - change - load data, eval=FALSE, include=FALSE}
 
 ## plot selected lc scenarios
 lc_snr_i <- c('Green30', 'Target30')
@@ -1888,8 +1893,7 @@ stat_bi_viz <- stat_bi %>%
   as.data.frame()
 ```
 
-
-```{r - stat - change - viz, eval=FALSE, include=FALSE}
+```{r - stat - change, eval=FALSE, include=FALSE}
 library(dplyr)
 library(ggplot2)
 
@@ -1929,7 +1933,8 @@ df_plot <- stat_bi_viz %>%
 
 ```
 
-```{r - viz 2}
+
+```{r - plot data, eval=FALSE, include=FALSE}
 library(dplyr)
 library(ggplot2)
 
@@ -1999,7 +2004,7 @@ names(df_plot)
 ```
 
 
-```{r - viz 2 - plot n}
+```{r - plot n of change, eval=FALSE, include=FALSE}
 df_plot %>%
   #filter(svi_var == 'SVI') %>%
   ggplot(.,
@@ -2059,7 +2064,7 @@ ggsave(
 
 
 
-```{r - viz 2 - plot %}
+```{r - plot % of change, eval=FALSE, include=FALSE}
 df_plot %>%
   #filter(svi_var == 'SVI') %>%
   ggplot(.,
@@ -2119,4 +2124,24 @@ ggsave(
   height = 6/2,      # Taller for 2 rows
   device = ragg::agg_png
 )
+```
+
+
+### Figure 7c-d: paired Green30-Target30 equity comparison
+
+The production workflow is maintained in
+`code/equity-health-fig7-upgrade.Rmd`. It pairs identical LSOAs and applies
+Green30 mortality-benefit tertiles to both scenarios, ensuring that “low
+benefit” has the same meaning throughout the comparison.
+
+```{r fig-7-cd-paired, echo=FALSE, out.width='100%'}
+fig7_cd_path <- "./figures/equity_map_biscale/fig7c_upgraded.png"
+
+if (!file.exists(fig7_cd_path)) {
+  stop(
+    "Run code/equity-health-fig7-upgrade.Rmd before rendering Figure 7c-d."
+  )
+}
+
+knitr::include_graphics(fig7_cd_path)
 ```
