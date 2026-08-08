@@ -23,13 +23,16 @@ library(cowplot)
 
 outcome_keep <- "All_cause"
 scenario_keep <- c("Green30", "Target30")
-vulnerability_vars <- c(
+main_vulnerability_vars <- c(
   "pIncomeDeprivation",
-  "p5under",
   "p75over",
-  "pBAME",
-  "SVI"
+  "pBAME"
 )
+
+# Age <5 is less directly aligned with all-cause mortality, while SVI partly
+# reproduces the targeting rule. Retain both as supplementary checks.
+supplementary_vulnerability_vars <- c("p5under", "SVI")
+vulnerability_vars <- c(main_vulnerability_vars, supplementary_vulnerability_vars)
 
 vulnerability_labels <- c(
   pIncomeDeprivation = "Income deprivation",
@@ -43,7 +46,6 @@ vulnerability_labels <- c(
 
 ```{r load data}
 health_sf <- readRDS(file = "./figures/equity_map_biscale/health_sf.rds")
-stat_bi   <- readRDS(file = "./figures/equity_map_biscale/stat_bi.rds")
 
 
 # Identify an optional LSOA population field. Add the exact field name here if
@@ -78,8 +80,7 @@ equity_long <- health_sf %>%
     as.character(lc_scenario) %in% scenario_keep
   ) %>%
   select(all_of(select_vars)) %>%
-  mutate(lc_scenario = as.character(lc_scenario)) %>%
-  distinct(id, lc_scenario, .keep_all = TRUE)
+  mutate(lc_scenario = as.character(lc_scenario))
 
 duplicate_check <- equity_long %>%
   count(id, lc_scenario) %>%
@@ -87,6 +88,9 @@ duplicate_check <- equity_long %>%
 if (nrow(duplicate_check) > 0) {
   stop("Each id must have exactly one row per scenario.")
 }
+
+equity_long <- equity_long %>%
+  distinct(id, lc_scenario, .keep_all = TRUE)
 
 pair_check <- equity_long %>%
   count(id) %>%
@@ -112,15 +116,24 @@ equity_wide <- equity_long %>%
     delta_cases = cases_Target30 - cases_Green30
   )
 
-# Use Green30 as the fixed benefit reference. This avoids redefining "low
-# benefit" within each scenario and makes scenario transitions interpretable.
-green30_ecdf <- ecdf(equity_wide$cases_Green30)
+# Use Green30 benefit tertiles as fixed thresholds for both scenarios. This
+# makes "low benefit" and every paired transition directly comparable.
+green30_benefit_breaks <- quantile(
+  equity_wide$cases_Green30,
+  probs = c(1 / 3, 2 / 3),
+  na.rm = TRUE,
+  names = FALSE,
+  type = 7
+)
+
+if (length(unique(green30_benefit_breaks)) != 2) {
+  stop("Green30 benefit tertiles are not distinct.")
+}
 
 classify_benefit <- function(x) {
-  p <- green30_ecdf(x)
   case_when(
-    p <= 1 / 3 ~ "Low",
-    p <= 2 / 3 ~ "Moderate",
+    x <= green30_benefit_breaks[1] ~ "Low",
+    x <= green30_benefit_breaks[2] ~ "Moderate",
     TRUE ~ "High"
   )
 }
@@ -220,70 +233,141 @@ blue_transitions <- metric_data %>%
   mutate(pct = 100 * n_LSOA / sum(n_LSOA)) %>%
   ungroup()
 
-# Panel C1: the blue-class gap. A downward slope indicates improvement.
+# Main-text panels use three independent vulnerability dimensions. Percentages
+# use high-vulnerability LSOAs as the denominator; population weighting is
+# reported separately when a population field is available.
+main_metric_labels <- unname(vulnerability_labels[main_vulnerability_vars])
+
 blue_plot_data <- headline_results %>%
-  select(
-    metric_label,
-    Green30 = pct_blue_Green30,
-    Target30 = pct_blue_Target30
-  ) %>%
-  pivot_longer(
-    cols = c(Green30, Target30),
-    names_to = "scenario",
-    values_to = "pct_blue"
-  ) %>%
+  filter(metric %in% main_vulnerability_vars) %>%
   mutate(
-    scenario = factor(scenario, levels = scenario_keep),
     metric_label = factor(
       metric_label,
-      levels = unname(vulnerability_labels[vulnerability_vars])
+      levels = rev(main_metric_labels)
+    ),
+    change_label = sprintf("%+.1f pp", change_blue_percentage_points)
+  )
+
+blue_transition_plot_data <- blue_transitions %>%
+  filter(metric %in% main_vulnerability_vars) %>%
+  mutate(
+    metric_label = factor(
+      metric_label,
+      levels = rev(main_metric_labels)
+    ),
+    benefit_Target30 = factor(
+      benefit_Target30,
+      levels = c("Low", "Moderate", "High")
     )
   )
+
+citywide_note <- sprintf(
+  paste0(
+    "Citywide deaths averted: Green30 %.1f; Target30 %.1f ",
+    "(%+.1f%%)"
+  ),
+  citywide_results$deaths_averted_Green30,
+  citywide_results$deaths_averted_Target30,
+  100 * (
+    citywide_results$deaths_averted_Target30 /
+      citywide_results$deaths_averted_Green30 - 1
+  )
+)
 ```
 
 
 ```{r plot}
-p_blue_gap <- ggplot(
-  blue_plot_data,
-  aes(x = scenario, y = pct_blue, group = metric_label)
-) +
-  geom_line(color = "grey65", linewidth = 0.7) +
-  geom_point(aes(color = scenario), size = 3) +
-  geom_text(
-    aes(label = sprintf("%.1f%%", pct_blue)),
-    nudge_y = 2.5,
-    size = 3,
-    show.legend = FALSE
+p_blue_gap <- ggplot(blue_plot_data, aes(y = metric_label)) +
+  geom_segment(
+    aes(
+      x = pct_blue_Green30,
+      xend = pct_blue_Target30,
+      yend = metric_label
+    ),
+    color = "grey70",
+    linewidth = 0.8
   ) +
-  facet_wrap(~ metric_label, nrow = 1) +
-  scale_color_manual(values = c(Green30 = "#4D4D4D", Target30 = "#007C91")) +
-  scale_y_continuous(
+  geom_point(
+    aes(x = pct_blue_Green30),
+    shape = 21,
+    size = 3.2,
+    stroke = 0.9,
+    fill = "white",
+    color = "#4D4D4D"
+  ) +
+  geom_point(
+    aes(x = pct_blue_Target30),
+    shape = 16,
+    size = 3.2,
+    color = "#007C91"
+  ) +
+  geom_text(
+    aes(
+      x = pct_blue_Green30,
+      label = sprintf("%.1f%%", pct_blue_Green30)
+    ),
+    nudge_y = 0.17,
+    color = "#4D4D4D",
+    size = 3
+  ) +
+  geom_text(
+    aes(
+      x = pct_blue_Target30,
+      label = sprintf("%.1f%%", pct_blue_Target30)
+    ),
+    nudge_y = -0.17,
+    color = "#007C91",
+    size = 3
+  ) +
+  geom_text(
+    aes(x = 68, label = change_label),
+    hjust = 1,
+    color = "#333333",
+    size = 3
+  ) +
+  scale_x_continuous(
+    limits = c(0, 70),
+    breaks = seq(0, 60, by = 20),
     labels = label_number(suffix = "%"),
-    limits = c(0, NA),
-    expand = expansion(mult = c(0, 0.15))
+    expand = expansion(mult = c(0, 0))
   ) +
   labs(
-    x = NULL,
-    y = "High-vulnerability LSOAs\nreceiving relatively low benefit",
-    color = NULL
+    title = "Relatively low mortality benefit among high-vulnerability LSOAs",
+    subtitle = paste0(
+      "Green30 reference tertiles applied to both scenarios.\n",
+      citywide_note
+    ),
+    x = "Share of high-vulnerability LSOAs",
+    y = NULL,
+    caption = paste(
+      "Open circles: Green30; filled circles: Target30.",
+      "Right labels show Target30 minus Green30."
+    )
   ) +
   theme_classic(base_size = 10) +
   theme(
-    legend.position = "top",
-    strip.background = element_blank(),
-    strip.text = element_text(face = "bold"),
-    axis.text.x = element_text(face = "bold")
+    plot.title = element_text(face = "bold", size = 12),
+    plot.subtitle = element_text(size = 9, lineheight = 1.05),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    plot.caption = element_text(hjust = 0)
   )
 
 # Panel C2: what happened to the same blue LSOAs after targeting?
 p_blue_transition <- ggplot(
-  blue_transitions,
-  aes(x = metric_label, y = pct, fill = benefit_Target30)
+  blue_transition_plot_data,
+  aes(y = metric_label, x = pct, fill = benefit_Target30)
 ) +
-  geom_col(width = 0.65, color = "white", linewidth = 0.3) +
+  geom_col(
+    width = 0.65,
+    color = "white",
+    linewidth = 0.3,
+    position = position_stack(reverse = TRUE)
+  ) +
   geom_text(
     aes(label = if_else(pct >= 7, paste0(round(pct), "%\n(n=", n_LSOA, ")"), "")),
-    position = position_stack(vjust = 0.5),
+    position = position_stack(vjust = 0.5, reverse = TRUE),
     size = 2.8,
     lineheight = 0.9
   ) +
@@ -296,16 +380,26 @@ p_blue_transition <- ggplot(
     ),
     drop = FALSE
   ) +
-  scale_y_continuous(labels = percent_format(scale = 1), expand = c(0, 0)) +
+  scale_x_continuous(
+    limits = c(0, 100),
+    breaks = seq(0, 100, by = 25),
+    labels = percent_format(scale = 1),
+    expand = c(0, 0)
+  ) +
   labs(
-    x = NULL,
-    y = "Outcome under Target30 among\nGreen30 blue-class LSOAs",
+    title = "Target30 outcomes for the same Green30 low-benefit LSOAs",
+    subtitle = "Each bar totals 100%; labels report within-bar percentages and LSOA counts.",
+    x = "Distribution under Target30",
+    y = NULL,
     fill = NULL
   ) +
   theme_classic(base_size = 10) +
   theme(
     legend.position = "top",
-    axis.text.x = element_text(face = "bold")
+    plot.title = element_text(face = "bold", size = 12),
+    plot.subtitle = element_text(size = 9),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank()
   )
 
 fig7c_upgraded <- plot_grid(
@@ -313,7 +407,7 @@ fig7c_upgraded <- plot_grid(
   p_blue_transition,
   labels = c("c", "d"),
   ncol = 1,
-  rel_heights = c(1, 1.15),
+  rel_heights = c(1, 1.05),
   label_size = 11
 )
 ```
@@ -342,7 +436,7 @@ ggsave(
   "./figures/equity_map_biscale/fig7c_upgraded.png",
   fig7c_upgraded,
   width = 7,
-  height = 6.2,
+  height = 6.4,
   dpi = 600,
   bg = "white",
   device = ragg::agg_png
@@ -353,4 +447,3 @@ print(citywide_results)
 print(fig7c_upgraded)
 
 ```
-
