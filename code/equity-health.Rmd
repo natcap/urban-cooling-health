@@ -2135,13 +2135,13 @@ Green30 mortality-benefit tertiles to both scenarios, ensuring that “low
 benefit” has the same meaning throughout the comparison.
 
 ```{r fig-7-cd-paired, echo=FALSE, out.width='100%'}
-fig7_cd_path <- "./figures/equity_map_biscale/fig7c_upgraded.png"
+fig7_cd_path <- paste0("./figures/equity_map_biscale/", 'fig7c_upgraded_', ymd, ".png")
+# 
+# if (!file.exists(fig7_cd_path)) {
+#   stop(
+#     "Run code/equity-health-fig7-upgrade.Rmd before rendering Figure 7c-d."
+#   )
+# }
 
-if (!file.exists(fig7_cd_path)) {
-  stop(
-    "Run code/equity-health-fig7-upgrade.Rmd before rendering Figure 7c-d."
-  )
-}
-
-knitr::include_graphics(fig7_cd_path)
+# knitr::include_graphics(fig7_cd_path)
 ```

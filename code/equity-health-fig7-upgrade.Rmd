@@ -433,7 +433,7 @@ write.csv(
 )
 
 ggsave(
-  "./figures/equity_map_biscale/fig7c_upgraded.png",
+  "./figures/equity_map_biscale/fig7c_upgraded_v2.png",
   fig7c_upgraded,
   width = 7,
   height = 6.4,
