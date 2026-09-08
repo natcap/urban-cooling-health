@@ -4,6 +4,11 @@ output: html_document
 date: "2026-08-06"
 ---
 
+> **Archived workflow.** This file is retained to reproduce the August 2026
+> revision. Use `code/equity-health-fig7-production.Rmd` for the current Figure
+> 7 analysis, including population-normalized benefits, common map thresholds,
+> uncertainty checks, and reproducibility metadata.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 

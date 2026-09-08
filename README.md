@@ -1,6 +1,9 @@
 
 ## Directory Structure
 
+For the current production Figure 7 workflow, required small inputs, uncertainty
+settings and validation steps, see [REPRODUCIBILITY.md](REPRODUCIBILITY.md).
+
 ```         
 ├── data/
 │   ├── tree_list_GiGL_Pre2023_2050.csv              # tree specices will be at risk by 2050

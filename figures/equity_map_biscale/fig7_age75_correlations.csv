@@ -1,0 +1,2 @@
+cor_age75_income_deprivation,cor_age75_ethnic_minority,cor_age75_SVI,cor_age75_Green30_benefit,cor_age75_Target30_benefit,cor_age75_Target30_minus_Green30,method,interpretation
+-0.44963686854262164,-0.39650908650573913,-0.47451127549924327,0.2176804723972345,-0.25664564327703415,-0.3894959422424726,Pearson correlation,Descriptive diagnostic; rerun with 2021 population-normalized benefit

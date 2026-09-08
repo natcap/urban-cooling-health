@@ -1,0 +1,10 @@
+benefit_Green30_group,benefit_Target30_group,n_LSOA,pct_within_Green30_class
+Low,Low,248,59.18854415274463
+Low,Moderate,86,20.525059665871122
+Low,High,85,20.286396181384248
+Moderate,Low,317,60.96153846153846
+Moderate,Moderate,99,19.03846153846154
+Moderate,High,104,20
+High,Low,324,48.4304932735426
+High,Moderate,140,20.92675635276532
+High,High,205,30.642750373692078

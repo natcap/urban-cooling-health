@@ -74,7 +74,7 @@ DEFAULT_CAUSES = [
     CauseConfig("mental_disorder",1.0260, 1.0130, 1.0400),
     CauseConfig("cardiovascular", 1.0344, 1.0310, 1.0378),
     CauseConfig("respiratory",    1.0360, 1.0318, 1.0402),
-    CauseConfig("self_harm",      1.0120, 1.0030, 1.0210), # this was wrong as we used (IRR) rather than RR
+    CauseConfig("self_harm",      1.0120, 1.0030, 1.0210), # this has been updated as the previous data was wrong.
 ]
 
 # -----------------------------

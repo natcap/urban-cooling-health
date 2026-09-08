@@ -1,6 +1,10 @@
 @echo off
 echo Starting heat mortality analysis...
 
+REM Study design: apply the 2050 temperature field while holding population
+REM and baseline mortality at 2021 values. Use the same seed as Green30 so
+REM Monte Carlo draws can be compared pairwise.
+
 C:\Users\pc\.conda\envs\geo_env\python.exe D:/natcap/urban-cooling-health/code/health_assessment/health-modeling.py ^
     --t_baseline "G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/scenario0/work_and_energy_runs/intermediate/T_air_london_scenario_25.0deg_5.0uhi_45.0hum_energy_productivity.tif" ^
     --t_scenario "G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/scenario530/work_and_energy_runs/intermediate/T_air_london_scenario530_25deg_5uhi_45hum_energy_productivity.tif" ^
@@ -13,7 +17,8 @@ C:\Users\pc\.conda\envs\geo_env\python.exe D:/natcap/urban-cooling-health/code/h
     --baseline_deaths_resp   "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_10m_bng/j00_j99_x_diseases_of_the_respiratory_system_bng10m_2021.tif" ^
 	--baseline_deaths_self_harm "G:/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_10m_bng/x60_x84_intentional_self_harm_bng10m_2021.tif" ^
     --out_dir "G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_output_s0_s530_2050_2050" ^
-    --n_draws 100
+    --n_draws 2000 ^
+    --seed 20260908
 
 echo.
 echo Analysis complete! Check the output directory for results.

@@ -12,10 +12,23 @@ figures/*
 # Ignore everything inside except RDS
 figures/equity_map_biscale/*
 !figures/equity_map_biscale/*.rds
+!figures/equity_map_biscale/fig7_*.csv
+!figures/equity_map_biscale/fig7_*.png
+!figures/equity_map_biscale/fig7_session_info.txt
+
+# Track the small, documented inputs needed to reproduce Figure 7. Large raw
+# rasters remain excluded by data/*.
+!data/derived/
+data/derived/*
+!data/derived/README.md
+!data/derived/*_template.csv
+!data/derived/lsoa_population_2021.csv
+!data/derived/*city_total_draws_by_cause.csv
 
 
 __pycache__/
 *.pyc
+.DS_Store
 
 *.docx
 *.xlsx
