@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "method": "sum count-preserved WorldPop 2021 pixels by Figure 7 LSOA polygon",
+  "geography": {
+    "count": 4835,
+    "vintage": "LSOA 2011",
+    "identifier": "official LSOA11CD",
+    "crs": "OSGB36 / British National Grid",
+    "allocation_rule": "raster pixel centre falls inside polygon",
+    "invalid_geometry_codes_repaired": ["E01000285", "E01000815", "E01001280", "E01001353", "E01003830", "E01003885", "E01004021", "E01004595"]
+  },
+  "validation": {
+    "population_raster_total": 8834023.3227,
+    "lsoa_population_total": 8832324.67,
+    "allocation_difference": -1698.6527,
+    "allocation_relative_difference": -0.0002,
+    "ons_census_2021_ts001_london_total": 8799776,
+    "benchmark_relative_difference": 0.0037,
+    "benchmark_role": "external London-total reasonableness check; not directly joined"
+  },
+  "inputs": {
+    "lsoa_vector": {
+      "path": "/Users/yingjiel/Documents/projects/urban-cooling-health/data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg",
+      "sha256": "919053115f65b5b87bc91a2e3c6bb3edd1d6356422f1908097d7894a5b39c442"
+    },
+    "population_raster": {
+      "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/pop_raster/resampled_10m/gbr_pop_2021_10m_count_preserved_bng.tif",
+      "sha256": "76e20669798764b393e757ab420727cff3bbf784d3f5ee0ae85066592b915ed0"
+    }
+  },
+  "output": {
+    "path": "data/derived/lsoa_population_2021_by_lsoa11cd.csv",
+    "sha256": "413e506219ee0384d8e33da9d4ddd2a10272ea1ed630eff3691a85c15cba883f"
+  },
+  "software": {
+    "r": "R version 4.6.0 (2026-04-24)",
+    "sf": "1.1.1",
+    "terra": "1.9.34",
+    "git_commit": "6414f7a19734cb6d992d6fd697f04120e8557974",
+    "git_worktree_dirty": false,
+    "preparation_script_sha256": "39059f5628bd3e14349f5c641097a2cffe673be795a4c236fbb37358eead5db8"
+  }
+}

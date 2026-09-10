@@ -138,23 +138,27 @@ The workflow writes the following files to
 
 ### 5. Use the validated 2021 LSOA population lookup
 
-The tracked [`lsoa_population_2021.csv`](data/derived/lsoa_population_2021.csv)
+The tracked
+[`lsoa_population_2021_by_lsoa11cd.csv`](data/derived/lsoa_population_2021_by_lsoa11cd.csv)
 contains positive population estimates for all 4,835 LSOA11 polygons used by
-Figure 7. It was generated from the count-preserved WorldPop surface with:
+Figure 7. It is keyed by official `LSOA11CD` and was generated from the
+count-preserved WorldPop surface with:
 
 ```bash
 Rscript code/health_assessment/prepare_lsoa_population_2021.R \
-  figures/equity_map_biscale/health_sf.rds \
+  data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg \
   /path/to/gbr_pop_2021_10m_count_preserved_bng.tif \
-  data/derived/lsoa_population_2021.csv \
-  data/derived/lsoa_population_2021.manifest.json
+  data/derived/lsoa_population_2021_by_lsoa11cd.csv \
+  data/derived/lsoa_population_2021_by_lsoa11cd.manifest.json
 ```
 
 The modeled LSOA total is 8,832,324.67, 0.370% above the official Census 2021
 TS001 London total of 8,799,776. The companion manifest records checksums,
 software versions, the pixel-centre allocation rule and topology repair for
-eight legacy polygons. TS001 uses 4,994 LSOA21 areas and is an external
-validation benchmark, not a direct join. `Rscript code/run-fig7.R` now reports
+eight source polygons. The official-code values are exactly identical to the
+previous numeric-ID lookup, but sorting or rebuilding upstream tables can no
+longer change the join. TS001 uses 4,994 LSOA21 areas and is an external
+validation benchmark, not a direct join. `Rscript code/run-fig7.R` reports
 deaths averted per 100,000 2021 residents.
 
 For the full Figure 7 protocol, including Monte Carlo files and the final review

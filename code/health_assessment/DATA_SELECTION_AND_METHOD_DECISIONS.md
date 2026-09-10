@@ -99,14 +99,15 @@ official TS001 totals as an external validation check. The alternative is to
 rebuild vulnerability inputs, zonal statistics and Figure 7 on LSOA 2021
 boundaries.
 
-**Implemented result (9 September 2026):**
-`prepare_lsoa_population_2021.R` generated 4,835 positive denominators totaling
-8,832,324.67. This is 0.370% above the TS001 London total and 0.019% below the
-masked raster total. Eight ring self-intersections in the legacy polygons were
-repaired deterministically with `sf::st_make_valid`; their numeric IDs and all
-checksums are recorded in the generation manifest. Because the legacy RDS does
-not contain `LSOA11CD`, the next full build must restore that official code at
-source rather than infer it from row order.
+**Implemented result (10 September 2026):**
+`prepare_lsoa_population_2021.R` generated 4,835 positive, official-code
+denominators totaling 8,832,324.67. This is 0.370% above the TS001 London total
+and 0.019% below the masked raster total. Eight ring self-intersections were
+repaired deterministically with `sf::st_make_valid`; their `LSOA11CD` values
+and all checksums are recorded in the generation manifest. The new values are
+exactly identical to the earlier numeric-ID lookup, but population,
+vulnerability and health results now join exclusively by official code. The
+legacy `health_sf.rds` and numeric lookup remain historical audit inputs only.
 
 ## 4. Population-weighted mortality allocation
 

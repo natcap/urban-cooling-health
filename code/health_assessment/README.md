@@ -181,21 +181,21 @@ This step uses GDAL sum resampling for the extensive population counts, applies
 the borough mask by pixel centre and checks the result against an 8.8 million
 London benchmark.
 
-To create the population denominator for the existing Figure 7 LSOA11 layer,
-run:
+To create the official-code population denominator for the production Figure 7
+LSOA11 layer, run:
 
 ```bash
 Rscript code/health_assessment/prepare_lsoa_population_2021.R \
-  figures/equity_map_biscale/health_sf.rds \
+  data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg \
   "$HEALTH_DATA_ROOT/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/pop_raster/resampled_10m/gbr_pop_2021_10m_count_preserved_bng.tif" \
-  data/derived/lsoa_population_2021.csv \
-  data/derived/lsoa_population_2021.manifest.json
+  data/derived/lsoa_population_2021_by_lsoa11cd.csv \
+  data/derived/lsoa_population_2021_by_lsoa11cd.manifest.json
 ```
 
-This uses the exact 4,835 stored polygons and numeric IDs. The legacy RDS does
-not retain `LSOA11CD`; restore the official code during the next full data
-build. The generated total is checked against both the source raster and the
-official TS001 London total.
+This uses the 4,835 production polygons and joins downstream data exclusively
+by official `LSOA11CD`. The generated total is checked against both the source
+raster and the official TS001 London total. The earlier numeric-ID table is
+retained only as historical audit evidence.
 
 WorldPop listing 135 and UK 2021 item 75899 identify this source as R2025A v1.
 The official TIFF retains stale internal `R2024B v1` tags; a fresh download was

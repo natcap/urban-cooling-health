@@ -7,19 +7,18 @@ rasters remain on the shared drive.
 
 ## Population lookup
 
-The tracked `lsoa_population_2021.csv` has exactly one row for every LSOA in
-`figures/equity_map_biscale/health_sf.rds` and these columns:
+The production `lsoa_population_2021_by_lsoa11cd.csv` has exactly one row for
+every official LSOA11 used by Figure 7 and these columns:
 
 ```text
-id,population_2021
-1,<2021 population for id 1>
-2,<2021 population for id 2>
+LSOA11CD,LSOA11NM,population_2021
+E01000001,City of London 001A,<2021 population>
 ```
 
 It is reproduced with `code/health_assessment/prepare_lsoa_population_2021.R`.
-Its manifest records input and output checksums, package versions, validation
-totals and the eight legacy self-intersecting polygons repaired with
-`sf::st_make_valid`. Current validation results are:
+Its manifest records the committed script, clean-worktree status, input and
+output checksums, package versions, validation totals and the eight source
+polygons repaired with `sf::st_make_valid`. Current validation results are:
 
 - 4,835 unique IDs, all positive and non-missing;
 - LSOA sum: 8,832,324.67;
@@ -28,19 +27,22 @@ totals and the eight legacy self-intersecting polygons repaired with
 
 Requirements for any regenerated version:
 
-- `id` must match the existing numeric `id` in `health_sf.rds`.
+- `LSOA11CD` must be unique, non-missing and match the production vulnerability
+  and health tables one-to-one.
 - `population_2021` must be the total usual-resident population, not density,
   and must be positive and non-missing.
-- The table must contain 4,835 unique IDs for the current London dataset.
+- The table must contain 4,835 unique official codes for the current London
+  dataset.
 - Preserve the source name, release date, geography vintage and aggregation
   method in a separate metadata note when creating the file.
 
-The current numeric ID was created from row order and represents 4,835 London
-LSOA 2011 areas. The official Census 2021 TS001 table uses 4,994 London LSOA
-2021 areas and must not be joined directly. For the current analysis, aggregate
-the count-preserved WorldPop 2021 raster over the exact geometries stored in
-`health_sf.rds`, while retaining the numeric ID. Label the resulting values as
-modeled WorldPop estimates and validate their London total against TS001.
+The earlier `lsoa_population_2021.csv` is retained as historical audit evidence
+but is not a production Figure 7 input because its numeric `id` originated from
+row order. The official-code table contains exactly the same 4,835 population
+values (`max absolute difference = 0`) after matching through the verified
+crosswalk. The official Census 2021 TS001 table uses 4,994 London LSOA21 areas
+and must not be joined directly. Label the WorldPop values as modeled estimates
+and retain TS001 only as a London-total validation benchmark.
 
 The full data build now restores `LSOA11CD` with a verified one-to-one centroid
 crosswalk. The maximum centroid difference is 0.0195 m. The relevant files are:

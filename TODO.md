@@ -42,8 +42,9 @@ affect the validity or interpretation of the Green30–Target30 comparison.
 - [x] Compare the legacy and revised allocations and deterministic 25°C health
   results. See `code/health_assessment/HEALTH_VERSION_COMPARISON.md` and the
   machine-readable comparison tables named there.
-- [ ] After code review and commit, rerun preparation from a clean worktree so
-  the publication manifests identify the final committed scripts.
+- [x] After code review and commit, rerun the LSOA population preparation from
+  a clean worktree. The official-code manifest records commit `6414f7a` and
+  `git_worktree_dirty: false`.
 - [x] Record the supplied borough and population paths, preserve the flawed
   processed raster for audit, and add a reproducible count-preserving
   reprojection from the raw WorldPop input without changing either source.
@@ -66,29 +67,28 @@ affect the validity or interpretation of the Green30–Target30 comparison.
 - [x] Confirm the recommended geography decision: retain the 4,835 LSOA11
   Figure 7 areas and aggregate the count-preserved WorldPop 2021 raster to
   those polygons. Do not directly join the 4,994-row LSOA21 TS001 table.
-- [x] Obtain modeled 2021 population for the exact 4,835-area geography
-  used by `figures/equity_map_biscale/health_sf.rds`.
-- [x] Document that the legacy RDS lacks `LSOA11CD`; retain its numeric ID and
-  exact geometry in this revision, and require the official code in the next
-  full source-data rebuild.
-- [x] Create `data/derived/lsoa_population_2021.csv` with exactly:
+- [x] Obtain modeled 2021 population for the exact 4,835-area production
+  LSOA11 geography.
+- [x] Restore `LSOA11CD` through a verified one-to-one crosswalk and remove the
+  legacy row-order ID from all production Figure 7 joins.
+- [x] Create `data/derived/lsoa_population_2021_by_lsoa11cd.csv` with exactly:
 
   ```csv
-  id,population_2021
-  1,VALUE_FOR_ID_1
-  2,VALUE_FOR_ID_2
+  LSOA11CD,LSOA11NM,population_2021
+  E01000001,City of London 001A,VALUE_FOR_E01000001
   ```
 
-- [x] Confirm 4,835 unique IDs, with no missing, zero or negative population.
+- [x] Confirm 4,835 unique official codes, with no missing, zero or negative
+  population.
 - [x] Run `Rscript code/run-fig7.R` and confirm that
   `fig7_run_metadata.csv` reports a population source and the benefit unit is
   deaths averted per 100,000 residents.
 
 **Result:** the WorldPop-derived LSOA total is 8,832,324.67, 0.370% above the
 TS001 London total. The manifest records the exact input checksums and the eight
-legacy geometry IDs repaired before zonal aggregation. Retain TS001 as an
-external validation reference; do not construct a direct LSOA21-to-row-ID
-crosswalk. See
+LSOA11 codes repaired before zonal aggregation. Retain TS001 as an external
+validation reference; do not construct a direct LSOA21-to-LSOA11 crosswalk.
+See
 [`data/derived/README.md`](data/derived/README.md).
 
 **Done when:** all Figure 7 rows have a valid 2021 population denominator and
@@ -205,8 +205,9 @@ coverage and the NoData transformation is checksum-documented.
   inputs. Figure 7 now reads these sources directly instead of rebuilding the
   historical `health_sf.rds`.
 - [x] Assert one-to-one joins and explicitly report unmatched or duplicate IDs.
-- [ ] Rebuild the population lookup using the official code rather than row
-  order.
+- [x] Rebuild the population lookup using `LSOA11CD` rather than row order.
+  The 4,835 official-code values are exactly identical to the previous lookup,
+  and Figure 7 now joins population, health and vulnerability by `LSOA11CD`.
 
 **Done when:** rerunning an upstream step or sorting rows cannot change any
 population, vulnerability or health-result join.

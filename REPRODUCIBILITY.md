@@ -12,7 +12,7 @@ The repository contains the documented inputs needed for the current Figure 7:
 
 - `data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg`;
 - `data/derived/health_lsoa_invest3202_population_weighted_2021_nodata_harmonized.csv`;
-- `data/derived/lsoa_population_2021.csv`; and
+- `data/derived/lsoa_population_2021_by_lsoa11cd.csv`; and
 - paired 25°C Green30 and Target30 `_nodata_harmonized_city_total_draws_by_cause.csv`
   files.
 
