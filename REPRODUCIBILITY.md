@@ -8,18 +8,17 @@ forecast of London's demographic composition in 2050.
 
 ## Inputs
 
-The repository contains the paired LSOA analysis object:
+The repository contains the documented inputs needed for the current Figure 7:
 
-- `figures/equity_map_biscale/health_sf.rds`
+- `data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg`;
+- `data/derived/health_lsoa_invest3202_population_weighted_2021_nodata_harmonized.csv`;
+- `data/derived/lsoa_population_2021.csv`; and
+- paired 25°C Green30 and Target30 `_nodata_harmonized_city_total_draws_by_cause.csv`
+  files.
 
-For publication-ready population-normalized results, add:
-
-- `data/derived/lsoa_population_2021.csv`
-
-See `data/derived/README.md` for its exact schema and validation requirements.
-
-For citywide exposure-response uncertainty, rerun the Green30 and Target30
-health-model batch files and add the two draw files described there.
+Their manifests and official-code crosswalk are in the same folder. The
+historical `figures/equity_map_biscale/health_sf.rds` is retained for audit but
+is no longer an analytical input to the production Figure 7 workflow.
 
 ## Run Figure 7
 
@@ -38,9 +37,10 @@ rmarkdown::render(
 )
 ```
 
-The workflow checks scenario pairing, duplicate IDs, missing benefit values and
-population join coverage. It writes the maps, paired comparison, headline
-tables, age-75+ diagnostics, run metadata and R session information to
+The workflow checks official-code and scenario pairing, duplicate IDs, missing
+benefit values and population join coverage. It writes the maps, paired
+comparison, headline tables, age-75+ diagnostics, paired citywide uncertainty,
+run metadata and R session information to
 `figures/equity_map_biscale/`.
 
 ## Verify equal intervention budgets
@@ -65,6 +65,6 @@ the resulting CSV as Figure 7 provenance.
 1. Confirm 4,835 paired LSOAs and complete 2021 population coverage.
 2. Confirm Green30 thresholds are used for both scenarios and all maps.
 3. Confirm the canopy-budget validation passes.
-4. Confirm both model runs used the same random seed and draw count.
+4. Confirm both model runs used seed `20260908` and 2,000 paired draws.
 5. Inspect both exported PNGs at full size for clipped labels and legends.
 6. Quote the fixed-2021-population assumption in Methods and figure captions.

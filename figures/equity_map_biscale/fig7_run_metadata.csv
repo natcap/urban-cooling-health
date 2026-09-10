@@ -1,2 +1,2 @@
-run_timestamp_utc,outcome,scenarios,n_paired_LSOA,population_year,temperature_period,population_source,benefit_unit,green30_tertile_1,green30_tertile_2,bootstrap_draws,bootstrap_seed
-2026-09-08 18:53:37 UTC,All_cause,Green30;Target30,4835,2021,2050,NA,Absolute deaths averted per LSOA (population denominator pending),0.04123588651418676,0.07496367891629532,2000,20260908
+run_timestamp_utc,outcome,scenarios,n_paired_LSOA,population_year,temperature_period,population_source,health_zonal_source,svi_source,benefit_unit,green30_tertile_1,green30_tertile_2,bootstrap_draws,bootstrap_seed
+2026-09-10 05:58:57 UTC,All_cause,Green30;Target30,4835,2021,2050,./data/derived/lsoa_population_2021.csv,./data/derived/health_lsoa_invest3202_population_weighted_2021_nodata_harmonized.csv,./data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg,"Deaths averted per 100,000 residents (2021 population)",3.2217919966575703,4.835770666365477,2000,20260908

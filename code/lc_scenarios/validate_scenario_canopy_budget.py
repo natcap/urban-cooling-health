@@ -134,7 +134,10 @@ def main() -> int:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="", encoding="utf-8") as target:
-        writer = csv.DictWriter(target, fieldnames=list(rows[0].keys()))
+        # Keep generated audit tables byte-stable across operating systems.
+        writer = csv.DictWriter(
+            target, fieldnames=list(rows[0].keys()), lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(rows)
 

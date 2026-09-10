@@ -1,0 +1,2 @@
+n_paired_draws,difference_mean,difference_p2p5,difference_p50,difference_p97p5,uncertainty_scope
+2000,143.52623580887257,100.16056486932355,143.74663427234978,185.22330659623705,Exposure-response RR uncertainty only; temperature and 2021 population/mortality inputs held fixed

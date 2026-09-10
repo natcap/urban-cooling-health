@@ -19,6 +19,10 @@ store.
 Current blockers and the recommended order of work are tracked in
 [`TODO.md`](TODO.md).
 
+The effect of replacing the legacy area-weighted mortality surface with the
+revised population-weighted workflow is summarized in
+[`code/health_assessment/HEALTH_VERSION_COMPARISON.md`](code/health_assessment/HEALTH_VERSION_COMPARISON.md).
+
 ## Current analysis convention
 
 All health analyses use **2021 population and 2021 baseline mortality**, even
@@ -30,6 +34,10 @@ Results must therefore be described as:
 > 2050 temperature scenarios evaluated under 2021 population and mortality.
 
 They are not projections of London's population or mortality patterns in 2050.
+
+Use the **25°C setting as the primary manuscript analysis** and the 28°C
+setting as a sensitivity analysis. Hold all other health-model inputs and Monte
+Carlo settings constant between them.
 
 ## Choose the workflow you need
 
@@ -60,6 +68,16 @@ The Green30–Target30 equity comparison is valid only after confirming that the
 two final scenario rasters contain comparable **realized additional canopy
 area**. Intended tree counts alone are not sufficient because existing-canopy
 overlap and rasterization can change the realized intervention.
+
+The legacy audit fails: Green30 adds 930,000 tree pixels and Target30 v3 adds
+869,444, a 6.511% deficit. The approved equal-budget Target30 v4 raster now
+adds exactly 930,000 pixels (93 km²); its audit passes with a 0.000% difference.
+Baseline, Green30 and Target30 v4 have now been rerun with InVEST 3.20.2 at
+25°C and 28°C, followed by the population-weighted health and Figure 7
+workflows. Green30's NoData sentinel was also harmonized with baseline and
+Target30; all valid land-cover values are unchanged and populated-cell coverage
+is now 100% in both scenarios. Earlier workspaces and both canopy audits are
+retained for traceability.
 
 ## Quick reproduction of Figure 7
 
@@ -118,32 +136,26 @@ The workflow writes the following files to
 
 ![Figure 7 paired equity comparison](figures/equity_map_biscale/fig7_cd_upgraded.png)
 
-### 5. Add 2021 population for the publication analysis
+### 5. Use the validated 2021 LSOA population lookup
 
-The tracked `health_sf.rds` currently lacks an LSOA population denominator.
-Without it, the workflow transparently reports absolute deaths averted per LSOA
-and leaves population-weighted fields blank.
+The tracked [`lsoa_population_2021.csv`](data/derived/lsoa_population_2021.csv)
+contains positive population estimates for all 4,835 LSOA11 polygons used by
+Figure 7. It was generated from the count-preserved WorldPop surface with:
 
-Create:
-
-```text
-data/derived/lsoa_population_2021.csv
+```bash
+Rscript code/health_assessment/prepare_lsoa_population_2021.R \
+  figures/equity_map_biscale/health_sf.rds \
+  /path/to/gbr_pop_2021_10m_count_preserved_bng.tif \
+  data/derived/lsoa_population_2021.csv \
+  data/derived/lsoa_population_2021.manifest.json
 ```
 
-with exactly these columns:
-
-```csv
-id,population_2021
-1,VALUE_FOR_ID_1
-2,VALUE_FOR_ID_2
-```
-
-The file must contain 4,835 unique IDs with positive, non-missing total
-usual-resident population values. See
-[`data/derived/README.md`](data/derived/README.md) for the validation rules and
-the current ID limitation. Rerun `Rscript code/run-fig7.R`; the production
-workflow will then classify mortality benefit using deaths averted per 100,000
-2021 residents.
+The modeled LSOA total is 8,832,324.67, 0.370% above the official Census 2021
+TS001 London total of 8,799,776. The companion manifest records checksums,
+software versions, the pixel-centre allocation rule and topology repair for
+eight legacy polygons. TS001 uses 4,994 LSOA21 areas and is an external
+validation benchmark, not a direct join. `Rscript code/run-fig7.R` now reports
+deaths averted per 100,000 2021 residents.
 
 For the full Figure 7 protocol, including Monte Carlo files and the final review
 checklist, see [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md).
@@ -168,12 +180,11 @@ conda create -n geo_env -c conda-forge \
   python=3.11 geopandas jupyterlab matplotlib numpy pandas pyogrio \
   rasterio shapely
 conda activate geo_env
-pip install natcap.invest==3.14.1
 ```
 
-InVEST 3.14.1 is the version recorded in the current model-run scripts. If a
-different version is used, record it with the run outputs and check for changed
-defaults or input requirements.
+Production Urban Cooling runs use InVEST 3.20.2. The older 3.14.1 version
+recorded in the historical model-run scripts is retained only for optional
+version-comparison checks; do not use it to generate new production results.
 
 The complete R analysis uses additional packages beyond the Figure 7 subset,
 including `exactextractr`, `here`, `mgcv`, `performance`, `terra`, `tmap`,
@@ -255,9 +266,11 @@ python code/lc_scenarios/validate_scenario_canopy_budget.py \
   --output figures/equity_map_biscale/fig7_canopy_budget_check.csv
 ```
 
-The default tolerance is 0.5% difference in added tree-canopy pixels. A failed
-check means Target30 must be regenerated with an adjusted allocation, then
-revalidated before the UCM and health-model steps are rerun.
+The default tolerance is 0.5% difference in added tree-canopy pixels. The
+approved `LULC_Scenario730v4_equal_budget.tif` passes at 0.000%; see
+`fig7_canopy_budget_check_equalized.csv`. The older failed audit is retained to
+show why regeneration was required. Rerun the UCM and health model with v4
+before treating the comparative health results as final.
 
 ### 5. Run the InVEST Urban Cooling Model
 
@@ -270,6 +283,54 @@ python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_curre
   "G:/Shared drives/Wellcome Trust Project Data" --eap
 ```
 
+For the approved equal-budget Target30 input, use the dedicated runner. It
+preserves the legacy `scenario530` outputs and runs the 25°C primary setting
+and 28°C sensitivity setting in a new health-only workspace:
+
+```bash
+python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_target30_equal_budget.py \
+  /path/to/Wellcome\ Trust\ Project\ Data
+```
+
+The default omits productivity and building-energy valuation because neither
+affects the air-temperature raster used by the health model. Add
+`--include-valuations` only when those additional outputs are required; they
+substantially increase runtime.
+
+Run the matching baseline and Green30 health inputs with the production runner:
+
+```bash
+python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_health_scenarios.py \
+  /path/to/Wellcome\ Trust\ Project\ Data --validate-only
+```
+
+After validation, remove `--validate-only`. The runner enforces InVEST 3.20.2,
+refuses to overwrite completed outputs, and writes input checksums, model
+arguments, grid metadata and software versions beside every result.
+
+Create the production environment from conda-forge, which resolves InVEST and
+its compiled geospatial dependencies together:
+
+```bash
+conda env create \
+  -f code/Urban_Cooling_Modeling_Runs/environment-invest-3.20.2.yml
+conda run -n urban-cooling-invest-3.20.2 \
+  python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_target30_equal_budget.py \
+  /path/to/Wellcome\ Trust\ Project\ Data --validate-only
+```
+
+The verified Apple Silicon installation resolves to InVEST 3.20.2, Python
+3.12, GDAL 3.12.4 and pygeoprocessing 2.4.11. Preserve the conda environment
+export with final run metadata. InVEST 3.20.2 writes `T_air` in the workspace
+root; the health configuration already uses this location. Run the command
+without `--validate-only` only after both temperature settings pass validation.
+
+For an exact comparison with historical model behavior only, see
+`environment-invest-3.14.1.yml` and clearly label those outputs as historical.
+The observed version check and the rule against mixing versions within a health
+comparison are documented in
+[`INVEST_VERSION_COMPARISON.md`](code/Urban_Cooling_Modeling_Runs/INVEST_VERSION_COMPARISON.md).
+
 Run the baseline and every required scenario with identical model settings.
 Target10/20/30 scripts are in
 [`Scenario_510_to_530_runs/`](code/Urban_Cooling_Modeling_Runs/Scenario_510_to_530_runs/).
@@ -280,21 +341,31 @@ output suffix before execution.
 
 Detailed health-model notes are in
 [`code/health_assessment/README.md`](code/health_assessment/README.md).
+Data-selection and allocation decisions are documented in
+[`code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md`](code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md).
 
-1. Prepare cause-specific 2021 mortality inputs with
-   [`health-model-01-prep-input-ONS-mortality-data.Rmd`](code/health_assessment/health-model-01-prep-input-ONS-mortality-data.Rmd).
-2. Confirm that temperature, population and mortality rasters share the intended
-   grid, CRS, extent and units.
-3. Review the paths in the relevant `health-modeling_*.bat` file.
-4. Activate `geo_env` and run the batch file from Windows. For Target30:
-
-   ```bat
-   cd D:\natcap\urban-cooling-health\code\health_assessment
-   health-modeling_s0_s530_2050_2050.bat
-   ```
-
-5. For Green30 and Target30 uncertainty, use at least 2,000 draws and the same
-   seed. The current batch files use seed `20260908`.
+1. Generate `mortality_2021_long.csv` from the project's original 2021 Nomis
+   TSV export as documented in the
+   [health-assessment guide](code/health_assessment/README.md), then allocate
+   them by 2021 pixel population with
+   [`prepare_mortality_population_weighted.py`](code/health_assessment/prepare_mortality_population_weighted.py).
+   The earlier area-weighted
+   [`health-model-01-prep-input-ONS-mortality-data.Rmd`](code/health_assessment/health-model-01-prep-input-ONS-mortality-data.Rmd)
+   remains available only for comparison until the revised results are approved.
+2. Create the count-preserved EPSG:27700 population raster directly from the
+   raw WorldPop count raster with
+   [`prepare_population_2021_count_preserved.py`](code/health_assessment/prepare_population_2021_count_preserved.py).
+   Do not use the older `gbr_pop_2021_10m_areal.tif`: its upstream bilinear
+   reprojection reduced the London total from about 8.8 million to 4.74
+   million. Confirm that temperature, corrected population and revised
+   mortality rasters share the intended grid, extent and units.
+3. Validate and run `green30_25c`, `target30_25c`, `green30_28c` and
+   `target30_28c` with `health_modeling_v2.py`. The production configuration
+   uses the approved equal-budget Target30 v4 input; Target10/20 naming remains
+   under review.
+4. Use 2,000 paired cause-stable draws and seed `20260908`, as recorded in
+   `health-analysis-v2.example.json`. Legacy Windows batch launchers are kept
+   only for historical comparison.
 
 The health model produces aligned temperature differences, attributable
 fractions, cause-specific excess-death rasters, deterministic city totals and
@@ -302,11 +373,13 @@ Monte Carlo draw files.
 
 ### 7. Calculate zonal statistics
 
-Run
+For the revised health workflow, run
+[`prepare_health_lsoa_zonal_stats.py`](code/health_assessment/prepare_health_lsoa_zonal_stats.py).
+It aggregates all four production cases, restores official `LSOA11CD`, verifies
+one-to-one geography matching, requires complete valid-cell assignment and
+writes a provenance manifest. The earlier
 [`health-modeling-zonal-stats.ipynb`](code/health_assessment/health-modeling-zonal-stats.ipynb)
-to aggregate health outputs to borough or LSOA level. Confirm that each output
-contains one row per geography, scenario and outcome before joining other
-attributes.
+is retained for legacy outputs only.
 
 Other service outputs use:
 
@@ -375,11 +448,10 @@ urban-cooling-health/
 
 ## Reproducibility status and limitations
 
-- **Figure 7 method:** directly runnable from the tracked `health_sf.rds`.
-- **Population-normalized Figure 7:** requires the documented 2021 LSOA
-  population lookup.
-- **Citywide Monte Carlo comparison:** requires paired Green30 and Target30 draw
-  files generated with the same seed.
+- **Figure 7:** directly runnable from the tracked, documented vulnerability,
+  LSOA health, 2021 population and paired-draw inputs under `data/derived/`.
+- **Full UCM and health rerun:** validated on InVEST 3.20.2 for baseline,
+  Green30 and equal-budget Target30 v4 at 25°C and 28°C.
 - **Full model chain:** requires external raw and intermediate geospatial data
   that are not stored in this repository.
 - **Historical result recreation:** requires the original versioned input

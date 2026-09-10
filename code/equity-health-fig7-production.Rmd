@@ -50,14 +50,48 @@ vulnerability_labels <- c(
 
 output_dir <- "./figures/equity_map_biscale"
 population_file <- "./data/derived/lsoa_population_2021.csv"
-green30_mc_file <- "./data/derived/green30_city_total_draws_by_cause.csv"
-target30_mc_file <- "./data/derived/target30_city_total_draws_by_cause.csv"
+health_zonal_file <- paste0(
+  "./data/derived/health_lsoa_invest3202_population_weighted_2021_",
+  "nodata_harmonized.csv"
+)
+green30_mc_file <- "./data/derived/green30_nodata_harmonized_city_total_draws_by_cause.csv"
+target30_mc_file <- "./data/derived/target30_nodata_harmonized_city_total_draws_by_cause.csv"
+svi_file <- "./data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg"
 ```
 
 ## Load and validate data
 
 ```{r load-data}
-health_sf <- readRDS(file.path(output_dir, "health_sf.rds"))
+# Build the analysis object from its documented sources instead of relying on
+# a previously saved RDS whose scenario and geography provenance is ambiguous.
+if (!file.exists(health_zonal_file)) {
+  stop("Missing revised LSOA health table: ", health_zonal_file)
+}
+if (!file.exists(svi_file)) {
+  stop("Missing documented Figure 7 vulnerability layer: ", svi_file)
+}
+
+svi_lsoa <- read_sf(svi_file, quiet = TRUE) %>%
+  rename(SVI = overall_score)
+health_rows <- read_csv(health_zonal_file, show_col_types = FALSE) %>%
+  filter(temperature_setting_c == 25, cause == "all_cause") %>%
+  transmute(
+    id, LSOA11CD, LSOA11NM, Neighborhood_name,
+    indicator, lc_scenario, cases = deaths_averted,
+    cases_meaning = "Deaths averted"
+  )
+if (nrow(health_rows) != 2 * nrow(svi_lsoa)) {
+  stop("Expected exactly two 25 C all-cause rows for each LSOA.")
+}
+if (anyDuplicated(health_rows[c("id", "lc_scenario")])) {
+  stop("Revised LSOA health table contains duplicate id/scenario pairs.")
+}
+health_sf <- svi_lsoa %>%
+  select(-any_of(c("LSOA11CD", "LSOA11NM"))) %>%
+  left_join(health_rows, by = c("id", "Neighborhood_name"))
+if (anyNA(health_sf$LSOA11CD)) {
+  stop("Official LSOA11 codes did not join completely to the SVI layer.")
+}
 
 required_vars <- c("id", "indicator", "lc_scenario", "cases", vulnerability_vars)
 missing_vars <- setdiff(required_vars, names(health_sf))
@@ -597,6 +631,8 @@ run_metadata <- tibble(
   population_year = population_year,
   temperature_period = temperature_period,
   population_source = population_source,
+  health_zonal_source = health_zonal_file,
+  svi_source = svi_file,
   benefit_unit = benefit_unit,
   green30_tertile_1 = green30_benefit_breaks[1],
   green30_tertile_2 = green30_benefit_breaks[2],
