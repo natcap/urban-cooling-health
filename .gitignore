@@ -24,6 +24,8 @@ data/derived/*
 !data/derived/*_template.csv
 !data/derived/lsoa_population_2021.csv
 !data/derived/lsoa_population_2021.manifest.json
+!data/derived/lsoa_population_2021_by_lsoa11cd.csv
+!data/derived/lsoa_population_2021_by_lsoa11cd.manifest.json
 !data/derived/*city_total_draws_by_cause.csv
 !data/derived/fig7_vulnerability_lsoa11.gpkg
 !data/derived/svi_lsoa11_crosswalk.csv

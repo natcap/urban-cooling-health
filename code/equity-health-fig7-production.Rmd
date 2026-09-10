@@ -49,7 +49,7 @@ vulnerability_labels <- c(
 )
 
 output_dir <- "./figures/equity_map_biscale"
-population_file <- "./data/derived/lsoa_population_2021.csv"
+population_file <- "./data/derived/lsoa_population_2021_by_lsoa11cd.csv"
 health_zonal_file <- paste0(
   "./data/derived/health_lsoa_invest3202_population_weighted_2021_",
   "nodata_harmonized.csv"
@@ -76,24 +76,24 @@ svi_lsoa <- read_sf(svi_file, quiet = TRUE) %>%
 health_rows <- read_csv(health_zonal_file, show_col_types = FALSE) %>%
   filter(temperature_setting_c == 25, cause == "all_cause") %>%
   transmute(
-    id, LSOA11CD, LSOA11NM, Neighborhood_name,
+    LSOA11CD, LSOA11NM, Neighborhood_name,
     indicator, lc_scenario, cases = deaths_averted,
     cases_meaning = "Deaths averted"
   )
 if (nrow(health_rows) != 2 * nrow(svi_lsoa)) {
   stop("Expected exactly two 25 C all-cause rows for each LSOA.")
 }
-if (anyDuplicated(health_rows[c("id", "lc_scenario")])) {
-  stop("Revised LSOA health table contains duplicate id/scenario pairs.")
+if (anyDuplicated(health_rows[c("LSOA11CD", "lc_scenario")])) {
+  stop("Revised LSOA health table contains duplicate LSOA11CD/scenario pairs.")
 }
 health_sf <- svi_lsoa %>%
-  select(-any_of(c("LSOA11CD", "LSOA11NM"))) %>%
-  left_join(health_rows, by = c("id", "Neighborhood_name"))
-if (anyNA(health_sf$LSOA11CD)) {
-  stop("Official LSOA11 codes did not join completely to the SVI layer.")
+  select(-any_of(c("id", "LSOA11NM", "Neighborhood_name"))) %>%
+  left_join(health_rows, by = "LSOA11CD")
+if (anyNA(health_sf$cases)) {
+  stop("Health results did not join completely by official LSOA11CD.")
 }
 
-required_vars <- c("id", "indicator", "lc_scenario", "cases", vulnerability_vars)
+required_vars <- c("LSOA11CD", "indicator", "lc_scenario", "cases", vulnerability_vars)
 missing_vars <- setdiff(required_vars, names(health_sf))
 if (length(missing_vars) > 0) {
   stop("Missing required columns in health_sf: ", paste(missing_vars, collapse = ", "))
@@ -116,21 +116,24 @@ if (length(population_matches) == 1) {
   population_source <- paste0("health_sf$", population_var)
 } else if (file.exists(population_file)) {
   population_lookup <- read_csv(population_file, show_col_types = FALSE)
-  if (!all(c("id", "population_2021") %in% names(population_lookup))) {
-    stop(population_file, " must contain id and population_2021 columns.")
+  if (!all(c("LSOA11CD", "population_2021") %in% names(population_lookup))) {
+    stop(population_file, " must contain LSOA11CD and population_2021 columns.")
   }
-  if (anyDuplicated(population_lookup$id)) {
-    stop(population_file, " contains duplicate id values.")
+  if (anyDuplicated(population_lookup$LSOA11CD)) {
+    stop(population_file, " contains duplicate LSOA11CD values.")
   }
   health_sf <- health_sf %>%
-    left_join(population_lookup %>% select(id, population_2021), by = "id")
+    left_join(
+      population_lookup %>% select(LSOA11CD, population_2021),
+      by = "LSOA11CD"
+    )
   population_source <- population_file
 } else {
   health_sf <- health_sf %>% mutate(population_2021 = NA_real_)
   population_source <- NA_character_
   warning(
     "No 2021 population lookup found. Add ", population_file,
-    " with columns id,population_2021. Absolute-benefit results will be ",
+    " with columns LSOA11CD,population_2021. Absolute-benefit results will be ",
     "retained, but population-normalized fields will be missing."
   )
 }
@@ -139,7 +142,7 @@ has_population <- any(!is.na(health_sf$population_2021))
 if (has_population) {
   population_check <- health_sf %>%
     st_drop_geometry() %>%
-    distinct(id, population_2021)
+    distinct(LSOA11CD, population_2021)
   if (anyNA(population_check$population_2021)) {
     stop("The 2021 population join is incomplete for one or more LSOAs.")
   }
@@ -155,20 +158,22 @@ equity_long <- health_sf %>%
     indicator == outcome_keep,
     as.character(lc_scenario) %in% scenario_keep
   ) %>%
-  select(id, lc_scenario, cases, population_2021, all_of(vulnerability_vars)) %>%
+  select(LSOA11CD, lc_scenario, cases, population_2021, all_of(vulnerability_vars)) %>%
   mutate(lc_scenario = as.character(lc_scenario))
 
-duplicate_check <- equity_long %>% count(id, lc_scenario) %>% filter(n != 1)
-if (nrow(duplicate_check) > 0) stop("Each id must have exactly one row per scenario.")
+duplicate_check <- equity_long %>% count(LSOA11CD, lc_scenario) %>% filter(n != 1)
+if (nrow(duplicate_check) > 0) {
+  stop("Each LSOA11CD must have exactly one row per scenario.")
+}
 
-pair_check <- equity_long %>% count(id) %>% filter(n != length(scenario_keep))
+pair_check <- equity_long %>% count(LSOA11CD) %>% filter(n != length(scenario_keep))
 if (nrow(pair_check) > 0) {
   stop(nrow(pair_check), " LSOAs do not have both Green30 and Target30.")
 }
 
 equity_wide <- equity_long %>%
   pivot_wider(
-    id_cols = c(id, population_2021, all_of(vulnerability_vars)),
+    id_cols = c(LSOA11CD, population_2021, all_of(vulnerability_vars)),
     names_from = lc_scenario,
     values_from = cases,
     names_prefix = "cases_"
@@ -214,7 +219,7 @@ metric_data <- map_dfr(vulnerability_vars, function(metric_name) {
   )
   equity_wide %>%
     transmute(
-      id,
+      LSOA11CD,
       metric = metric_name,
       metric_label = unname(vulnerability_labels[metric_name]),
       vulnerability = .data[[metric_name]],
@@ -433,14 +438,21 @@ if (file.exists(green30_mc_file) && file.exists(target30_mc_file)) {
 
 ```{r maps}
 main_metric_labels <- unname(vulnerability_labels[main_vulnerability_vars])
-geometry_by_id <- health_sf %>% select(id) %>% group_by(id) %>% slice(1) %>% ungroup()
+geometry_by_lsoa <- health_sf %>%
+  select(LSOA11CD) %>%
+  group_by(LSOA11CD) %>%
+  slice(1) %>%
+  ungroup()
 
-map_data <- geometry_by_id %>%
+map_data <- geometry_by_lsoa %>%
   left_join(
     metric_data %>%
       filter(metric %in% main_vulnerability_vars) %>%
-      select(id, metric_label, vulnerability_class, benefit_class_Green30, benefit_class_Target30),
-    by = "id"
+      select(
+        LSOA11CD, metric_label, vulnerability_class,
+        benefit_class_Green30, benefit_class_Target30
+      ),
+    by = "LSOA11CD"
   ) %>%
   pivot_longer(
     starts_with("benefit_class_"),

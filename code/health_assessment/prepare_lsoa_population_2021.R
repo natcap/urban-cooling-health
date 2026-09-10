@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 
-# Aggregate the count-preserved 2021 WorldPop raster to the exact LSOA
-# geometries used by Figure 7. The output remains keyed to the legacy numeric
-# `id` because the serialized analysis layer does not retain LSOA11CD.
+# Aggregate the count-preserved 2021 WorldPop raster to the official-coded
+# LSOA11 geometries used by Figure 7. The output is keyed only by `LSOA11CD`,
+# so sorting or rebuilding upstream tables cannot change population joins.
 
 required_packages <- c("digest", "jsonlite", "sf", "terra")
 missing_packages <- required_packages[
@@ -15,7 +15,7 @@ if (length(missing_packages) > 0) {
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 4) {
   stop(
-    "Usage: prepare_lsoa_population_2021.R HEALTH_RDS POPULATION_TIF ",
+    "Usage: prepare_lsoa_population_2021.R LSOA11_VECTOR POPULATION_TIF ",
     "OUTPUT_CSV OUTPUT_MANIFEST_JSON"
   )
 }
@@ -26,7 +26,7 @@ if (length(file_argument) != 1L) {
 }
 script_path <- normalizePath(sub("^--file=", "", file_argument))
 
-health_path <- normalizePath(args[[1]], mustWork = TRUE)
+lsoa_path <- normalizePath(args[[1]], mustWork = TRUE)
 population_path <- normalizePath(args[[2]], mustWork = TRUE)
 output_path <- normalizePath(args[[3]], mustWork = FALSE)
 manifest_path <- normalizePath(args[[4]], mustWork = FALSE)
@@ -35,34 +35,31 @@ if (file.exists(output_path) || file.exists(manifest_path)) {
   stop("Output already exists; remove it only after reviewing the prior result")
 }
 
-health <- readRDS(health_path)
-if (!inherits(health, "sf") || !all(c("id", "geom") %in% names(health))) {
-  stop("Health RDS must be an sf object containing `id` and `geom`")
+lsoa <- sf::read_sf(lsoa_path, quiet = TRUE)
+required_lsoa_fields <- c("LSOA11CD", "LSOA11NM")
+missing_lsoa_fields <- setdiff(required_lsoa_fields, names(lsoa))
+if (length(missing_lsoa_fields) > 0L) {
+  stop(
+    "LSOA vector is missing required field(s): ",
+    paste(missing_lsoa_fields, collapse = ", ")
+  )
 }
-if (anyNA(health$id) || anyDuplicated(sort(unique(health$id))) > 0) {
-  stop("Health RDS contains invalid IDs")
-}
-
-# Each ID is repeated across model/scenario rows. Retain one exact geometry per
-# ID without subsetting the legacy sf object, whose active geometry metadata is
-# not compatible with current sf subsetting methods.
-first_row <- !duplicated(health$id)
-lsoa <- sf::st_sf(
-  id = health$id[first_row],
-  geometry = health$geom[first_row],
-  crs = sf::st_crs(health$geom)
-)
-lsoa <- lsoa[order(lsoa$id), ]
-if (nrow(lsoa) != 4835L || anyDuplicated(lsoa$id)) {
-  stop("Expected exactly 4,835 unique Figure 7 LSOA IDs")
+lsoa <- lsoa[, required_lsoa_fields]
+lsoa <- lsoa[order(lsoa$LSOA11CD), ]
+if (
+  nrow(lsoa) != 4835L || anyNA(lsoa$LSOA11CD) ||
+  anyDuplicated(lsoa$LSOA11CD)
+) {
+  stop("Expected exactly 4,835 unique official LSOA11CD values")
 }
 if (any(sf::st_is_empty(lsoa))) {
   stop("LSOA geometry contains empty features")
 }
 invalid_before <- which(!sf::st_is_valid(lsoa))
+invalid_before_codes <- lsoa$LSOA11CD[invalid_before]
 if (length(invalid_before) > 0L) {
-  # Eight legacy polygons have ring self-intersections with current GEOS.
-  # st_make_valid repairs topology while retaining the same IDs and footprint.
+  # Repair any source topology defects deterministically while retaining the
+  # same official codes and footprint.
   lsoa <- sf::st_make_valid(lsoa)
 }
 if (any(!sf::st_is_valid(lsoa))) {
@@ -88,7 +85,8 @@ extracted <- terra::extract(
   touches = FALSE
 )
 lookup <- data.frame(
-  id = lsoa$id,
+  LSOA11CD = lsoa$LSOA11CD,
+  LSOA11NM = lsoa$LSOA11NM,
   population_2021 = as.numeric(extracted[[2]])
 )
 if (anyNA(lookup$population_2021) || any(lookup$population_2021 <= 0)) {
@@ -112,9 +110,6 @@ ons_ts001_london_total <- 8799776
 benchmark_relative_difference <-
   (lsoa_total - ons_ts001_london_total) / ons_ts001_london_total
 
-dir.create(dirname(output_path), recursive = TRUE, showWarnings = FALSE)
-write.csv(lookup, output_path, row.names = FALSE, quote = FALSE)
-
 git_value <- function(arguments) {
   result <- suppressWarnings(system2("git", arguments, stdout = TRUE, stderr = FALSE))
   if (!identical(attr(result, "status"), NULL) && attr(result, "status") != 0) {
@@ -127,16 +122,21 @@ old_working_directory <- setwd(repository_root)
 on.exit(setwd(old_working_directory), add = TRUE)
 git_status <- git_value(c("status", "--porcelain"))
 
+# Capture repository state before creating the requested outputs; otherwise a
+# clean run into data/derived would incorrectly report itself as dirty.
+dir.create(dirname(output_path), recursive = TRUE, showWarnings = FALSE)
+write.csv(lookup, output_path, row.names = FALSE, quote = FALSE, eol = "\n")
+
 manifest <- list(
   schema_version = 1,
   method = "sum count-preserved WorldPop 2021 pixels by Figure 7 LSOA polygon",
   geography = list(
     count = nrow(lsoa),
     vintage = "LSOA 2011",
-    identifier = "legacy numeric id from health_sf.rds",
+    identifier = "official LSOA11CD",
     crs = sf::st_crs(lsoa)$input,
     allocation_rule = "raster pixel centre falls inside polygon",
-    invalid_geometry_ids_repaired = lsoa$id[invalid_before]
+    invalid_geometry_codes_repaired = invalid_before_codes
   ),
   validation = list(
     population_raster_total = unname(raster_total),
@@ -148,7 +148,10 @@ manifest <- list(
     benchmark_role = "external London-total reasonableness check; not directly joined"
   ),
   inputs = list(
-    health_rds = list(path = health_path, sha256 = digest::digest(health_path, "sha256", file = TRUE)),
+    lsoa_vector = list(
+      path = lsoa_path,
+      sha256 = digest::digest(lsoa_path, "sha256", file = TRUE)
+    ),
     population_raster = list(
       path = population_path,
       sha256 = digest::digest(population_path, "sha256", file = TRUE)
