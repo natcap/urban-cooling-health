@@ -154,3 +154,12 @@ All required follow-up steps are complete:
    from the consistent 3.20.2 outputs.
 6. Checksums, parameters, environment versions and validation results are
    retained beside the model workspaces and in the tracked audit tables.
+
+As a final provenance check, Target30 v4 was rerun from clean commit `be4433c`
+into `scenario730v4_equal_budget_health_invest3202_publication`. Both manifests
+record InVEST 3.20.2 and `git_worktree_dirty: false`. The 25 C and 28 C
+temperature rasters are byte-for-byte identical to the earlier 3.20.2 Target30
+outputs: all 23,089,980 valid cells match, with zero maximum absolute
+difference. See `target30_publication_rerun_comparison.csv`. Because the health
+model consumed raster values with these same checksums, this provenance rerun
+does not require another downstream health-model run.

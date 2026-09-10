@@ -77,7 +77,9 @@ Baseline, Green30 and Target30 v4 have now been rerun with InVEST 3.20.2 at
 workflows. Green30's NoData sentinel was also harmonized with baseline and
 Target30; all valid land-cover values are unchanged and populated-cell coverage
 is now 100% in both scenarios. Earlier workspaces and both canopy audits are
-retained for traceability.
+retained for traceability. A final clean-worktree Target30 publication rerun
+produced byte-identical temperature rasters at both settings and manifests that
+record InVEST 3.20.2 and commit `be4433c`.
 
 ## Quick reproduction of Figure 7
 

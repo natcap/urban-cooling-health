@@ -72,7 +72,12 @@ For each Target scenario, record:
 |---|---|---:|---|---|---|
 | Target10 | TBD | TBD | TBD | TBD | TBD |
 | Target20 | TBD | TBD | TBD | TBD | TBD |
-| Target30 | `LULC_Scenario730v4_equal_budget.tif` | 930,000 pixels / 93 km² | `scenario730v4_equal_budget_health_invest3202` | both 25/5/45 and 28/5/45 | `health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c` and `target30_28c` |
+| Target30 | `LULC_Scenario730v4_equal_budget.tif` | 930,000 pixels / 93 km² | `scenario730v4_equal_budget_health_invest3202_publication` | both 25/5/45 and 28/5/45 | `health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c` and `target30_28c` |
+
+The clean publication UCM rerun is byte-identical to the earlier 3.20.2
+Target30 workspace at both temperatures. The health outputs therefore remain
+valid: their temperature input checksums match the publication rasters even
+though their manifests retain the earlier equivalent workspace path.
 
 For the unresolved Target10 and Target20 scenarios, after approval:
 

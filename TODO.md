@@ -158,6 +158,9 @@ Use 25°C as the primary manuscript setting and 28°C as sensitivity.
   environment. Retain 3.14.1 only for optional historical comparison.
 - [x] Validate and run Target30 v4 with InVEST 3.20.2 at both temperature
   settings in a versioned, health-only workspace.
+- [x] Repeat Target30 v4 from clean commit `be4433c` in a publication workspace.
+  Both 25 C and 28 C rasters are byte-identical to the earlier 3.20.2 outputs;
+  the new manifests record the enforced model version and clean worktree.
 - [x] Diagnose the 3.14.1-to-3.20.2 temperature difference. The dominant cause
   is the park Cooling Capacity bug fixed in InVEST 3.15.0; see
   `INVEST_VERSION_COMPARISON.md` for the function audit and decomposition.
