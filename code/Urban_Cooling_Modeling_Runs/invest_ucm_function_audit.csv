@@ -1,0 +1,12 @@
+order,function,status,relevance
+1,execute,Changed,Contains LULC alignment and corrected park-cooling execution path; material.
+2,mask_cc_green_areas_op,Added,Implements green_area x CC with nodata handling; material.
+3,calc_cc_op_factors,Unchanged,Project factors-method CC equation unchanged.
+4,calc_eti_op,Unchanged,ETI equation unchanged.
+5,hm_op,Unchanged,Equation unchanged; its cc_park input changed.
+6,calc_t_air_nomix_op,Unchanged,Temperature equation unchanged.
+7,convolve_2d_by_exponential,Numerically unchanged,Only a documentation typo changed.
+8,calculate_wbgt / map_work_loss,Unchanged,No effect on T_air.
+9,calculate_uhi_result_vector,Output-type update,Vector float casting only.
+10,calculate_energy_savings,Validation refactor,Valuation was disabled.
+11,validate / model specification,Refactored,Validation and file registration only.

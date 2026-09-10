@@ -1,0 +1,16 @@
+# Historical-comparison environment only; production runs use InVEST 3.20.2.
+name: urban-cooling-invest-3.14.1
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.6
+  - pip
+  - gdal=3.5.3
+  - numpy=1.26.4
+  - cython=0.29.36
+  - babel=2.12.1
+  - setuptools-scm=8.1.0
+
+# InVEST must be installed after creating this environment. On Apple Silicon,
+# use the no-build-isolation commands documented in the project README so its
+# compiled extensions link to this environment's GDAL rather than a newer wheel.

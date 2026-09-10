@@ -1,0 +1,7 @@
+order,stage,difference,unit
+1,Reference ET0,-0.00008,mm
+2,Cooling Capacity,0.00722,index
+3,Park Cooling Capacity,-0.13067,index
+4,Heat Mitigation,-0.08795,index
+5,Unmixed air temperature,0.43975,C
+6,Final mixed air temperature,0.43782,C

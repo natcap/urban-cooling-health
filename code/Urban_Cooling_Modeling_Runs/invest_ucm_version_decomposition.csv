@@ -1,0 +1,4 @@
+component,effect_c,comparison,common_valid_pixels
+Park-cooling correction,0.5012,Corrected logic minus old logic on the 3.20.2 grid,23089980
+Alignment/resampling,-0.0633,Residual after holding the park formula constant,23088902
+Observed net,0.4378,3.20.2 minus bilinearly aligned 3.14.1,23088902

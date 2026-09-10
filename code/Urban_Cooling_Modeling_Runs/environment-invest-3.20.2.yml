@@ -1,0 +1,8 @@
+name: urban-cooling-invest-3.20.2
+channels:
+  - conda-forge
+dependencies:
+  # InVEST is installed from conda-forge so GDAL and compiled dependencies are
+  # solved together. This avoids platform-specific pip build failures.
+  - python=3.12
+  - natcap.invest=3.20.2
