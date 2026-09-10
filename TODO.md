@@ -141,8 +141,15 @@ scenario names, and one documented input raster maps to each Target scenario.
   as canopy and allowed transitions from all valid source codes.
 - [x] Approve the revised definition: existing canopy `{1,2,100}`, eligible
   planting `{4,20,21}`, replacement code `100`, and `all_touched=False`.
-- [x] Document the historical Green construction evidence and missing original
-  Scenario Generator parameters in `code/lc_scenarios/README.md`.
+- [x] Recover and document the historical Green Scenario Generator logs. They
+  confirm InVEST 3.14.1, areas of 3,200/6,200/9,300 ha, focal and convertible
+  codes `1 2 4 20 21`, replacement code `100`, nearest-to-edge and two steps.
+- [x] Implement and test `generate_green_scenarios_invest.py` under InVEST
+  3.20.2. The revised test outputs contain exactly 307,768/595,084/894,249
+  eligible cells, no ineligible transitions, matching NoData, and full nesting.
+- [x] Run a historical-parameter version check. InVEST 3.20.2 preserves the
+  exact area totals but differs from the archived 3.14.1 outputs in
+  9,594/18,970/23,276 full-raster cells for Green10/20/30.
 - [x] Test historical Green nesting. Green10 has 4,451 converted cells absent
   from Green20; Green20 has 11,709 absent from Green30.
 - [x] Audit Target10 and Target20. Target10 adds 276,430 pixels versus
@@ -150,8 +157,10 @@ scenario names, and one documented input raster maps to each Target scenario.
   620,000 (12.422% short).
 - [ ] Generalize the transition audit to accept canopy and eligibility code
   sets and export the complete source-to-target transition matrix.
-- [ ] Create corrected Green10/20/30 copies from the baseline, retaining only
-  `{4,20,21} -> 100`; expected counts are 307,768, 595,084 and 894,249.
+- [x] Run the tested revised Green generator into the permanent versioned
+  shared folder `lc_green_scenarios_output/`
+  `revised_v2_invest_3.20.2_2026-09-10/`; retain its three rasters, raw InVEST
+  workspaces and JSON manifest.
 - [ ] Validate each selected Target vector as a prefix of its approved full
   ranked layer.
 - [ ] Generate all three Target rasters from the baseline, restricted to
@@ -159,11 +168,13 @@ scenario names, and one documented input raster maps to each Target scenario.
 - [ ] Require exact counts, zero ineligible transitions, unchanged NoData,
   identical grids and nested 10-within-20-within-30 masks before UCM runs.
 
-**Data to locate or add:** no additional source raster is needed for the
-canopy-budget correction. The required baseline, Green10/20 and selected
-Target10/20 rasters are present. The regeneration needs the original ranked
-target-allocation vector inputs already used for Target30. Do not substitute
-intermediate rasters with similar names.
+**Data to locate or add:** no additional source raster is needed for the Green
+regeneration. The full Target ranking has now been located at
+`My Drive/NatCap/projects/KCL_Welcome/london-equity-tree-scenario/Results/`
+`Potential_Tree_Points_Ranked.shp` (including its `.dbf`, `.shx`, `.prj` and
+`.cpg` sidecars). Before Target regeneration, validate that its `rank` field,
+CRS, feature count and first-ranked geometries reproduce the approved trial
+vectors. Do not substitute intermediate rasters or similarly named vectors.
 
 **Current result:** the earlier audit tables correctly record code-100
 transitions but not total new canopy under the revised definition. Target30 v4

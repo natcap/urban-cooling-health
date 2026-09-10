@@ -31,6 +31,43 @@ A transition from woodland code `1` or `2` to `100` is a relabeling, not new
 canopy. Changes from water, wetland, coastal habitat, rock or NoData are not
 eligible.
 
+### Complete land-cover code list
+
+The baseline follows the UKCEH LCM2023 class codes, with project-specific code
+`100` added for the 2024 tree-canopy overlay.
+
+| Code | Land-cover class | Role in the revised scenarios |
+|---:|---|---|
+| 0 | NoData/background in the clipped baseline | Never convert |
+| 1 | Broadleaved woodland | Existing canopy; focal only |
+| 2 | Coniferous woodland | Existing canopy; focal only |
+| 3 | Arable and horticulture | Not eligible |
+| 4 | Improved grassland | Eligible planting class |
+| 5 | Neutral grassland | Not eligible |
+| 6 | Calcareous grassland | Not eligible |
+| 7 | Acid grassland | Not eligible |
+| 8 | Fen, marsh and swamp | Not eligible |
+| 9 | Heather | Not eligible |
+| 10 | Heather grassland | Not eligible |
+| 11 | Bog | Not eligible |
+| 12 | Inland rock | Not eligible |
+| 13 | Saltwater | Not eligible |
+| 14 | Freshwater | Not eligible |
+| 15 | Supralittoral rock | Not eligible |
+| 16 | Supralittoral sediment | Not eligible |
+| 17 | Littoral rock | Not eligible |
+| 18 | Littoral sediment | Not eligible |
+| 19 | Saltmarsh | Not eligible |
+| 20 | Urban | Eligible planting class |
+| 21 | Suburban | Eligible planting class |
+| 100 | Project tree-canopy overlay/new canopy | Existing canopy, focal and replacement |
+
+Codes `4`, `20` and `21` are a common analytical eligibility definition, not a
+claim that every cell is physically or legally plantable. Before treating the
+maps as an implementation plan, add finer opportunity constraints for
+buildings, roads and rail, hard surfaces, sports fields, utilities, protected
+habitats and land access/ownership.
+
 ## Required external data layout
 
 Large rasters and vectors are intentionally outside Git. In the shared data
@@ -42,7 +79,7 @@ root, this workflow uses:
 ├── LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_10prc_canopy_increase.tif
 ├── LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_20prc_canopy_increase.tif
 ├── LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_30prc_canopy_increase.tif
-└── lc_tree_equity_scenarios_output/
+├── lc_tree_equity_scenarios_output/
     ├── tree_equity_scenario710.gpkg
     ├── tree_equity_scenario710v2.gpkg
     ├── tree_equity_scenario730.gpkg
@@ -51,6 +88,13 @@ root, this workflow uses:
     ├── LULC_Scenario510.tif
     ├── LULC_Scenario520.tif
     └── LULC_Scenario530.tif
+└── lc_green_scenarios_output/
+    └── revised_v2_invest_3.20.2_2026-09-10/
+        ├── Green10_equal_area_eligible_v2.tif
+        ├── Green20_equal_area_eligible_v2.tif
+        ├── Green30_equal_area_eligible_v2.tif
+        ├── green_scenario_manifest_revised.json
+        └── invest_workspaces/
 ```
 
 Do not commit the source, scenario or UCM rasters until the UKCEH licence
@@ -82,7 +126,7 @@ LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_20prc_canopy_increas
 LCM2023_London_10m_clip2aoi_tcc24_scenario4_nearest_to_edge_30prc_canopy_increase.tif
 ```
 
-The preserved rasters establish the following facts:
+The preserved rasters and recovered InVEST logs establish the following facts:
 
 - the baseline was `LCM2023_London_10m_clip2aoi_tcc24.tif`;
 - conversion followed the “nearest to edge” output pattern;
@@ -93,14 +137,31 @@ The preserved rasters establish the following facts:
   nested: 4,451 Green10 conversion cells are absent from Green20, and 11,709
   Green20 conversion cells are absent from Green30.
 
-The original InVEST Scenario Generator log or datastack was not found. The
-exact historical InVEST version, focal-code list, convertible-code list,
-requested maximum areas, AOI and conversion-step count therefore remain
-unverified. The output filenames and cell transitions support the method above
-but are not a substitute for those missing run parameters. The non-nested
-outputs also show that the three levels cannot be reconstructed as simple
-prefixes of one preserved distance ranking. This is method reconstruction, not
-exact historical reproduction.
+The logs were recovered from the shared-data folder
+`EP_preliminary_tests/clipped_lulc/UKECH/`. They confirm that the main runs used
+InVEST **3.14.1**, no AOI, nearest-to-edge conversion, two fragmentation steps,
+replacement code `100`, and the following parameters:
+
+| Scenario | Maximum area (ha) | Focal codes | Convertible codes |
+|---|---:|---|---|
+| Green10 | 3,200 | `1 2 4 20 21` | `1 2 4 20 21` |
+| Green20 | 6,200 | `1 2 4 20 21` | `1 2 4 20 21` |
+| Green30 | 9,300 | `1 2 4 20 21` | `1 2 4 20 21` |
+
+This confirms two methodological problems. First, woodland codes `1` and `2`
+were eligible for conversion to `100`, so part of each reported increase was a
+label change rather than added canopy. Second, the focal list omitted the
+project's explicit canopy code `100` and instead included every convertible
+class. “Nearest to edge” therefore did not mean nearest to the complete
+existing-canopy definition `{1,2,100}`.
+
+A controlled rerun of the confirmed inputs under InVEST 3.20.2 reproduced the
+total conversion budgets exactly, but not every selected cell. Relative to the
+preserved 3.14.1 outputs, 9,594, 18,970 and 23,276 full-raster cell values
+differed for Green10, Green20 and Green30, respectively (0.036%, 0.072% and
+0.088% of all cells). Exact historical reproduction therefore requires the
+archived 3.14.1 software environment; InVEST 3.20.2 provides a close method
+replication and should be used consistently for all new production scenarios.
 
 ### Observed Green transitions
 
@@ -120,6 +181,74 @@ The machine-readable table is
 The original 320,000/620,000/930,000 totals counted woodland relabeling as
 added canopy. They must not be used as the stopping targets for the revised
 Target scenarios.
+
+### Rough tree-equivalent interpretation
+
+A 10 m raster cell represents canopy area, not one tree. For a rough planning
+translation, the existing Target workflow buffers tree points by 5 m, implying
+a 10 m mature crown diameter and about 78.54 m² of crown area per tree. Dividing
+eligible added-canopy area by that crown area gives:
+
+| Scenario | Eligible pixels | Added canopy (km²) | Approx. 10 m-crown tree equivalents | Sensitivity for 8–12 m crowns |
+|---|---:|---:|---:|---:|
+| Green10 | 307,768 | 30.7768 | ~392,000 | ~272,000–612,000 |
+| Green20 | 595,084 | 59.5084 | ~758,000 | ~526,000–1,184,000 |
+| Green30 | 894,249 | 89.4249 | ~1,139,000 | ~791,000–1,779,000 |
+
+These are **mature-crown equivalents**, not planting-stem requirements. Actual
+planting counts require species mix, expected mature crown diameter, spacing,
+crown overlap, establishment mortality and replacement assumptions. Report
+pixels or area as the primary scenario quantity and use tree equivalents only
+as a clearly labelled approximation.
+
+## Recommended Green10/20/30 regeneration
+
+Use [`generate_green_scenarios_invest.py`](generate_green_scenarios_invest.py)
+with InVEST 3.20.2. The recommended profile changes the historical settings as
+follows:
+
+| Parameter | Recommended setting | Reason |
+|---|---|---|
+| Focal codes | `1 2 100` | Represents all existing canopy used in this project |
+| Convertible codes | `4 20 21` | Uses the same eligible planting mask as Target scenarios |
+| Replacement code | `100` | Preserves the project-specific new-canopy class |
+| Direction | nearest to edge only | Expands canopy outwards from existing canopy |
+| Conversion steps | `1` per tier | Makes each tier's distance calculation explicit and avoids an arbitrary within-tier recalculation count |
+| Scenario sequence | baseline → Green10 → Green20 → Green30 | Guarantees nesting |
+| Cumulative budgets | 307,768; 595,084; 894,249 cells | Matches eligible canopy actually added by the historical Green rasters |
+| AOI | none | The baseline is already clipped to the London study grid |
+| NoData | restore baseline value `0` | Avoids the previous `0`/`255` mismatch in downstream UCM runs |
+
+Run the revised profile with:
+
+```bash
+conda run -n urban-cooling-invest-3.20.2 python \
+  code/lc_scenarios/generate_green_scenarios_invest.py \
+  --baseline /path/to/LCM2023_London_10m_clip2aoi_tcc24.tif \
+  --output-dir /path/to/new/versioned/green_scenarios \
+  --profile revised
+```
+
+The runner keeps the InVEST workspaces, writes harmonized final rasters, checks
+that only codes `{4,20,21}` changed to `100`, enforces the exact cumulative
+budgets and writes a JSON manifest with parameters, transitions and SHA-256
+checksums. A temporary test run under 3.20.2 produced exactly 307,768, 595,084
+and 894,249 eligible cells, with Green10 fully inside Green20 and Green20 fully
+inside Green30.
+
+The verified production run is stored under
+`lc_green_scenarios_output/revised_v2_invest_3.20.2_2026-09-10/` in the shared
+LULC folder. Its final transitions from the original baseline are:
+
+| Scenario | `4 -> 100` | `20 -> 100` | `21 -> 100` | Eligible total |
+|---|---:|---:|---:|---:|
+| Green10 | 69,962 | 72,704 | 165,102 | 307,768 |
+| Green20 | 138,011 | 148,736 | 308,337 | 595,084 |
+| Green30 | 194,268 | 242,156 | 457,825 | 894,249 |
+
+For a version-comparison audit only, use `--profile historical-audit`. Do not
+use that profile for manuscript production because it intentionally retains
+the historical focal/eligibility problems.
 
 ## How the current Target trials were created
 
@@ -150,9 +279,9 @@ these stages in order:
    [`validate_scenario_canopy_budget.py`](validate_scenario_canopy_budget.py)
    to accept canopy codes `{1,2,100}` and eligible source codes `{4,20,21}` and
    to export the full source-to-target transition matrix.
-2. **Create corrected Green copies from the baseline.** Retain historical
-   Green conversions only where the baseline is `{4,20,21}`. Expected new
-   canopy counts are 307,768, 595,084 and 894,249 cells.
+2. **Generate revised Green scenarios.** Run the recommended InVEST profile
+   above. Expected cumulative new-canopy counts are 307,768, 595,084 and
+   894,249 cells.
 3. **Validate the target ranking.** Confirm that each selected trial vector is
    a geometry-and-rank prefix of its approved full ranked layer. Stop if any
    prefix check fails.
@@ -184,6 +313,7 @@ LULC_Target30_equal_area_eligible_v2.tif
 |---|---|---|
 | `reclassify-lulc-using-tcc.ipynb` | Overlay 2024 tree-canopy polygons as code 100 | Baseline lineage; retains machine-specific paths |
 | `scenario_1_pavement_and_2_opportunity_trees.ipynb` | Early pavement and opportunity-tree scenarios | Exploratory/legacy; not the Green10/20/30 generator |
+| `generate_green_scenarios_invest.py` | Reproduce historical parameters or generate corrected nested Green scenarios | Recommended Green generator; requires InVEST 3.20.2 |
 | `tree_equity_1_number_of_trees_to_polygon.py` | Select and buffer ranked Target candidates | Historical construction; configuration is hard-coded |
 | `tree_equity_2_scenario_engine.py` | Burn Target buffers into baseline | Historical construction; lacks eligibility masking |
 | `tree_equity_3_lulc_stats.py` | Summarize LULC classes | Diagnostic; active filenames are legacy aliases |
