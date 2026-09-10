@@ -139,17 +139,18 @@ and warmer temperature, follows the corrected formula directly.
   LULC alignment for other datasets.
 - The findings apply to this project's factors-method inputs and parameters.
 
-## Required next steps before health modelling
+## Production follow-up status
 
-1. Keep the new Target30 health configurations disabled for now.
-2. Create versioned InVEST 3.20.2 workspaces for the no-intervention baseline
-   and Green30 at 25 C and 28 C.
-3. Verify that every `T_air` raster matches the 2021 population grid exactly.
-4. Compare new 3.20.2 baseline and Green30 results with their historical
-   counterparts and record the version effect separately from scenario effects.
-5. Only then enable and run the population-weighted health assessment and
-   regenerate Figure 7.
-6. Preserve checksums, parameters, environment versions and validation results
-   in a machine-readable manifest beside each model workspace.
+All required follow-up steps are complete:
 
-No further production model runs should start until steps 2-3 are approved.
+1. Baseline and Green30 were rerun with InVEST 3.20.2 at 25 C and 28 C in
+   versioned workspaces.
+2. Target30 v4 was run with InVEST 3.20.2 at both temperature settings after
+   its realized canopy budget was matched exactly to Green30.
+3. Every production `T_air` raster matches the 2021 population grid exactly.
+4. The version effect, Green30 NoData sensitivity and scenario effects were
+   recorded separately in machine-readable comparison tables.
+5. The population-weighted health assessment and Figure 7 were regenerated
+   from the consistent 3.20.2 outputs.
+6. Checksums, parameters, environment versions and validation results are
+   retained beside the model workspaces and in the tracked audit tables.

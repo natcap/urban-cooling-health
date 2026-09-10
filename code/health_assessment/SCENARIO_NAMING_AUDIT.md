@@ -72,9 +72,9 @@ For each Target scenario, record:
 |---|---|---:|---|---|---|
 | Target10 | TBD | TBD | TBD | TBD | TBD |
 | Target20 | TBD | TBD | TBD | TBD | TBD |
-| Target30 | `LULC_Scenario730v4_equal_budget.tif` | 930,000 pixels / 93 km² | new output directory required | both 25/5/45 and 28/5/45 | regenerate separately by temperature setting |
+| Target30 | `LULC_Scenario730v4_equal_budget.tif` | 930,000 pixels / 93 km² | `scenario730v4_equal_budget_health_invest3202` | both 25/5/45 and 28/5/45 | `health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c` and `target30_28c` |
 
-After approval:
+For the unresolved Target10 and Target20 scenarios, after approval:
 
 1. update construction, LULC-statistics, UCM, health and plotting references in
    one commit;
