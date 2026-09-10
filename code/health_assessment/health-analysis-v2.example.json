@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "data_root": "${HEALTH_DATA_ROOT}",
+  "output_root": "2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized",
+  "design": {
+    "population_year": 2021,
+    "mortality_year": 2021,
+    "primary_temperature_setting_c": 25,
+    "sensitivity_temperature_settings_c": [28],
+    "temperature_contexts": [
+      "25 C reference-temperature setting",
+      "28 C reference-temperature setting"
+    ],
+    "interpretation": "25 C and 28 C temperature scenarios evaluated under 2021 population and mortality"
+  },
+  "population_2021": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/pop_raster/resampled_10m/gbr_pop_2021_10m_count_preserved_bng.tif",
+  "monte_carlo": {
+    "n_draws": 2000,
+    "seed": 20260908
+  },
+  "causes": [
+    {
+      "name": "all_cause",
+      "rr_1c": 1.02,
+      "rr_low_1c": 1.014,
+      "rr_high_1c": 1.026,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_all_cause_population_weighted_2021.tif"
+    },
+    {
+      "name": "mental_disorder",
+      "rr_1c": 1.026,
+      "rr_low_1c": 1.013,
+      "rr_high_1c": 1.04,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_mental_disorder_population_weighted_2021.tif"
+    },
+    {
+      "name": "cardiovascular",
+      "rr_1c": 1.0344,
+      "rr_low_1c": 1.031,
+      "rr_high_1c": 1.0378,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_cardiovascular_population_weighted_2021.tif"
+    },
+    {
+      "name": "respiratory",
+      "rr_1c": 1.036,
+      "rr_low_1c": 1.0318,
+      "rr_high_1c": 1.0402,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_respiratory_population_weighted_2021.tif"
+    },
+    {
+      "name": "self_harm",
+      "rr_1c": 1.012,
+      "rr_low_1c": 1.003,
+      "rr_high_1c": 1.021,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_self_harm_population_weighted_2021.tif"
+    }
+  ],
+  "scenarios": {
+    "green30_25c": {
+      "enabled": true,
+      "label": "Green30 - 25 C",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/baseline_health_invest3202/T_air_london_baseline_25deg_5uhi_45hum.tif",
+      "lulc_note": "Valid Green30 classes unchanged; NoData harmonized from 255 to baseline/Target30 value 0 before InVEST",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/green30_health_invest3202_nodata_harmonized/T_air_london_green30_25deg_5uhi_45hum.tif"
+    },
+    "target30_25c": {
+      "enabled": true,
+      "label": "Target30 v4 equal budget - 25 C",
+      "temperature_setting_c": 25,
+      "lulc_source": "LULC_Scenario730v4_equal_budget.tif; 930000 added tree pixels",
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/baseline_health_invest3202/T_air_london_baseline_25deg_5uhi_45hum.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/scenario730v4_equal_budget_health_invest3202/T_air_london_scenario730v4_equal_budget_25deg_5uhi_45hum.tif"
+    },
+    "green30_28c": {
+      "enabled": true,
+      "label": "Green30 - 28 C",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/baseline_health_invest3202/T_air_london_baseline_28deg_5uhi_45hum.tif",
+      "lulc_note": "Valid Green30 classes unchanged; NoData harmonized from 255 to baseline/Target30 value 0 before InVEST",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/green30_health_invest3202_nodata_harmonized/T_air_london_green30_28deg_5uhi_45hum.tif"
+    },
+    "target30_28c": {
+      "enabled": true,
+      "label": "Target30 v4 equal budget - 28 C",
+      "temperature_setting_c": 28,
+      "lulc_source": "LULC_Scenario730v4_equal_budget.tif; 930000 added tree pixels",
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/baseline_health_invest3202/T_air_london_baseline_28deg_5uhi_45hum.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/scenario730v4_equal_budget_health_invest3202/T_air_london_scenario730v4_equal_budget_28deg_5uhi_45hum.tif"
+    }
+  }
+}

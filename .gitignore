@@ -23,7 +23,13 @@ data/derived/*
 !data/derived/README.md
 !data/derived/*_template.csv
 !data/derived/lsoa_population_2021.csv
+!data/derived/lsoa_population_2021.manifest.json
 !data/derived/*city_total_draws_by_cause.csv
+!data/derived/fig7_vulnerability_lsoa11.gpkg
+!data/derived/svi_lsoa11_crosswalk.csv
+!data/derived/health_lsoa_invest3202_population_weighted_2021.csv
+!data/derived/health_lsoa_invest3202_population_weighted_2021.manifest.json
+!data/derived/*nodata_harmonized*
 
 
 __pycache__/

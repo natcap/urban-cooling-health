@@ -1,0 +1,323 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-10T05:58:14.520251+00:00",
+  "method": "pixel-centre rasterization followed by zonal sum",
+  "lsoa_count": 4835,
+  "crosswalk_method": "one-to-one nearest polygon-centroid match",
+  "crosswalk_max_centroid_distance_m": 0.01949286332294418,
+  "outer_edge_cell_assignment": "Valid raster-cell centres outside the generalized LSOA outline were assigned to the nearest LSOA; equidistant ties use the smallest stable id",
+  "outer_edge_cell_count": 6823,
+  "outer_edge_max_assignment_distance_m": 21.433550736080722,
+  "software": {
+    "python": "3.11.15",
+    "geopandas": "1.1.4",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "rasterio": "1.4.4"
+  },
+  "inputs": {
+    "svi": {
+      "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/Social_Vulnerability_Index_london.gpkg",
+      "size_bytes": 6430720,
+      "sha256": "45e3630db0954618d634862c2f84e92f32c53b044fad72f8830e61a8ebf4e457"
+    },
+    "official_lsoa11_shapefile": [
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.dbf",
+        "size_bytes": 1199562,
+        "sha256": "29cb00a5131e0b55fad7afe56d8119f81608c7d67251e6278d66bb01c7653a07"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.prj",
+        "size_bytes": 416,
+        "sha256": "136e03e16e6030eb237481d1494e903d21844a4cf255d69be88985d3dfccc616"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.sbn",
+        "size_bytes": 50652,
+        "sha256": "d2d4fe790ead9c665399348fd96efa610f12c8151da9f8c83ece385dbfc91663"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.sbx",
+        "size_bytes": 4188,
+        "sha256": "5a0c589a88a18cbc27ee47e0ce94ff840ba799b2d4db746888d6a52368ab8d6f"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.shp",
+        "size_bytes": 2846220,
+        "sha256": "02773dbcb524c8a95e359c6634545a75f92e775168540d09ab2853c5e84642b4"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.shp.xml",
+        "size_bytes": 640,
+        "sha256": "1bf41d6c4bc6731fb604322dc8fc5a9a2f3da986be57270b097ac00b8dfc4fbe"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.shx",
+        "size_bytes": 38780,
+        "sha256": "b72619c33e9081704d6903320700f74ba8b1fc6d125fbd2ddf38761ea98bb903"
+      }
+    ],
+    "health_rasters": [
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_25c/Excess_all_cause.tif",
+        "size_bytes": 64248073,
+        "sha256": "4d3f9ba012ba1d97e14ce433e99f6dedae2ef6253423b5ae9b0c462bae7b10c8"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_25c/Excess_mental_disorder.tif",
+        "size_bytes": 64138169,
+        "sha256": "fef018e0c5b07f06c04470389bf37b0813a7c251a0d14d4a6861684bef76022c"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_25c/Excess_cardiovascular.tif",
+        "size_bytes": 64244169,
+        "sha256": "a40ba1647208ca981b9e92f67113ae6f8a0464f1e3280d0fa34ff8b38b66ef5d"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_25c/Excess_respiratory.tif",
+        "size_bytes": 64243721,
+        "sha256": "bd1339bfd1ee2369324fd9f88882847fe5d348858575d66963ab35627e49b63a"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_25c/Excess_self_harm.tif",
+        "size_bytes": 64127321,
+        "sha256": "73f5984ea59fbc0be47c7a59128710e72105e1a31186435a79aa35ad28ac7143"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c/Excess_all_cause.tif",
+        "size_bytes": 64691690,
+        "sha256": "06b8ec8a5178e8d3edef25b6e4da63f96990b4d58acb4de608421ce95f71bead"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c/Excess_mental_disorder.tif",
+        "size_bytes": 64567968,
+        "sha256": "e1878fd864ced356bbdee48aa64d697f2c1ba9c5a9d5f18f129a97462ba96006"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c/Excess_cardiovascular.tif",
+        "size_bytes": 64698565,
+        "sha256": "bb85c9b32e9fca11f7f89aef6cf34f5f25bfe2e365e40ba8d6cf58397681dc66"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c/Excess_respiratory.tif",
+        "size_bytes": 64687102,
+        "sha256": "9e7fc9cb57db0ac953eb42479fa1091ae58272bcd8d208c5d15cc9e784b6b331"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c/Excess_self_harm.tif",
+        "size_bytes": 64575503,
+        "sha256": "a87d90c7d6345557cf346369c72acf947fa9fff64329d143a4808e9fa916ff10"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_28c/Excess_all_cause.tif",
+        "size_bytes": 64240739,
+        "sha256": "0ddfba2be74496a220eac04b3cbbf2af59adfc241851b3168ed13d26eafa2ae3"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_28c/Excess_mental_disorder.tif",
+        "size_bytes": 64129354,
+        "sha256": "bb8d692c3f0caa5bd9f5d447d0993649f95224d984362a3b9a40369173617c18"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_28c/Excess_cardiovascular.tif",
+        "size_bytes": 64239829,
+        "sha256": "e68652f7618a085645280b70a6d03c28cc228ee0c4097061307dac967e4fb6c7"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_28c/Excess_respiratory.tif",
+        "size_bytes": 64235955,
+        "sha256": "2eea87634c9515db05c7d6087e3fbc77ca9ba9315cb469178753da354f6aa345"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/green30_28c/Excess_self_harm.tif",
+        "size_bytes": 64121238,
+        "sha256": "3798083ef7c9f0305514d7b9a0d412a9e6d80cfdae80ceedc57fbf2cbe34d306"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_28c/Excess_all_cause.tif",
+        "size_bytes": 64680005,
+        "sha256": "c9aef97cb4331cf20a304442aaa4c1253005a830927bd223506c369be1a096cf"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_28c/Excess_mental_disorder.tif",
+        "size_bytes": 64554971,
+        "sha256": "76242dfbacb2c357345ffb3b98c7e382ac6517a1c418ced7430f51349c8de9d2"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_28c/Excess_cardiovascular.tif",
+        "size_bytes": 64687176,
+        "sha256": "5d29e0d8066a6dc063fed3b0afa38ec8aa8d7be4f8d6a82caa6c95234e39b8f5"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_28c/Excess_respiratory.tif",
+        "size_bytes": 64675495,
+        "sha256": "eb09a33c732a7b229f5566b2ca32ae255d2390b1bf3fba30e8377b2d68d0d2a4"
+      },
+      {
+        "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_28c/Excess_self_harm.tif",
+        "size_bytes": 64561017,
+        "sha256": "5d23d54a8c214ca70d91d68c9f6b4d26c1c6c96375fc134eef9ea62982db169a"
+      }
+    ]
+  },
+  "outputs": {
+    "zonal_csv": {
+      "path": "/Users/yingjiel/Documents/projects/urban-cooling-health/data/derived/health_lsoa_invest3202_population_weighted_2021_nodata_harmonized.csv",
+      "size_bytes": 12807039,
+      "sha256": "5d34631ca2628e7364f6936d07d5d5a48a26a735675c602528e00db86b196a52"
+    },
+    "crosswalk_csv": {
+      "path": "/Users/yingjiel/Documents/projects/urban-cooling-health/data/derived/svi_lsoa11_crosswalk_nodata_harmonized.csv",
+      "size_bytes": 295903,
+      "sha256": "2d4100a55da876336d771c022aac49d3af9553e9044e840b4bb2c38680e442fe"
+    },
+    "vulnerability_gpkg": {
+      "path": "/Users/yingjiel/Documents/projects/urban-cooling-health/data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg",
+      "size_bytes": 6631424,
+      "sha256": "919053115f65b5b87bc91a2e3c6bb3edd1d6356422f1908097d7894a5b39c442"
+    }
+  },
+  "quality_control": [
+    {
+      "scenario": "green30_25c",
+      "cause": "all_cause",
+      "lsoa_sum_excess_deaths": -367.2235142860752,
+      "valid_raster_sum_excess_deaths": -367.2235142860752,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_25c",
+      "cause": "mental_disorder",
+      "lsoa_sum_excess_deaths": -28.552790066407674,
+      "valid_raster_sum_excess_deaths": -28.552790066407674,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_25c",
+      "cause": "cardiovascular",
+      "lsoa_sum_excess_deaths": -143.31143244616527,
+      "valid_raster_sum_excess_deaths": -143.31143244616527,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_25c",
+      "cause": "respiratory",
+      "lsoa_sum_excess_deaths": -54.91431395193247,
+      "valid_raster_sum_excess_deaths": -54.914313951932456,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_25c",
+      "cause": "self_harm",
+      "lsoa_sum_excess_deaths": -1.7553828306055255,
+      "valid_raster_sum_excess_deaths": -1.7553828306055257,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "all_cause",
+      "lsoa_sum_excess_deaths": -510.3249339338635,
+      "valid_raster_sum_excess_deaths": -510.32493393386346,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "mental_disorder",
+      "lsoa_sum_excess_deaths": -38.98116250770798,
+      "valid_raster_sum_excess_deaths": -38.98116250770798,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "cardiovascular",
+      "lsoa_sum_excess_deaths": -199.64883436427039,
+      "valid_raster_sum_excess_deaths": -199.64883436427039,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "respiratory",
+      "lsoa_sum_excess_deaths": -76.38976175253364,
+      "valid_raster_sum_excess_deaths": -76.38976175253364,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "self_harm",
+      "lsoa_sum_excess_deaths": -2.4400838475546576,
+      "valid_raster_sum_excess_deaths": -2.440083847554657,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "all_cause",
+      "lsoa_sum_excess_deaths": -367.2235325134816,
+      "valid_raster_sum_excess_deaths": -367.2235325134816,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "mental_disorder",
+      "lsoa_sum_excess_deaths": -28.55279157060157,
+      "valid_raster_sum_excess_deaths": -28.55279157060157,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "cardiovascular",
+      "lsoa_sum_excess_deaths": -143.31143961541156,
+      "valid_raster_sum_excess_deaths": -143.31143961541156,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "respiratory",
+      "lsoa_sum_excess_deaths": -54.91431672038166,
+      "valid_raster_sum_excess_deaths": -54.91431672038166,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "self_harm",
+      "lsoa_sum_excess_deaths": -1.755382918478655,
+      "valid_raster_sum_excess_deaths": -1.755382918478655,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "all_cause",
+      "lsoa_sum_excess_deaths": -510.3249633556557,
+      "valid_raster_sum_excess_deaths": -510.32496335565577,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "mental_disorder",
+      "lsoa_sum_excess_deaths": -38.98116485555665,
+      "valid_raster_sum_excess_deaths": -38.98116485555665,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "cardiovascular",
+      "lsoa_sum_excess_deaths": -199.6488461590026,
+      "valid_raster_sum_excess_deaths": -199.64884615900263,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "respiratory",
+      "lsoa_sum_excess_deaths": -76.38976612925198,
+      "valid_raster_sum_excess_deaths": -76.38976612925198,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "self_harm",
+      "lsoa_sum_excess_deaths": -2.440083978325661,
+      "valid_raster_sum_excess_deaths": -2.4400839783256614,
+      "unassigned_valid_pixel_count": 0
+    }
+  ]
+}
