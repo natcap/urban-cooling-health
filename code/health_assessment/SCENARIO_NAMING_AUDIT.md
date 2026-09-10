@@ -1,34 +1,65 @@
-# Target-scenario naming audit
+# Target-scenario identity and canopy-budget audit
 
-Reviewed: 9 September 2026
+Reviewed: 10 September 2026
 
-This audit records the active and downstream references for the renamed
-`710v3/720v3/730v3` Target10/20/30 inputs. A checksum comparison resolves the
-Target30 input used in Figure 7; Target10 and Target20 still require review.
+This audit separates two questions that must not be conflated:
 
-## Checksum result
+1. **File identity:** was a trial raster copied to a manuscript-facing
+   `510/520/530` filename without changing its contents?
+2. **Budget comparability:** does that raster realize the same added tree-canopy
+   area as the corresponding Green10/20/30 raster?
 
-The two Target30 rasters are byte-for-byte identical:
+## Confirmed copy/alias mapping
 
-| File | SHA-256 |
-|---|---|
-| `LULC/LULC_Scenario530.tif` | `1999f4760c3c94acf95f4578ef846ba69597b6a729c4bcfb01cfdd2230d432c7` |
-| `LULC/lc_tree_equity_scenarios_output/LULC_Scenario730v3.tif` | `1999f4760c3c94acf95f4578ef846ba69597b6a729c4bcfb01cfdd2230d432c7` |
+All three user-declared pairs are byte-for-byte identical. Copies in both the
+parent `LULC` folder and `lc_tree_equity_scenarios_output` have the same hash.
 
-Therefore the existing `scenario530` UCM outputs describe the same legacy v3
-Target30 input. They are retained for comparison but cannot be used as the
-final equal-budget Target30 result. This does not extend to the other
-intervention levels: the `510`/`710v3` and `520`/`720v3` checksum pairs differ.
+| Manuscript label | Selected trial raster | Manuscript-facing copy | SHA-256 |
+|---|---|---|---|
+| Target10 | `LULC_Scenario710v2.tif` | `LULC_Scenario510.tif` | `b756510124c996a08ab180aeca0518b057a4c84884083f602ae66e1bd295e520` |
+| Target20 | `LULC_Scenario730v2.tif` | `LULC_Scenario520.tif` | `15edfce32b571bdd04faa875768a3ca911175eb8f7d85f4b218a4c07a1c1ec40` |
+| Target30 (legacy) | `LULC_Scenario730v3.tif` | `LULC_Scenario530.tif` | `1999f4760c3c94acf95f4578ef846ba69597b6a729c4bcfb01cfdd2230d432c7` |
+
+The numbering is intentionally non-sequential: Target20 came from the
+`730v2` trial, not `720v2` or `720v3`. Future scripts and documentation must
+use this explicit mapping rather than infer a source filename from the
+manuscript label.
+
+## Realized canopy comparison
+
+The copy operation is verified, but the legacy selections do not all have the
+same realized added-canopy budget as their Green counterparts. Counts are
+relative to `LCM2023_London_10m_clip2aoi_tcc24.tif`; each pixel is 100 m2.
+
+| Comparison | Green added pixels | Selected Target added pixels | Target deficit | Equal budget? |
+|---|---:|---:|---:|---|
+| Green10 vs Target10 (`510`/`710v2`) | 320,000 (32.0000 km2) | 276,430 (27.6430 km2) | 43,570 (13.616%) | No |
+| Green20 vs Target20 (`520`/`730v2`) | 620,000 (62.0000 km2) | 542,985 (54.2985 km2) | 77,015 (12.422%) | No |
+| Green30 vs legacy Target30 (`530`/`730v3`) | 930,000 (93.0000 km2) | 869,444 (86.9444 km2) | 60,556 (6.511%) | No |
+| Green30 vs final Target30 (`730v4_equal_budget`) | 930,000 (93.0000 km2) | 930,000 (93.0000 km2) | 0 (0.000%) | Yes |
+
+Therefore, describe `510/520/530` as the selected historical Target trials or
+aliases, not as proven equal-budget scenarios. Green10, Green20, Target10 and
+Target20 may remain in the manuscript, but a like-for-like equity comparison
+requires recalibrating Target10 and Target20 to 320,000 and 620,000 added
+pixels respectively, then rerunning their UCM and health workflows.
+
+The machine-readable record is
+[`target_scenario_alias_and_canopy_audit.csv`](target_scenario_alias_and_canopy_audit.csv).
 
 ## Approved equal-budget Target30
 
 `LULC_Scenario730v4_equal_budget.tif` was generated separately on 9 September
 2026. It extends v3 with the next-ranked candidate locations until the realized
-addition is exactly 930,000 tree pixels (93 km²), equal to Green30. The audit
-passes with a 0.000% difference and no removal of baseline canopy. The adjacent
-manifest records the input and output checksums, five prefix-sequence checks,
-software versions, feature counts and rank cutoff. Existing files were not
-overwritten.
+addition is exactly 930,000 tree pixels (93 km2), equal to Green30. It removes
+no baseline canopy. The adjacent manifest records input and output checksums,
+five prefix-sequence checks, software versions, feature counts and the rank
+cutoff. Existing files were not overwritten.
+
+The clean publication UCM rerun used InVEST 3.20.2 and is byte-identical to the
+earlier 3.20.2 Target30 workspace at both temperatures. The existing revised
+health outputs remain valid because their temperature-input checksums match
+the publication rasters.
 
 ## Current construction references
 
@@ -38,53 +69,39 @@ overwritten.
 | Rasterize target planting | [`tree_equity_2_scenario_engine.py`](../lc_scenarios/tree_equity_2_scenario_engine.py) | reads the three `v3` GeoPackages and writes `LULC_Scenario710v3.tif`, `720v3.tif`, `730v3.tif` |
 | Calculate LULC statistics | [`tree_equity_3_lulc_stats.py`](../lc_scenarios/tree_equity_3_lulc_stats.py) | the `v3` rasters are commented out; `LULC_Scenario510.tif`, `520.tif`, `530.tif` are active |
 
+These construction defaults do not reproduce the now-confirmed Target10 and
+Target20 selections. They must be revised when the equal-budget Target10/20
+calibration is implemented; until then, use the explicit mapping above.
+
 ## Current downstream references
 
-The following files still use `510/520/530`:
+The legacy UCM, health and plotting workflows still use `510/520/530`,
+including:
 
-- `code/Urban_Cooling_Modeling_Runs/Scenario_510_to_530_runs/execute_invest_urban_cooling_model_scenario510.py`
-- `code/Urban_Cooling_Modeling_Runs/Scenario_510_to_530_runs/execute_invest_urban_cooling_model_scenario520.py`
-- `code/Urban_Cooling_Modeling_Runs/Scenario_510_to_530_runs/execute_invest_urban_cooling_model_scenario530.py`
-- `code/Urban_Cooling_Modeling_Runs/Scenario_510_to_530_runs/UCM_sherlock_runs.sbatch`
-- `code/health_assessment/health-modeling_s0_s510_2050_2050.bat`
-- `code/health_assessment/health-modeling_s0_s520_2050_2050.bat`
-- `code/health_assessment/health-modeling_s0_s530_2050_2050.bat`
+- `code/Urban_Cooling_Modeling_Runs/Scenario_510_to_530_runs/`
+- `code/health_assessment/health-modeling_s0_s{510,520,530}_2050_2050.bat`
 - `code/health_assessment/health-modeling-output-plot-city.Rmd`
 - `code/health_assessment/health-modeling-zonal-stats-viz-borough.Rmd`
 - `code/equity-health.Rmd`
 - `code/func_colors.R`
 
-## Climate settings
+The legacy Target runners have only `[28, 5, 45]` active. The revised
+publication convention is 25 C as primary and 28 C as sensitivity, always
+paired with matching baseline and Green runs.
 
-Each `execute_invest_urban_cooling_model_scenario{510,520,530}.py` script
-currently has only `[28, 5, 45]` active in its `variables` array. Inspection of
-the shared project folder confirmed that `scenario530` contains both the
-`25deg_5uhi_45hum` and `28deg_5uhi_45hum` Target30 outputs, and `scenario43`
-contains the corresponding Green30 outputs. The revised health configuration
-therefore includes both temperature settings, each paired with its matching
-baseline.
+## Publication status and next action
 
-## Confirmation checklist
+| Label | Current selected raster | Budget status | Publication action |
+|---|---|---|---|
+| Target10 | `LULC_Scenario510.tif` (alias of `710v2`) | 43,570 pixels short | Generate a separate equal-budget version, then rerun UCM and health at 25 C and 28 C |
+| Target20 | `LULC_Scenario520.tif` (alias of `730v2`) | 77,015 pixels short | Generate a separate equal-budget version, then rerun UCM and health at 25 C and 28 C |
+| Target30 | `LULC_Scenario730v4_equal_budget.tif` | Equal to Green30 | Complete; use the InVEST 3.20.2 publication outputs |
 
-For each Target scenario, record:
-
-| Manuscript label | Approved LULC raster | Realized added canopy | UCM run directory | Temperature/UHI/humidity | Health output directory |
-|---|---|---:|---|---|---|
-| Target10 | TBD | TBD | TBD | TBD | TBD |
-| Target20 | TBD | TBD | TBD | TBD | TBD |
-| Target30 | `LULC_Scenario730v4_equal_budget.tif` | 930,000 pixels / 93 km² | `scenario730v4_equal_budget_health_invest3202_publication` | both 25/5/45 and 28/5/45 | `health_v2_invest3202_population_weighted_2021_nodata_harmonized/target30_25c` and `target30_28c` |
-
-The clean publication UCM rerun is byte-identical to the earlier 3.20.2
-Target30 workspace at both temperatures. The health outputs therefore remain
-valid: their temperature input checksums match the publication rasters even
-though their manifests retain the earlier equivalent workspace path.
-
-For the unresolved Target10 and Target20 scenarios, after approval:
-
-1. update construction, LULC-statistics, UCM, health and plotting references in
-   one commit;
-2. validate realized canopy area against the corresponding Green scenario;
-3. regenerate UCM outputs if either the approved LULC or climate configuration
-   differs from the existing run;
-4. regenerate health and zonal outputs; and
-5. retain the old mapping and output checksums in the publication archive.
+Recommended implementation for Target10/20: preserve all existing rasters;
+extend each approved selected trial with the next-ranked eligible locations,
+using the same prefix-preserving procedure validated for Target30, until the
+exact corresponding Green budget is reached. Suggested new filenames are
+`LULC_Scenario710v4_equal_budget.tif` and
+`LULC_Scenario720v4_equal_budget.tif`. Generate manifests, validate no baseline
+tree removal, and obtain scientific approval before replacing manuscript
+results.

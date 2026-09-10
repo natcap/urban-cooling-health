@@ -5,6 +5,30 @@ all land-cover and 2050 temperature scenarios. These files provide the small
 denominators and uncertainty outputs needed to reproduce Figure 7; large source
 rasters remain on the shared drive.
 
+## Source licences and attribution
+
+- **WorldPop population:** Bondarenko et al. (2025), United Kingdom 2021
+  population counts, R2025A v1, DOI
+  [10.5258/SOTON/WP00839](https://doi.org/10.5258/SOTON/WP00839), licensed
+  CC BY 4.0. The values here are modified by count-preserving reprojection and
+  LSOA aggregation.
+- **ONS/Nomis mortality:** Source: Office for National Statistics, licensed
+  under the Open Government Licence. Values here are transformed through
+  population-weighted spatial allocation and health-impact modeling.
+- **GLA vulnerability variables:** Greater London Authority and Bloomberg
+  Associates, [Climate Risk Mapping
+  2024](https://data.london.gov.uk/dataset/climate-risk-mapping-2oxg6),
+  licensed under the Open Government Licence v3. Values here are selected,
+  rescored and joined to official LSOA11 codes.
+- **LSOA boundaries:** Source: Office for National Statistics licensed under
+  the Open Government Licence v3.0. Contains OS data © Crown copyright and
+  database right **[insert the year stated with the downloaded boundary]**.
+
+The bracketed ONS/OS year must be completed from the original boundary
+download record before public release. UKCEH LCM2023 terms also require a
+project-specific confirmation for the modeled outputs; see
+[`DATA_LICENCE_AND_REDISTRIBUTION.md`](../../DATA_LICENCE_AND_REDISTRIBUTION.md).
+
 ## Population lookup
 
 The production `lsoa_population_2021_by_lsoa11cd.csv` has exactly one row for

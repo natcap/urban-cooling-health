@@ -67,15 +67,15 @@ Green30 changes relatively little because its cooling is broadly distributed.
 Target30 changes substantially because the population-weighted mortality burden
 is more concentrated in inhabited pixels, which overlap more strongly with the
 targeted cooling pattern. This result is consistent with the intended equity
-mechanism, but it should be treated as provisional until the canopy-budget,
-paired uncertainty and LSOA-output checks are complete.
+mechanism. The later equal-budget, paired-uncertainty and official-code LSOA
+checks described below supersede the provisional v3 comparison.
 
 The legacy canopy-budget audit failed because Target30 v3 adds 6.511% less
-realized canopy than Green30. Target30 v4 has now been calibrated to the exact
-Green30 budget and passes the raster audit, but the UCM and health calculations
-shown above still use v3. They remain provisional until regenerated with v4;
-the rerun will show how much of the previous difference was associated with
-the intervention-budget mismatch.
+realized canopy than Green30. Target30 v4 was calibrated to the exact Green30
+budget and passes the raster audit. The calculations shown above are retained
+only as a v3 diagnostic; the final v4 results in the next section replace them.
+A clean InVEST 3.20.2 publication rerun reproduced the Target30 v4 temperature
+rasters byte for byte, so another health rerun was not required.
 
 The difference is not evidence that total London mortality increased. The
 observed borough totals are unchanged; only their modeled within-borough

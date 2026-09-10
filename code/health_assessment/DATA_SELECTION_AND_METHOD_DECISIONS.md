@@ -156,21 +156,23 @@ not a replacement for the final paired Monte Carlo analysis.
 relative-risk parameters, scenario definitions, random seed and Monte Carlo
 draw count in both settings.
 
-## 6. Target30 scenario identity
+## 6. Target scenario identity
 
-**Decision:** existing `scenario530` UCM outputs identify the legacy Target30
-v3 calculation, but may no longer be used for the final equal-budget analysis.
+**Decision:** preserve the historical manuscript-facing aliases and record
+their trial origins explicitly: Target10 `510 = 710v2`, Target20
+`520 = 730v2`, and legacy Target30 `530 = 730v3`. Equality signs here mean
+byte-for-byte file identity, not equality of realized canopy budgets.
 
-**Justification:** `LULC_Scenario530.tif` and the renamed
-`LULC_Scenario730v3.tif` are byte-for-byte identical. The final Target30 input
-is the separately generated `LULC_Scenario730v4_equal_budget.tif`; its UCM and
-health outputs must be regenerated. The v3 equivalence does not apply to the
-Target10 or Target20 old/new raster pairs, which remain under review.
+**Justification:** SHA-256 checks confirm all three copy operations. The
+Target20 source name is intentionally `730v2`; it must not be guessed from the
+Target20 label. The final Target30 input is the separately generated
+`LULC_Scenario730v4_equal_budget.tif`. Its clean InVEST 3.20.2 rerun matches
+the temperature rasters already used by the revised health analysis.
 
 ## 7. Realized canopy budget
 
 The LULC files referenced by the current UCM scripts do not provide equal
-realized additions. Relative to
+realized additions at any of the three intervention levels. Relative to
 `LCM2023_London_10m_clip2aoi_tcc24.tif`, Green30 adds 930,000 tree pixels
 (93.0000 km²; 29.890% of baseline canopy), while `LULC_Scenario530.tif` adds
 869,444 pixels (86.9444 km²; 27.944%). Target30 therefore adds 60,556 fewer
@@ -184,7 +186,18 @@ then stop at exactly 930,000 realized added pixels. The new
 Green30 at 930,000 pixels (93 km²), removes no baseline canopy and passes with
 a 0.000% difference. Its manifest verifies five sampled prefix positions,
 records rank cutoff 1,948,394 and hashes all inputs. Existing UCM, health and
-Figure 7 scenario results remain provisional until rerun with this raster.
+Figure 7 results have since been checked against the clean InVEST 3.20.2
+publication rerun; the matching temperature-raster checksums preserve their
+validity.
+
+For the retained lower intervention levels, Green10 adds 320,000 pixels while
+Target10 (`510`/`710v2`) adds 276,430, a 43,570-pixel (13.616%) deficit.
+Green20 adds 620,000 pixels while Target20 (`520`/`730v2`) adds 542,985, a
+77,015-pixel (12.422%) deficit. The recommended resolution is to preserve the
+historical files, extend each selected target allocation with the next-ranked
+eligible locations to the exact Green budget, and then rerun matching 25 C and
+28 C UCM and health analyses. This is a scientific scenario change and remains
+subject to explicit approval.
 
 ## Reproducibility evidence
 

@@ -229,6 +229,12 @@ Wellcome Trust Project Data/
 └── 2_postprocess_intermediate/UCM_official_runs/
 ```
 
+See [`DATA_LICENCE_AND_REDISTRIBUTION.md`](DATA_LICENCE_AND_REDISTRIBUTION.md)
+before publishing data or results. WorldPop, ONS/Nomis, ONS boundaries and the
+GLA vulnerability layer have documented open terms with attribution. UKCEH
+LCM2023 requires confirmation against the licence accepted for this project;
+raw/clipped LCM, scenario and UCM rasters must remain outside Git meanwhile.
+
 ### 3. Prepare baseline layers and construct scenarios
 
 Run only the components needed for the scenarios under study:
@@ -249,12 +255,13 @@ Run only the components needed for the scenarios under study:
    - [`tree_equity_2_scenario_engine.py`](code/lc_scenarios/tree_equity_2_scenario_engine.py)
    - [`tree_equity_3_lulc_stats.py`](code/lc_scenarios/tree_equity_3_lulc_stats.py)
 
-**Configuration gate:** the currently active generator configuration uses
-`710v3`, `720v3` and `730v3` filenames, while downstream UCM and health scripts
-refer to `510`, `520` and `530`. Before running, select one approved scenario
-version and make its names and paths consistent across all three scenario
-scripts, the UCM run scripts, the health batch files and the scenario-label
-mapping. Do not combine outputs from different versions.
+**Configuration gate:** checksum verification records the historical selections
+as `710v2 -> 510` (Target10), `730v2 -> 520` (Target20), and `730v3 -> 530`
+(legacy Target30). The Target20 mapping is intentionally non-sequential. The
+currently active generator uses different `710v3/720v3/730v3` defaults, so do
+not infer or substitute inputs from their filenames. Use
+[`SCENARIO_NAMING_AUDIT.md`](code/health_assessment/SCENARIO_NAMING_AUDIT.md)
+as the authoritative crosswalk.
 
 Several older scenario scripts contain machine-specific paths. Review every
 input and output path before running them; do not assume the defaults point to
@@ -274,9 +281,15 @@ python code/lc_scenarios/validate_scenario_canopy_budget.py \
 
 The default tolerance is 0.5% difference in added tree-canopy pixels. The
 approved `LULC_Scenario730v4_equal_budget.tif` passes at 0.000%; see
-`fig7_canopy_budget_check_equalized.csv`. The older failed audit is retained to
-show why regeneration was required. Rerun the UCM and health model with v4
-before treating the comparative health results as final.
+`fig7_canopy_budget_check_equalized.csv`. Its clean InVEST 3.20.2 publication
+rerun matches the revised health inputs exactly. The older failed audit is
+retained to show why regeneration was required.
+
+The same audit found that historical Target10 is 43,570 pixels (13.616%) below
+Green10 and historical Target20 is 77,015 pixels (12.422%) below Green20.
+These four scenarios may remain in the manuscript, but Target10/20 should not
+be described as equal-total-canopy comparisons until separate equal-budget
+rasters are generated and their UCM and health analyses are rerun.
 
 ### 5. Run the InVEST Urban Cooling Model
 

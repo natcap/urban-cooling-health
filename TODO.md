@@ -96,21 +96,23 @@ the population-normalized tables and figures have been visually checked.
 
 ### 2. Resolve the targeted-scenario naming mismatch
 
-The active scenario generator uses `710v3`, `720v3` and `730v3`, while legacy
-UCM, health and plotting workflows use `510`, `520` and `530`. The old Target30
-pair is resolved: `LULC_Scenario530.tif` and `LULC_Scenario730v3.tif` have the
-same SHA-256 checksum. The final Target30 input is now the equal-budget v4
-raster. The Target10 and Target20 pairs differ and remain unresolved.
+The manuscript-facing files are now traced to their selected trials by SHA-256:
+`510` is a copy of `710v2`, `520` is a copy of `730v2`, and `530` is a copy of
+`730v3`. The Target20 mapping is intentionally non-sequential. These identity
+checks resolve the naming history, but do not establish equal canopy budgets.
+The active generator's `710v3/720v3/730v3` defaults do not reproduce the
+confirmed Target10/20 selections and must not be used implicitly.
 
 The exact file references and the two available 25°C and 28°C comparison sets
 are recorded in [`code/health_assessment/SCENARIO_NAMING_AUDIT.md`](code/health_assessment/SCENARIO_NAMING_AUDIT.md).
 
-- [x] Confirm that the old and renamed Target30 LULC rasters are identical.
-- [ ] Decide which raster set is the approved Target10/20 version.
-- [ ] Record a single mapping from manuscript label to raster filename and run
-  directory.
+- [x] Confirm all three historical copy/alias pairs by checksum.
+- [x] Record the approved historical Target10/20 selections and explain the
+  non-sequential Target20 source name.
+- [x] Record a single manuscript-label-to-raster mapping and canopy audit.
 - [ ] Update the three `tree_equity_*` scripts, UCM scripts, health batch files
-  and `code/func_colors.R` to use that mapping consistently.
+  and `code/func_colors.R` after the equal-budget Target10/20 rasters are
+  approved; do not redirect them to a provisional input.
 - [ ] Archive or clearly label superseded scenario rasters so they cannot be
   selected accidentally.
 
@@ -137,14 +139,26 @@ scenario names, and one documented input raster maps to each Target scenario.
 
 - [x] Generate `LULC_Scenario730v4_equal_budget.tif` separately from the legacy
   rasters and repeat the canopy-budget check.
+- [x] Audit Target10 and Target20. Target10 adds 276,430 pixels versus
+  Green10's 320,000 (13.616% short); Target20 adds 542,985 versus Green20's
+  620,000 (12.422% short).
+- [ ] Approve separate equal-budget Target10/20 regeneration using the same
+  prefix-preserving method used for Target30.
+- [ ] Generate the equal-budget Target10/20 rasters, manifests and validation
+  records without overwriting the historical files.
 
-**Data to locate or add:** the three final LULC rasters. Do not substitute
+**Data to locate or add:** no additional source raster is needed for the
+canopy-budget correction. The required baseline, Green10/20 and selected
+Target10/20 rasters are present. The regeneration needs the original ranked
+target-allocation vector inputs already used for Target30. Do not substitute
 intermediate rasters with similar names.
 
 **Current result:** `fig7_canopy_budget_check.csv` records the legacy failure.
 `fig7_canopy_budget_check_equalized.csv` records a pass: Green30 and Target30
 v4 each add 930,000 pixels (93 km²), with no removed baseline tree pixels.
-Downstream UCM and health outputs still need to be regenerated with v4.
+Target30 UCM was cleanly rerun with InVEST 3.20.2 and its identical checksums
+confirm that the revised health results remain valid. Target10/20 remain to be
+equalized and rerun.
 
 **Done when:** the audit records a pass and identifies the three final rasters.
 
@@ -283,8 +297,16 @@ scenario version, units and values.
 
 - [ ] Add the manuscript citation or preprint DOI when available.
 - [ ] Explain how qualified collaborators can request restricted input data.
-- [ ] Confirm that all committed derived data can be redistributed under their
-  source licences.
+- [x] Audit licences for the revised Figure 7 inputs and list the exact
+  remaining questions in `DATA_LICENCE_AND_REDISTRIBUTION.md`.
+- [ ] Provide the UKCEH LCM2023 licence/order record and confirm whether the
+  intended aggregate outputs and figures may be publicly redistributed.
+- [ ] Record the original publisher, URL and licence for
+  `data/London_Ward_aoi.*` and for the two tracked MIDAS weather RDS extracts.
+- [x] Add WorldPop, Nomis/ONS and GLA/Bloomberg attribution text to the
+  derived-data README.
+- [ ] Add those attributions to the manuscript and replace the bracketed
+  ONS/OS boundary copyright year before public release.
 
 ## Recommended next run order
 
