@@ -1,0 +1,16 @@
+scenario,baseline_code,baseline_label,cells_changed_to_100,area_km2,eligible_new_canopy
+Green10,1,Broadleaved woodland,10224,1.0224,false
+Green10,2,Coniferous woodland,2008,0.2008,false
+Green10,4,Improved grassland,82950,8.2950,true
+Green10,20,Urban,72055,7.2055,true
+Green10,21,Suburban,152763,15.2763,true
+Green20,1,Broadleaved woodland,21062,2.1062,false
+Green20,2,Coniferous woodland,3854,0.3854,false
+Green20,4,Improved grassland,163622,16.3622,true
+Green20,20,Urban,145763,14.5763,true
+Green20,21,Suburban,285699,28.5699,true
+Green30,1,Broadleaved woodland,30348,3.0348,false
+Green30,2,Coniferous woodland,5403,0.5403,false
+Green30,4,Improved grassland,240117,24.0117,true
+Green30,20,Urban,229866,22.9866,true
+Green30,21,Suburban,424266,42.4266,true

@@ -169,35 +169,40 @@ Target20 label. The final Target30 input is the separately generated
 `LULC_Scenario730v4_equal_budget.tif`. Its clean InVEST 3.20.2 rerun matches
 the temperature rasters already used by the revised health analysis.
 
-## 7. Realized canopy budget
+## 7. Realized canopy area
 
-The LULC files referenced by the current UCM scripts do not provide equal
-realized additions at any of the three intervention levels. Relative to
+The first audit counted only transitions into code 100. Relative to
 `LCM2023_London_10m_clip2aoi_tcc24.tif`, Green30 adds 930,000 tree pixels
 (93.0000 km²; 29.890% of baseline canopy), while `LULC_Scenario530.tif` adds
 869,444 pixels (86.9444 km²; 27.944%). Target30 therefore adds 60,556 fewer
 pixels, a 6.511% deficit relative to Green30, and fails the prespecified 0.5%
 tolerance.
 
-**Approved and implemented resolution (9 September 2026):** extend the v3
+**Historical code-100 resolution (9 September 2026):** extend the v3
 scenario using the next features in the original ascending vulnerability rank,
 then stop at exactly 930,000 realized added pixels. The new
 `LULC_Scenario730v4_equal_budget.tif` adds 60,556 pixels to v3 and matches
 Green30 at 930,000 pixels (93 km²), removes no baseline canopy and passes with
 a 0.000% difference. Its manifest verifies five sampled prefix positions,
 records rank cutoff 1,948,394 and hashes all inputs. Existing UCM, health and
-Figure 7 results have since been checked against the clean InVEST 3.20.2
-publication rerun; the matching temperature-raster checksums preserve their
-validity.
+Figure 7 results were checked against the clean InVEST 3.20.2 publication
+rerun; matching checksums preserve that run as reproducibility evidence.
+
+**Revised decision (10 September 2026):** define existing canopy as codes
+`{1,2,100}` and eligible planting land as `{4,20,21}`. A new-canopy cell must
+have an eligible baseline code and scenario code 100. The historical Green
+rasters contain 307,768, 595,084 and 894,249 such cells. Target30 v4 contains
+917,794 and therefore exceeds corrected Green30 by 23,545 cells (2.633%). The
+v4 result is not the final equal-area comparison.
 
 For the retained lower intervention levels, Green10 adds 320,000 pixels while
 Target10 (`510`/`710v2`) adds 276,430, a 43,570-pixel (13.616%) deficit.
 Green20 adds 620,000 pixels while Target20 (`520`/`730v2`) adds 542,985, a
-77,015-pixel (12.422%) deficit. The recommended resolution is to preserve the
-historical files, extend each selected target allocation with the next-ranked
-eligible locations to the exact Green budget, and then rerun matching 25 C and
-28 C UCM and health analyses. This is a scientific scenario change and remains
-subject to explicit approval.
+77,015-pixel (12.422%) deficit under the original code-100 audit. Preserve all
+historical files, rebuild corrected Green copies and all Targets from the
+baseline using the common eligibility mask, then rerun matching 25 C and 28 C
+UCM and health analyses. The detailed approved procedure is in
+[`../lc_scenarios/README.md`](../lc_scenarios/README.md).
 
 ## Reproducibility evidence
 

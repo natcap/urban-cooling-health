@@ -61,25 +61,17 @@ Scenario names used in the analysis are defined centrally in
 | AllBuilt | `scenario1` | Counterfactual built-land scenario |
 | TreeRisk | `scenario2_TR` | Loss of trees considered at climatic risk |
 | TreeOpp | `scenario3_TO` | Tree-planting opportunity scenario |
-| Green10/20/30 | `scenario4_10/20/30` | General greening with 10%, 20% or 30% relative tree-canopy increase |
+| Green10/20/30 | `scenario4_10/20/30` | Historical proximity-based general-greening scenarios; revised eligible-area versions pending |
 | Target10/20/30 | `scenario510/520/530` | Vulnerability-targeted planting at corresponding intervention levels |
 
-The Green30–Target30 equity comparison is valid only after confirming that the
-two final scenario rasters contain comparable **realized additional canopy
-area**. Intended tree counts alone are not sufficient because existing-canopy
-overlap and rasterization can change the realized intervention.
-
-The legacy audit fails: Green30 adds 930,000 tree pixels and Target30 v3 adds
-869,444, a 6.511% deficit. The approved equal-budget Target30 v4 raster now
-adds exactly 930,000 pixels (93 km²); its audit passes with a 0.000% difference.
-Baseline, Green30 and Target30 v4 have now been rerun with InVEST 3.20.2 at
-25°C and 28°C, followed by the population-weighted health and Figure 7
-workflows. Green30's NoData sentinel was also harmonized with baseline and
-Target30; all valid land-cover values are unchanged and populated-cell coverage
-is now 100% in both scenarios. Earlier workspaces and both canopy audits are
-retained for traceability. A final clean-worktree Target30 publication rerun
-produced byte-identical temperature rasters at both settings and manifests that
-record InVEST 3.20.2 and commit `be4433c`.
+The Green–Target comparison requires the same definition of existing canopy,
+eligible planting land and realized additional canopy. Transition-level review
+found that the earlier audit counted every transition to code 100, including
+relabeling woodland codes 1 and 2 and converting ineligible classes. Therefore
+the existing UCM, health and Figure 7 outputs are retained as reproducibility
+evidence but are not the final equal-area comparison. See the complete
+historical lineage and approved regeneration method in
+[`code/lc_scenarios/README.md`](code/lc_scenarios/README.md).
 
 ## Quick reproduction of Figure 7
 
@@ -248,8 +240,11 @@ Run only the components needed for the scenarios under study:
    [`scenario_1_pavement_and_2_opportunity_trees.ipynb`](code/lc_scenarios/scenario_1_pavement_and_2_opportunity_trees.ipynb).
 4. Build the tree-risk scenario using the `tree-at-climate-risk-*` scripts in
    [`code/lc_scenarios/`](code/lc_scenarios/).
-5. Create general Green10/20/30 rasters using the InVEST Scenario Generator and
-   retain the final LULC rasters referenced by the scenario-4 run scripts.
+5. Review how the historical Green10/20/30 rasters were created and construct
+   corrected common-eligibility copies using
+   [`code/lc_scenarios/README.md`](code/lc_scenarios/README.md). Do not rerun
+   the historical configuration by inference: its original Scenario Generator
+   log/datastack is missing.
 6. Create Target10/20/30 planting polygons and rasters, in order, with:
    - [`tree_equity_1_number_of_trees_to_polygon.py`](code/lc_scenarios/tree_equity_1_number_of_trees_to_polygon.py)
    - [`tree_equity_2_scenario_engine.py`](code/lc_scenarios/tree_equity_2_scenario_engine.py)
@@ -267,7 +262,7 @@ Several older scenario scripts contain machine-specific paths. Review every
 input and output path before running them; do not assume the defaults point to
 the intended data snapshot.
 
-### 4. Validate intervention budgets
+### 4. Validate intervention areas
 
 Before comparing Green30 with Target30, run:
 
@@ -279,17 +274,13 @@ python code/lc_scenarios/validate_scenario_canopy_budget.py \
   --output figures/equity_map_biscale/fig7_canopy_budget_check.csv
 ```
 
-The default tolerance is 0.5% difference in added tree-canopy pixels. The
-approved `LULC_Scenario730v4_equal_budget.tif` passes at 0.000%; see
-`fig7_canopy_budget_check_equalized.csv`. Its clean InVEST 3.20.2 publication
-rerun matches the revised health inputs exactly. The older failed audit is
-retained to show why regeneration was required.
-
-The same audit found that historical Target10 is 43,570 pixels (13.616%) below
-Green10 and historical Target20 is 77,015 pixels (12.422%) below Green20.
-These four scenarios may remain in the manuscript, but Target10/20 should not
-be described as equal-total-canopy comparisons until separate equal-budget
-rasters are generated and their UCM and health analyses are rerun.
+The current script counts code-100 transitions only and is retained as a
+diagnostic. It must be generalized before production use. The approved
+definition treats `{1,2,100}` as existing canopy, permits planting only on
+`{4,20,21}`, and matches each Target to the corrected Green count. The
+historical Green reference counts under that definition are 307,768, 595,084
+and 894,249 cells. Exact validation and regeneration steps are in the scenario
+README.
 
 ### 5. Run the InVEST Urban Cooling Model
 
@@ -302,14 +293,18 @@ python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_curre
   "G:/Shared drives/Wellcome Trust Project Data" --eap
 ```
 
-For the approved equal-budget Target30 input, use the dedicated runner. It
-preserves the legacy `scenario530` outputs and runs the 25°C primary setting
-and 28°C sensitivity setting in a new health-only workspace:
+The dedicated Target30 v4 runner preserves the legacy `scenario530` outputs
+and runs the 25°C primary and 28°C sensitivity settings in a separate
+health-only workspace:
 
 ```bash
 python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_target30_equal_budget.py \
   /path/to/Wellcome\ Trust\ Project\ Data
 ```
+
+This runner reproduces the historical code-100-matched v4 analysis. Do not use
+it for the final comparison until its input is replaced by a reviewed
+common-eligibility Target30 raster.
 
 The default omits productivity and building-energy valuation because neither
 affects the air-temperature raster used by the health model. Add
@@ -378,10 +373,10 @@ Data-selection and allocation decisions are documented in
    reprojection reduced the London total from about 8.8 million to 4.74
    million. Confirm that temperature, corrected population and revised
    mortality rasters share the intended grid, extent and units.
-3. Validate and run `green30_25c`, `target30_25c`, `green30_28c` and
-   `target30_28c` with `health_modeling_v2.py`. The production configuration
-   uses the approved equal-budget Target30 v4 input; Target10/20 naming remains
-   under review.
+3. After the six revised Green/Target LULC rasters pass the scenario gates,
+   validate and run their 25°C and 28°C pairs with `health_modeling_v2.py`.
+   The current configuration reproduces the historical code-100-matched
+   Green30/Target30 v4 analysis and must be updated before the final rerun.
 4. Use 2,000 paired cause-stable draws and seed `20260908`, as recorded in
    `health-analysis-v2.example.json`. Legacy Windows batch launchers are kept
    only for historical comparison.
@@ -467,10 +462,13 @@ urban-cooling-health/
 
 ## Reproducibility status and limitations
 
-- **Figure 7:** directly runnable from the tracked, documented vulnerability,
-  LSOA health, 2021 population and paired-draw inputs under `data/derived/`.
-- **Full UCM and health rerun:** validated on InVEST 3.20.2 for baseline,
-  Green30 and equal-budget Target30 v4 at 25°C and 28°C.
+- **Historical Figure 7:** directly runnable from the tracked, documented
+  vulnerability, LSOA health, 2021 population and paired-draw inputs under
+  `data/derived/`; it predates the common-eligibility scenario correction.
+- **Historical UCM and health rerun:** validated on InVEST 3.20.2 for baseline,
+  Green30 and code-100-matched Target30 v4 at 25°C and 28°C.
+- **Final equal-area comparison:** pending construction and review of all six
+  common-eligibility Green/Target rasters.
 - **Full model chain:** requires external raw and intermediate geospatial data
   that are not stored in this repository.
 - **Historical result recreation:** requires the original versioned input

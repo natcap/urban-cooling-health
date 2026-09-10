@@ -12,9 +12,10 @@ rasters and the cause-specific relative-risk parameters constant. It compares:
 - **revised:** borough deaths distributed by count-preserved 2021 WorldPop
   weights directly on the UCM grid.
 
-The first comparison below records the deterministic QA stage. A final section
-now reports the approved equal-budget Target30 v4 rerun and paired Monte Carlo
-analysis.
+The first comparison below records the deterministic QA stage. A later section
+reports the historical code-100-matched Target30 v4 rerun and paired Monte
+Carlo analysis. Those values predate the common-eligibility correction and are
+not final equal-area estimates.
 
 ## Population preprocessing finding
 
@@ -81,18 +82,20 @@ The difference is not evidence that total London mortality increased. The
 observed borough totals are unchanged; only their modeled within-borough
 locations and grid coverage changed.
 
-## Final equal-budget Target30 v4 result
+## Historical code-100-matched Target30 v4 result
 
-The production rerun uses InVEST 3.20.2, the approved 930,000-pixel Target30 v4
-canopy budget, fixed 2021 population and mortality, and the same 25°C baseline
-as Green30.
+This rerun uses InVEST 3.20.2, the 930,000-transition Target30 v4 raster, fixed
+2021 population and mortality, and the same 25°C baseline as Green30. A later
+transition-level review found that the 930,000 count includes woodland
+relabeling and does not enforce common eligible source codes. These values are
+retained for reproducibility but are not the final equal-area estimates.
 
 - After harmonizing Green30's NoData sentinel with baseline and Target30,
   Green30 yields 367.2235 all-cause deaths averted. This is 24.5936 fewer
   deaths (-6.28%) than the otherwise identical `255`-NoData run.
 - Target30 increases from the provisional v3 result of 480.9062 to 510.3249
   deaths averted: +29.4187 deaths, or +6.12%.
-- The final Target30 advantage over harmonized Green30 is 143.1014 deaths
+- The historical v4 Target30 advantage over harmonized Green30 is 143.1014 deaths
   (+38.97%).
 - Across 2,000 paired exposure-response draws, the mean Target30-minus-Green30
   advantage is 143.53 deaths, with a 95% interval of 100.16 to 185.22.

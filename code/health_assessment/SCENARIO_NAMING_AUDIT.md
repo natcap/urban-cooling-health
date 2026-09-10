@@ -25,41 +25,61 @@ The numbering is intentionally non-sequential: Target20 came from the
 use this explicit mapping rather than infer a source filename from the
 manuscript label.
 
-## Realized canopy comparison
+## Original code-100 transition comparison
 
-The copy operation is verified, but the legacy selections do not all have the
-same realized added-canopy budget as their Green counterparts. Counts are
-relative to `LCM2023_London_10m_clip2aoi_tcc24.tif`; each pixel is 100 m2.
+The copy operation is verified. The table below records the original audit,
+which counted every valid transition from a non-100 code to code 100. It did
+not count woodland codes 1 and 2 as existing canopy and did not exclude
+ineligible source classes. Each pixel is 100 m2.
 
 | Comparison | Green added pixels | Selected Target added pixels | Target deficit | Equal budget? |
 |---|---:|---:|---:|---|
 | Green10 vs Target10 (`510`/`710v2`) | 320,000 (32.0000 km2) | 276,430 (27.6430 km2) | 43,570 (13.616%) | No |
 | Green20 vs Target20 (`520`/`730v2`) | 620,000 (62.0000 km2) | 542,985 (54.2985 km2) | 77,015 (12.422%) | No |
 | Green30 vs legacy Target30 (`530`/`730v3`) | 930,000 (93.0000 km2) | 869,444 (86.9444 km2) | 60,556 (6.511%) | No |
-| Green30 vs final Target30 (`730v4_equal_budget`) | 930,000 (93.0000 km2) | 930,000 (93.0000 km2) | 0 (0.000%) | Yes |
+| Green30 vs Target30 v4 (`730v4_equal_budget`) | 930,000 (93.0000 km2) | 930,000 (93.0000 km2) | 0 (0.000%) | Yes under code-100 audit only |
 
-Therefore, describe `510/520/530` as the selected historical Target trials or
-aliases, not as proven equal-budget scenarios. Green10, Green20, Target10 and
-Target20 may remain in the manuscript, but a like-for-like equity comparison
-requires recalibrating Target10 and Target20 to 320,000 and 620,000 added
-pixels respectively, then rerunning their UCM and health workflows.
+Therefore, describe `510/520/530` as selected historical Target trials or
+aliases, not as equal-canopy scenarios. The code-100 figures remain useful
+diagnostics but are superseded for production by the common definition below.
 
 The machine-readable record is
 [`target_scenario_alias_and_canopy_audit.csv`](target_scenario_alias_and_canopy_audit.csv).
 
-## Approved equal-budget Target30
+## Revised common canopy and eligibility definition
+
+The approved definition is:
+
+```text
+existing canopy = {1, 2, 100}
+eligible planting source = {4, 20, 21}
+replacement code = 100
+rasterization = pixel centre (all_touched = false)
+```
+
+Under this definition, Green10/20/30 provide reference additions of 307,768,
+595,084 and 894,249 cells. Historical Target10/20 and Target30 v3 contain
+273,242, 535,737 and 858,121 eligible new-canopy cells respectively. Target30
+v4 contains 917,794, which is 23,545 cells (2.633%) above Green30. Consequently
+none of the current Target rasters is the final equal-area input.
+
+Historical Green construction and the exact regeneration procedure are in
+[`../lc_scenarios/README.md`](../lc_scenarios/README.md).
+
+## Historical Target30 v4 audit
 
 `LULC_Scenario730v4_equal_budget.tif` was generated separately on 9 September
-2026. It extends v3 with the next-ranked candidate locations until the realized
-addition is exactly 930,000 tree pixels (93 km2), equal to Green30. It removes
-no baseline canopy. The adjacent manifest records input and output checksums,
+2026. It extends v3 with the next-ranked candidate locations until the original
+code-100 audit reaches 930,000 transitions (93 km2), equal to Green30 under
+that limited definition. It removes no code-100 baseline cells. The adjacent
+manifest records input and output checksums,
 five prefix-sequence checks, software versions, feature counts and the rank
 cutoff. Existing files were not overwritten.
 
-The clean publication UCM rerun used InVEST 3.20.2 and is byte-identical to the
-earlier 3.20.2 Target30 workspace at both temperatures. The existing revised
-health outputs remain valid because their temperature-input checksums match
-the publication rasters.
+The clean UCM rerun used InVEST 3.20.2 and is byte-identical to the earlier
+3.20.2 Target30 workspace at both temperatures. These outputs are retained as
+reproducibility evidence, but they are not the final common-eligibility
+comparison.
 
 ## Current construction references
 
@@ -93,15 +113,12 @@ paired with matching baseline and Green runs.
 
 | Label | Current selected raster | Budget status | Publication action |
 |---|---|---|---|
-| Target10 | `LULC_Scenario510.tif` (alias of `710v2`) | 43,570 pixels short | Generate a separate equal-budget version, then rerun UCM and health at 25 C and 28 C |
-| Target20 | `LULC_Scenario520.tif` (alias of `730v2`) | 77,015 pixels short | Generate a separate equal-budget version, then rerun UCM and health at 25 C and 28 C |
-| Target30 | `LULC_Scenario730v4_equal_budget.tif` | Equal to Green30 | Complete; use the InVEST 3.20.2 publication outputs |
+| Target10 | `LULC_Scenario510.tif` (alias of `710v2`) | 34,526 eligible cells short | Rebuild from baseline to exactly 307,768 eligible cells, then rerun UCM and health |
+| Target20 | `LULC_Scenario520.tif` (alias of `730v2`) | 59,347 eligible cells short | Rebuild from baseline to exactly 595,084 eligible cells, then rerun UCM and health |
+| Target30 v4 | `LULC_Scenario730v4_equal_budget.tif` | 23,545 eligible cells over | Rebuild from baseline to exactly 894,249 eligible cells, then rerun UCM and health |
 
-Recommended implementation for Target10/20: preserve all existing rasters;
-extend each approved selected trial with the next-ranked eligible locations,
-using the same prefix-preserving procedure validated for Target30, until the
-exact corresponding Green budget is reached. Suggested new filenames are
-`LULC_Scenario710v4_equal_budget.tif` and
-`LULC_Scenario720v4_equal_budget.tif`. Generate manifests, validate no baseline
-tree removal, and obtain scientific approval before replacing manuscript
-results.
+Preserve all existing rasters. Build all revised Targets from the baseline,
+rather than extending historical rasters that already contain ineligible
+transitions. Validate the selected ranking prefixes, restrict candidate cells
+to baseline codes `{4,20,21}`, stop at the corresponding Green count, and
+write manifests and nesting checks before replacing manuscript results.

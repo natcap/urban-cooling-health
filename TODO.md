@@ -119,14 +119,14 @@ are recorded in [`code/health_assessment/SCENARIO_NAMING_AUDIT.md`](code/health_
 **Done when:** a repository-wide search finds no active conflicting Target
 scenario names, and one documented input raster maps to each Target scenario.
 
-### 3. Verify equal realized canopy intervention
+### 3. Rebuild the equal realized-canopy intervention
 
-- [x] Locate and audit the LULC rasters referenced by the existing UCM scripts.
-  Green30 adds 930,000 tree pixels; Target30 adds 869,444, or 6.511% fewer.
+- [x] Complete the original code-100 transition audit. It found 930,000 Green30
+  and 869,444 legacy Target30 transitions to code 100.
 - [x] Check the available Target30 variants. None matches Green30: `730` adds
   1,201,968 pixels, `730v2` adds 542,985, and `530`/`730v3` add 869,444.
-- [x] Approve regeneration of Target30 to match Green30's 930,000 realized
-  added pixels.
+- [x] Generate Target30 v4 to match 930,000 code-100 transitions. Retain this as
+  historical audit evidence rather than the final equal-canopy result.
 - [x] Run:
 
   ```bash
@@ -137,15 +137,27 @@ scenario names, and one documented input raster maps to each Target scenario.
     --output figures/equity_map_biscale/fig7_canopy_budget_check.csv
   ```
 
-- [x] Generate `LULC_Scenario730v4_equal_budget.tif` separately from the legacy
-  rasters and repeat the canopy-budget check.
+- [x] Identify the limitation of the original audit: it treated only code 100
+  as canopy and allowed transitions from all valid source codes.
+- [x] Approve the revised definition: existing canopy `{1,2,100}`, eligible
+  planting `{4,20,21}`, replacement code `100`, and `all_touched=False`.
+- [x] Document the historical Green construction evidence and missing original
+  Scenario Generator parameters in `code/lc_scenarios/README.md`.
+- [x] Test historical Green nesting. Green10 has 4,451 converted cells absent
+  from Green20; Green20 has 11,709 absent from Green30.
 - [x] Audit Target10 and Target20. Target10 adds 276,430 pixels versus
   Green10's 320,000 (13.616% short); Target20 adds 542,985 versus Green20's
   620,000 (12.422% short).
-- [ ] Approve separate equal-budget Target10/20 regeneration using the same
-  prefix-preserving method used for Target30.
-- [ ] Generate the equal-budget Target10/20 rasters, manifests and validation
-  records without overwriting the historical files.
+- [ ] Generalize the transition audit to accept canopy and eligibility code
+  sets and export the complete source-to-target transition matrix.
+- [ ] Create corrected Green10/20/30 copies from the baseline, retaining only
+  `{4,20,21} -> 100`; expected counts are 307,768, 595,084 and 894,249.
+- [ ] Validate each selected Target vector as a prefix of its approved full
+  ranked layer.
+- [ ] Generate all three Target rasters from the baseline, restricted to
+  `{4,20,21}`, and stop at the corresponding corrected Green count.
+- [ ] Require exact counts, zero ineligible transitions, unchanged NoData,
+  identical grids and nested 10-within-20-within-30 masks before UCM runs.
 
 **Data to locate or add:** no additional source raster is needed for the
 canopy-budget correction. The required baseline, Green10/20 and selected
@@ -153,12 +165,12 @@ Target10/20 rasters are present. The regeneration needs the original ranked
 target-allocation vector inputs already used for Target30. Do not substitute
 intermediate rasters with similar names.
 
-**Current result:** `fig7_canopy_budget_check.csv` records the legacy failure.
-`fig7_canopy_budget_check_equalized.csv` records a pass: Green30 and Target30
-v4 each add 930,000 pixels (93 km²), with no removed baseline tree pixels.
-Target30 UCM was cleanly rerun with InVEST 3.20.2 and its identical checksums
-confirm that the revised health results remain valid. Target10/20 remain to be
-equalized and rerun.
+**Current result:** the earlier audit tables correctly record code-100
+transitions but not total new canopy under the revised definition. Target30 v4
+has 917,794 eligible new-canopy cells versus Green30's 894,249, an excess of
+23,545 cells (2.3545 km²; 2.633%). The prior UCM and health reruns remain
+reproducibility evidence and must be superseded after all six corrected
+scenarios pass validation.
 
 **Done when:** the audit records a pass and identifies the three final rasters.
 

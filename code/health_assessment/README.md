@@ -359,8 +359,10 @@ HEALTH_DATA_ROOT="$HEALTH_DATA_ROOT" Rscript code/run-fig7.R
 
 ## Target-scenario status
 
-The final Target30 LULC is the approved equal-budget v4 raster. Its canopy audit,
-InVEST 3.20.2 UCM run, population-weighted health run and Figure 7 regeneration
-pass. Target10 and Target20 remain unresolved because their old/new raster pairs differ. The exact
-affected files are listed in
+The existing Target30 v4 raster passed the earlier code-100 transition audit,
+and its InVEST 3.20.2, population-weighted health and Figure 7 runs are retained
+as reproducibility evidence. A later transition-level review showed that this
+audit relabeled woodland and did not enforce common eligible source codes.
+All six Green/Target rasters must therefore be rebuilt and reviewed before the
+final health rerun. The exact affected files are listed in
 [`SCENARIO_NAMING_AUDIT.md`](SCENARIO_NAMING_AUDIT.md).
