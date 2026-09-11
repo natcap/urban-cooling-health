@@ -38,6 +38,29 @@ The document records this Target workflow:
 6. Extract 14:00 UTCI, normalize it to 0–1, join the SVI percentile, calculate
    `score = UTCI_norm * SVI_percentile`, and rank descending.
 
+### Collaborator correspondence and source leads
+
+Project correspondence supplied on 11 September 2026 independently describes
+the same candidate-generation logic: points at 5 m spacing along footways and
+cycleways; parallel offsets for residential roads; and screening using 1 m
+existing canopy and buffered building footprints. It also records that the
+shared `london-roads-osm` folder contained classified roads and railways.
+
+The correspondence links to a
+[project methods document](https://docs.google.com/document/d/1IPCTz-Np_FgikIy_5PtN4cw4HHGHEQpiWz9D0YfqZKY/edit?usp=sharing)
+and an access-controlled
+[project data folder](https://drive.google.com/drive/folders/1MfGJtYOMSbx7_HptoJmYBFLHigohA9KJ?usp=sharing).
+These links are provenance leads, not immutable input records: they do not
+identify the OSM provider or download date, and their contents can change.
+
+The exchange also mentions `DEM_GLA_1m_EPSG_32631.tif` and a clipped
+`LIDAR_Composite_10m_DTM_2022_LondonClip.tif`. The latter traces to the
+[Environment Agency LIDAR Composite DTM 10 m](https://www.data.gov.uk/dataset/7f31af0f-bc98-4761-b4b4-147bfb986648/lidar-composite-digital-terrain-model-dtm-10m),
+an EPSG:27700, metre-elevation product under the Open Government Licence. The
+available Target Methods document does not state that either DEM was used in
+candidate screening or ranking, so they must not be treated as Target inputs
+without additional evidence.
+
 ## Supplied-data checks
 
 | Item | Observed evidence | Assessment |
@@ -139,6 +162,13 @@ Request or record, when available:
 - UTCI model provenance and the explicit `0.01` integer scale;
 - the SVI source, geography, year and formula used for `overall_pc`; and
 - software versions and checksums for all final Target inputs.
+
+The collaborator who created the candidate points did not provide the source
+script/notebook. Record this as an unavailable historical artifact rather than
+an expected future deliverable. Independent reconstruction must therefore be
+described as unavailable; reproducibility begins from the preserved, screened
+and ranked point dataset whose components and checksums are recorded by the
+revised generator.
 
 These gaps do not prevent a controlled regeneration from the supplied final
 candidate points, but they prevent independent reconstruction of those points

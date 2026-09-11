@@ -318,7 +318,10 @@ comparison.
 The default omits productivity and building-energy valuation because neither
 affects the air-temperature raster used by the health model. Add
 `--include-valuations` only when those additional outputs are required; they
-substantially increase runtime.
+substantially increase runtime. The manuscript does not use InVEST's built-in
+threshold-based work-loss values. Generate the WBGT layer with this option and
+then run the documented project-specific Hothaps calculation in
+[`code/post_processing_layers/README.md`](code/post_processing_layers/README.md).
 
 Run the matching baseline and Green30 health inputs with the production runner:
 
@@ -476,8 +479,11 @@ urban-cooling-health/
   `data/derived/`; it predates the common-eligibility scenario correction.
 - **Historical UCM and health rerun:** validated on InVEST 3.20.2 for baseline,
   Green30 and code-100-matched Target30 v4 at 25°C and 28°C.
-- **Final equal-area comparison:** pending construction and review of all six
-  common-eligibility Green/Target rasters.
+- **Final equal-area comparison:** complete. All six revised Green/Target
+  rasters pass equal-budget, eligibility, nesting, grid and NoData checks; all
+  fourteen 25°C/28°C InVEST 3.20.2 temperature runs and twelve revised health
+  runs are complete. Use `figures/equity_map_biscale_revised_equal_area/` for
+  the current Figure 7 outputs.
 - **Full model chain:** requires external raw and intermediate geospatial data
   that are not stored in this repository.
 - **Historical result recreation:** requires the original versioned input
