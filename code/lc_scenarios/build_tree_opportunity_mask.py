@@ -30,7 +30,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _point_coordinate_views(path: Path) -> tuple[np.ndarray, np.ndarray]:
+def point_coordinate_views(path: Path) -> tuple[np.ndarray, np.ndarray]:
     """Return zero-copy x/y views for a standard 2D Point shapefile."""
     size = path.stat().st_size
     with path.open("rb") as source:
@@ -134,7 +134,7 @@ def main() -> int:
     if args.radius_m <= 0:
         parser.error("--radius-m must be positive")
 
-    x, y = _point_coordinate_views(points_path)
+    x, y = point_coordinate_views(points_path)
     if not np.isfinite(x).all() or not np.isfinite(y).all():
         raise ValueError("Candidate coordinates contain non-finite values")
 
