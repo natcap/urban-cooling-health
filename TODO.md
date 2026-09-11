@@ -1,6 +1,6 @@
 # Project TODO and reproduction roadmap
 
-Last reviewed: 9 September 2026
+Last reviewed: 11 September 2026
 
 This document tracks the remaining work needed to make the analysis portable,
 fully reproducible and ready for publication. Start with the **P0** items: they
@@ -187,10 +187,12 @@ regeneration. The full Target ranking has now been located at
 `.cpg` sidecars). Before Target regeneration, validate that its `rank` field,
 CRS, feature count and first-ranked geometries reproduce the approved trial
 vectors. Do not substitute intermediate rasters or similarly named vectors.
-The supplied Methods record does not identify the exact building file, OSM
-download/version, 1 m canopy raster filename, or source-generation script;
-retain these as provenance requests rather than blockers to regeneration from
-the final screened points.
+The supplied Methods record and collaborator correspondence do not identify
+the exact building file, OSM download/version, 1 m canopy raster filename or
+source-generation script. The originating collaborators did not provide the
+script/notebook, so treat independent reconstruction from raw sources as an
+unavailable historical step. Retain the remaining source details as provenance
+requests rather than blockers to regeneration from the final screened points.
 
 **Current result:** all six revised Green/Target rasters pass the scenario
 gate. Each pair adds exactly 307,768/595,084/894,249 eligible cells, all tiers
@@ -251,6 +253,31 @@ regenerated from the harmonized result.
 
 **Done:** Green30 and Target30 now have complete, identical populated-cell
 coverage and the NoData transformation is checksum-documented.
+
+### 4b. Regenerate energy and project-specific work productivity
+
+The final revised equal-area UCM run generated temperature inputs for health
+but intentionally disabled energy and productivity valuation. The previous
+manuscript energy/productivity numbers therefore remain tied to historical
+scenario rasters and must not be combined with the revised health results.
+
+- [x] Add an `--include-valuations` mode to the seven-scenario InVEST 3.20.2
+  runner and validate all seven configurations at the primary 25°C setting.
+- [x] Replace the hard-coded work-intensity loop with a portable Hothaps
+  processor using `alpha1 = 30.94` and `alpha2 = 16.64`; retain InVEST's
+  threshold-based work-loss layers only as unused intermediates.
+- [x] Add documented citywide and borough summary processing that sums energy
+  once across unique buildings and quantifies any borough-intersection
+  duplication.
+- [ ] Complete all seven 25°C valuation runs in a new versioned output folder.
+- [ ] Generate Hothaps rasters and reconcile citywide/borough summaries.
+- [ ] Compare revised energy and productivity results with manuscript-era
+  values, then update Figures 4–5 and their text.
+
+**Done when:** all seven scenarios have matching energy, WBGT and Hothaps
+outputs; summary CSVs pass reconciliation checks; and the manuscript uses only
+the revised results. See
+[`code/post_processing_layers/README.md`](code/post_processing_layers/README.md).
 
 ## P1 — complete before submission or public release
 
@@ -337,10 +364,17 @@ scenario version, units and values.
 - [ ] Explain how qualified collaborators can request restricted input data.
 - [x] Audit licences for the revised Figure 7 inputs and list the exact
   remaining questions in `DATA_LICENCE_AND_REDISTRIBUTION.md`.
-- [ ] Provide the UKCEH LCM2023 licence/order record and confirm whether the
-  intended aggregate outputs and figures may be publicly redistributed.
-- [ ] Record the original publisher, URL and licence for
-  `data/London_Ward_aoi.*` and for the two tracked MIDAS weather RDS extracts.
+- [x] Identify the UKCEH LCM2023 GB 10 m dataset, DOI and Land Cover Map Raster
+  licence from the supplied catalogue record.
+- [ ] Obtain UKCEH confirmation that small aggregate tables and rendered
+  figures may be distributed in a public repository under a separate
+  non-commercial derived-output notice; continue withholding every LCM-derived
+  raster.
+- [x] Record the likely GLA London Wards 2018 publisher, download page,
+  transformation and licence for `data/London_Ward_aoi.*`; retain the lack of
+  a source checksum as a limitation.
+- [ ] Record the original archive version, URL and licence for the two tracked
+  MIDAS weather RDS extracts.
 - [x] Add WorldPop, Nomis/ONS and GLA/Bloomberg attribution text to the
   derived-data README.
 - [ ] Add those attributions to the manuscript and replace the bracketed

@@ -1,6 +1,15 @@
 
 
-scenario_colors = c(
+scenario_colors <- c(
+  # Canonical names written by the revised production runner.
+  "baseline" = "gray20",
+  "green10" = "#78c679",
+  "green20" = "#238443",
+  "green30" = "#004529",
+  "target10" = "#8c96c6",
+  "target20" = "#8856a7",
+  "target30" = "#810f7c",
+  # Historical names retained only for archived result tables.
   "scenario0" = "gray20", 
   "scenario1" = "#d95f0e", # #78C679
   "scenario2_TR" = "#fec44f", # tree risk
@@ -11,30 +20,18 @@ scenario_colors = c(
   "scenario510"  = "#8c96c6",
   "scenario520"  = "#8856a7",
   "scenario530"  = "#810f7c"
-  )
-
-
-scenario_abbr <- c(
-  'Baseline',
-  'AllBuilt', 
-  'TreeRisk',
-  'TreeOpp',
-  'Green10',
-  'Green20',
-  'Green30',
-  'Target10',
-  'Target20',
-  'Target30'
 )
 
-
-# update the scenario name abbreviation 
-scenario_colors_new <- scenario_colors
-names(scenario_colors_new) <- scenario_abbr
-
-
-# Define mapping once at the top of your script
+# Canonical and historical label mapping. New outputs must use the lower-case
+# canonical keys; scenario510/520/530 are accepted only when reading archives.
 scenario_labels <- c(
+  'baseline'     = 'Baseline',
+  'green10'      = 'Green10',
+  'green20'      = 'Green20',
+  'green30'      = 'Green30',
+  'target10'     = 'Target10',
+  'target20'     = 'Target20',
+  'target30'     = 'Target30',
   'scenario0'    = 'Baseline',
   'scenario1'    = 'AllBuilt', 
   'scenario2_TR' = 'TreeRisk',
@@ -45,4 +42,18 @@ scenario_labels <- c(
   "scenario510"  = "Target10",
   "scenario520"  = "Target20",
   "scenario530"  = "Target30"
+)
+
+# Display-name palette used after labels have been applied.
+scenario_colors_new <- c(
+  'Baseline' = 'gray20',
+  'AllBuilt' = '#d95f0e',
+  'TreeRisk' = '#fec44f',
+  'TreeOpp' = '#d9f0a3',
+  'Green10' = '#78c679',
+  'Green20' = '#238443',
+  'Green30' = '#004529',
+  'Target10' = '#8c96c6',
+  'Target20' = '#8856a7',
+  'Target30' = '#810f7c'
 )

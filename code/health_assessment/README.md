@@ -23,20 +23,22 @@ The quantitative old-versus-new results are in
 
 ## Workflow status
 
-Two workflows currently coexist:
+Two workflows are retained with different authority:
 
-- **Revised workflow under validation:**
+- **Revised production workflow:**
   `prepare_mortality_population_weighted.py` allocates borough mortality by
   2021 pixel population and records quality-control evidence.
 - **Legacy workflow retained for comparison:**
   `health-model-01-prep-input-ONS-mortality-data.Rmd`, `health-modeling.py` and
-  the `health-modeling_*.bat` launchers. These files remain unchanged so that
-  old and revised results can be compared before replacement.
+  the `health-modeling_*.bat` launchers. These files, including the
+  `s510/s520/s530` launchers, are historical evidence and must not be used to
+  produce current manuscript values.
 
-The revised mortality preparation, InVEST 3.20.2 UCM reruns, four deterministic
-health runs, four 2,000-draw uncertainty runs and scripted LSOA11 aggregation
-have passed project-data QA. Figure 7 now reads the revised LSOA table directly
-and no longer depends on the opaque historical `health_sf.rds`.
+The revised mortality preparation, fourteen InVEST 3.20.2 UCM temperature
+runs, twelve Green/Target deterministic health runs, paired 2,000-draw
+uncertainty runs and scripted LSOA11 aggregation have passed project-data QA.
+Figure 7 now reads the revised equal-area LSOA table directly and no longer
+depends on the opaque historical `health_sf.rds`.
 
 ## Why mortality allocation is changing
 

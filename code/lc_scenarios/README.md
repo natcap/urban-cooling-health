@@ -3,7 +3,7 @@
 This folder contains the scripts and notebooks used to prepare the baseline
 land-cover raster and construct the Green and vulnerability-targeted tree
 scenarios. Read this file before running any scenario script: the historical
-rasters are useful evidence, but the current Green/Target pairs do not yet meet
+rasters are useful evidence, while the production Green/Target pairs now pass
 the revised equal-realized-canopy and source-class checks.
 
 ## Current scientific definition
@@ -289,7 +289,7 @@ For a version-comparison audit only, use `--profile historical-audit`. Do not
 use that profile for manuscript production because it intentionally retains
 the historical focal/eligibility problems.
 
-## How the current Target trials were created
+## How the historical Target trials were created
 
 [`tree_equity_1_number_of_trees_to_polygon.py`](tree_equity_1_number_of_trees_to_polygon.py)
 reads ranked potential-tree points, selects prefixes of the ascending `rank`
