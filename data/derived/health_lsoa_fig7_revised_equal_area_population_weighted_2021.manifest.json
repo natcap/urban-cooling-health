@@ -1,0 +1,325 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-11T01:37:46.175577+00:00",
+  "method": "pixel-centre rasterization followed by zonal sum",
+  "scenario_set": "revised-equal-area",
+  "health_root": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10",
+  "lsoa_count": 4835,
+  "crosswalk_method": "one-to-one nearest polygon-centroid match",
+  "crosswalk_max_centroid_distance_m": 0.01949286332294418,
+  "outer_edge_cell_assignment": "Valid raster-cell centres outside the generalized LSOA outline were assigned to the nearest LSOA; equidistant ties use the smallest stable id",
+  "outer_edge_cell_count": 6823,
+  "outer_edge_max_assignment_distance_m": 21.433550736080722,
+  "software": {
+    "python": "3.11.15",
+    "geopandas": "1.1.4",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "rasterio": "1.4.4"
+  },
+  "inputs": {
+    "svi": {
+      "path": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/Social_Vulnerability_Index_london.gpkg",
+      "size_bytes": 6430720,
+      "sha256": "45e3630db0954618d634862c2f84e92f32c53b044fad72f8830e61a8ebf4e457"
+    },
+    "official_lsoa11_shapefile": [
+      {
+        "path": "0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.dbf",
+        "size_bytes": 1199562,
+        "sha256": "29cb00a5131e0b55fad7afe56d8119f81608c7d67251e6278d66bb01c7653a07"
+      },
+      {
+        "path": "0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.prj",
+        "size_bytes": 416,
+        "sha256": "136e03e16e6030eb237481d1494e903d21844a4cf255d69be88985d3dfccc616"
+      },
+      {
+        "path": "0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.sbn",
+        "size_bytes": 50652,
+        "sha256": "d2d4fe790ead9c665399348fd96efa610f12c8151da9f8c83ece385dbfc91663"
+      },
+      {
+        "path": "0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.sbx",
+        "size_bytes": 4188,
+        "sha256": "5a0c589a88a18cbc27ee47e0ce94ff840ba799b2d4db746888d6a52368ab8d6f"
+      },
+      {
+        "path": "0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.shp",
+        "size_bytes": 2846220,
+        "sha256": "02773dbcb524c8a95e359c6634545a75f92e775168540d09ab2853c5e84642b4"
+      },
+      {
+        "path": "0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.shp.xml",
+        "size_bytes": 640,
+        "sha256": "1bf41d6c4bc6731fb604322dc8fc5a9a2f3da986be57270b097ac00b8dfc4fbe"
+      },
+      {
+        "path": "0_source_data/UK boundary shapefile/statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/LSOA_2011_London_gen_MHW.shx",
+        "size_bytes": 38780,
+        "sha256": "b72619c33e9081704d6903320700f74ba8b1fc6d125fbd2ddf38761ea98bb903"
+      }
+    ],
+    "health_rasters": [
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_25c/Excess_all_cause.tif",
+        "size_bytes": 64405829,
+        "sha256": "bf0df93ebc875115cf2be74eb45f84d0e731be77184f66f8bf38dc4c3f02e672"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_25c/Excess_mental_disorder.tif",
+        "size_bytes": 64290107,
+        "sha256": "4dad7ce8bb174df9ce61b0a921edc1f64a79c3a0875f7b31d56f91ca991e0303"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_25c/Excess_cardiovascular.tif",
+        "size_bytes": 64399235,
+        "sha256": "24aae80dbc4c28ecbf819b2197347b1e58e997c7799f10e95f12e0a11592ce13"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_25c/Excess_respiratory.tif",
+        "size_bytes": 64399572,
+        "sha256": "f4289aa5f6df29cfecd711f5dccf5ffb453a631090f53c0444d8e69f0252a898"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_25c/Excess_self_harm.tif",
+        "size_bytes": 64282200,
+        "sha256": "232e1a7b8ea90f41bba2cba0c7733670a9600bd5db8d1d876b341bd3a8ab38d9"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_25c/Excess_all_cause.tif",
+        "size_bytes": 64548165,
+        "sha256": "ef0849adc4726d951511efec3f7379558120eb85efd9720dceef25ba4c9ec98c"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_25c/Excess_mental_disorder.tif",
+        "size_bytes": 64426139,
+        "sha256": "2ce7ea4810addc7d9f8d0e7f72cab8a2f4fafb0ef8fb80d759ed30148b3090aa"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_25c/Excess_cardiovascular.tif",
+        "size_bytes": 64559664,
+        "sha256": "fb321419f7d1e03a3599c60fa0f2f54164282887e3743bb8ec366e15a1c9621a"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_25c/Excess_respiratory.tif",
+        "size_bytes": 64548941,
+        "sha256": "6a000f45b8ac05ae5b8661d35c46231ab50f6f1bd59fcbdc2813615e7d3e9cf7"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_25c/Excess_self_harm.tif",
+        "size_bytes": 64431989,
+        "sha256": "a166088623d246683822f0468460e20ca5f7dc1842547a208e02b93d30dace48"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_28c/Excess_all_cause.tif",
+        "size_bytes": 64398936,
+        "sha256": "aa45933ca9403ee31cb626b663fabb5f6612ee7cf9880856fe64b412716aa950"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_28c/Excess_mental_disorder.tif",
+        "size_bytes": 64284831,
+        "sha256": "36233e4020754e5fa633c413f87162323f2909284fdb728acde9b2fe4402e36d"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_28c/Excess_cardiovascular.tif",
+        "size_bytes": 64393228,
+        "sha256": "fb5e22268742abba64333b5f099b2de968fa13a7f12f4262da7400a13908b410"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_28c/Excess_respiratory.tif",
+        "size_bytes": 64390012,
+        "sha256": "14754c9dcdd72c14c017c99a3500da28c7f5feb7712719f66a35bf1d8248b836"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_28c/Excess_self_harm.tif",
+        "size_bytes": 64274917,
+        "sha256": "97386ad538182f29e48e2c9f5122a3a1dd2b1be3205d7ec447e787815d6dad5c"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_28c/Excess_all_cause.tif",
+        "size_bytes": 64547163,
+        "sha256": "1325f99ed5f7226283552ca1652f2079cefeb8d5a60e68a947544802ff768e93"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_28c/Excess_mental_disorder.tif",
+        "size_bytes": 64423045,
+        "sha256": "815b9cc9a487a4c1128f1918527d2763879733291ad0614831a023dbd2fb83d5"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_28c/Excess_cardiovascular.tif",
+        "size_bytes": 64555160,
+        "sha256": "cc218d3f1799f8f6d9f5f54e495f706e412264fe099b43f870254e1b32d790ad"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_28c/Excess_respiratory.tif",
+        "size_bytes": 64546331,
+        "sha256": "d888f561760bd69075ae7cc3fd4255e4c5d0804daf2c5cf0dc8b11cd79ecf34b"
+      },
+      {
+        "path": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/target30_28c/Excess_self_harm.tif",
+        "size_bytes": 64429065,
+        "sha256": "040061b99222f6a06bce30048d3faf8866d22666ca8244ea63abd4c570691e3f"
+      }
+    ]
+  },
+  "outputs": {
+    "zonal_csv": {
+      "path": "data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv",
+      "size_bytes": 12806857,
+      "sha256": "cad48a3a23286050f084a280d4f8dd59408832316d9eb0701a5d673cbf4f7c7c"
+    },
+    "crosswalk_csv": {
+      "path": "data/derived/svi_lsoa11_crosswalk_fig7_revised_equal_area.csv",
+      "size_bytes": 295903,
+      "sha256": "2d4100a55da876336d771c022aac49d3af9553e9044e840b4bb2c38680e442fe"
+    },
+    "vulnerability_gpkg": {
+      "path": "data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg",
+      "size_bytes": 6631424,
+      "sha256": "e547fb05307a6448a7b4ec698942fde4ffa8dab4b8c95b59e525a17e93bae372"
+    }
+  },
+  "quality_control": [
+    {
+      "scenario": "green30_25c",
+      "cause": "all_cause",
+      "lsoa_sum_excess_deaths": -387.3737943409187,
+      "valid_raster_sum_excess_deaths": -387.37379434091866,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_25c",
+      "cause": "mental_disorder",
+      "lsoa_sum_excess_deaths": -30.02165681815801,
+      "valid_raster_sum_excess_deaths": -30.02165681815801,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_25c",
+      "cause": "cardiovascular",
+      "lsoa_sum_excess_deaths": -151.22602254665946,
+      "valid_raster_sum_excess_deaths": -151.22602254665946,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_25c",
+      "cause": "respiratory",
+      "lsoa_sum_excess_deaths": -57.862301981802844,
+      "valid_raster_sum_excess_deaths": -57.862301981802844,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_25c",
+      "cause": "self_harm",
+      "lsoa_sum_excess_deaths": -1.8559749819395157,
+      "valid_raster_sum_excess_deaths": -1.855974981939516,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "all_cause",
+      "lsoa_sum_excess_deaths": -495.54028258766317,
+      "valid_raster_sum_excess_deaths": -495.5402825876632,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "mental_disorder",
+      "lsoa_sum_excess_deaths": -37.808826262697416,
+      "valid_raster_sum_excess_deaths": -37.80882626269742,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "cardiovascular",
+      "lsoa_sum_excess_deaths": -193.86436525146854,
+      "valid_raster_sum_excess_deaths": -193.86436525146854,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "respiratory",
+      "lsoa_sum_excess_deaths": -74.14905212343582,
+      "valid_raster_sum_excess_deaths": -74.14905212343581,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_25c",
+      "cause": "self_harm",
+      "lsoa_sum_excess_deaths": -2.372685255470588,
+      "valid_raster_sum_excess_deaths": -2.3726852554705875,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "all_cause",
+      "lsoa_sum_excess_deaths": -387.3738118171897,
+      "valid_raster_sum_excess_deaths": -387.3738118171897,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "mental_disorder",
+      "lsoa_sum_excess_deaths": -30.021658261298143,
+      "valid_raster_sum_excess_deaths": -30.02165826129814,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "cardiovascular",
+      "lsoa_sum_excess_deaths": -151.22602943616084,
+      "valid_raster_sum_excess_deaths": -151.22602943616081,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "respiratory",
+      "lsoa_sum_excess_deaths": -57.86230463432011,
+      "valid_raster_sum_excess_deaths": -57.86230463432011,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "green30_28c",
+      "cause": "self_harm",
+      "lsoa_sum_excess_deaths": -1.855975066059488,
+      "valid_raster_sum_excess_deaths": -1.855975066059488,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "all_cause",
+      "lsoa_sum_excess_deaths": -495.54030927618817,
+      "valid_raster_sum_excess_deaths": -495.54030927618817,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "mental_disorder",
+      "lsoa_sum_excess_deaths": -37.80882839197049,
+      "valid_raster_sum_excess_deaths": -37.808828391970486,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "cardiovascular",
+      "lsoa_sum_excess_deaths": -193.86437595482954,
+      "valid_raster_sum_excess_deaths": -193.86437595482954,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "respiratory",
+      "lsoa_sum_excess_deaths": -74.1490561165651,
+      "valid_raster_sum_excess_deaths": -74.1490561165651,
+      "unassigned_valid_pixel_count": 0
+    },
+    {
+      "scenario": "target30_28c",
+      "cause": "self_harm",
+      "lsoa_sum_excess_deaths": -2.3726853733846793,
+      "valid_raster_sum_excess_deaths": -2.3726853733846793,
+      "unassigned_valid_pixel_count": 0
+    }
+  ]
+}

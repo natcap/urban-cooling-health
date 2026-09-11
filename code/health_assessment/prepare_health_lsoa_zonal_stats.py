@@ -24,11 +24,19 @@ CAUSES = (
     "respiratory",
     "self_harm",
 )
-SCENARIOS = {
+HISTORICAL_SCENARIOS = {
     "green30_25c": ("Green30", 25),
     "target30_25c": ("Target30", 25),
     "green30_28c": ("Green30", 28),
     "target30_28c": ("Target30", 28),
+}
+REVISED_SCENARIOS = {
+    f"{family}{level}_{temperature}c": (
+        f"{family.capitalize()}{level}", temperature
+    )
+    for temperature in (25, 28)
+    for level in (10, 20, 30)
+    for family in ("green", "target")
 }
 
 
@@ -40,12 +48,26 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _file_record(path: Path) -> dict:
-    return {"path": str(path), "size_bytes": path.stat().st_size, "sha256": _sha256(path)}
+def _file_record(path: Path, relative_to: Path | None = None) -> dict:
+    """Record identity without embedding a user's machine-specific root."""
+    display_path = path
+    if relative_to is not None:
+        try:
+            display_path = path.relative_to(relative_to)
+        except ValueError:
+            pass
+    return {
+        "path": str(display_path),
+        "size_bytes": path.stat().st_size,
+        "sha256": _sha256(path),
+    }
 
 
-def _shapefile_records(path: Path) -> list[dict]:
-    return [_file_record(item) for item in sorted(path.parent.glob(f"{path.stem}.*"))]
+def _shapefile_records(path: Path, relative_to: Path | None = None) -> list[dict]:
+    return [
+        _file_record(item, relative_to)
+        for item in sorted(path.parent.glob(f"{path.stem}.*"))
+    ]
 
 
 def _make_crosswalk(svi: gpd.GeoDataFrame, official: gpd.GeoDataFrame) -> pd.DataFrame:
@@ -85,6 +107,21 @@ def main() -> None:
     parser.add_argument("--crosswalk-csv", type=Path, required=True)
     parser.add_argument("--vulnerability-gpkg", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument(
+        "--scenario-set",
+        choices=("historical30", "revised-equal-area"),
+        default="historical30",
+    )
+    parser.add_argument(
+        "--health-root",
+        type=Path,
+        help="Override the selected scenario set's health-results directory.",
+    )
+    parser.add_argument(
+        "--scenarios",
+        nargs="+",
+        help="Optional subset of keys from the selected scenario set.",
+    )
     args = parser.parse_args()
 
     data_root = args.data_root.expanduser().resolve()
@@ -97,9 +134,25 @@ def main() -> None:
         "statistical-gis-boundaries-london/statistical-gis-boundaries-london/ESRI/"
         "LSOA_2011_London_gen_MHW.shp"
     )
+    scenarios = (
+        REVISED_SCENARIOS
+        if args.scenario_set == "revised-equal-area"
+        else HISTORICAL_SCENARIOS
+    )
+    if args.scenarios:
+        unknown = set(args.scenarios) - set(scenarios)
+        if unknown:
+            parser.error(f"Unknown scenario(s): {sorted(unknown)}")
+        scenarios = {name: scenarios[name] for name in args.scenarios}
+    default_health_folder = (
+        "health_v3_revised_equal_area_population_weighted_2021_2026-09-10"
+        if args.scenario_set == "revised-equal-area"
+        else "health_v2_invest3202_population_weighted_2021_nodata_harmonized"
+    )
     health_root = (
-        data_root / "2_postprocess_intermediate/UCM_official_runs/"
-        "health_v2_invest3202_population_weighted_2021_nodata_harmonized"
+        args.health_root.expanduser().resolve()
+        if args.health_root
+        else data_root / "2_postprocess_intermediate/UCM_official_runs" / default_health_folder
     )
     for path in (svi_path, official_path):
         if not path.exists():
@@ -113,7 +166,7 @@ def main() -> None:
 
     raster_paths = {
         (scenario, cause): health_root / scenario / f"Excess_{cause}.tif"
-        for scenario in SCENARIOS
+        for scenario in scenarios
         for cause in CAUSES
     }
     missing = [path for path in raster_paths.values() if not path.exists()]
@@ -192,7 +245,7 @@ def main() -> None:
         sums = np.bincount(
             zone_ids[valid], weights=values[valid], minlength=len(zone_pixel_counts)
         )
-        scenario_label, temperature = SCENARIOS[scenario]
+        scenario_label, temperature = scenarios[scenario]
         for identifier in svi["id"].astype(int):
             rows.append({
                 "id": identifier,
@@ -219,6 +272,7 @@ def main() -> None:
     crosswalk_csv = args.crosswalk_csv.resolve()
     vulnerability_gpkg = args.vulnerability_gpkg.resolve()
     manifest_path = args.manifest.resolve()
+    repository_root = Path(__file__).resolve().parents[2]
     for output in (output_csv, crosswalk_csv, vulnerability_gpkg, manifest_path):
         output.parent.mkdir(parents=True, exist_ok=True)
         if output.exists():
@@ -235,6 +289,8 @@ def main() -> None:
         "schema_version": 1,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "method": "pixel-centre rasterization followed by zonal sum",
+        "scenario_set": args.scenario_set,
+        "health_root": str(health_root.relative_to(data_root)),
         "lsoa_count": len(svi),
         "crosswalk_method": "one-to-one nearest polygon-centroid match",
         "crosswalk_max_centroid_distance_m": float(crosswalk["centroid_distance_m"].max()),
@@ -252,14 +308,16 @@ def main() -> None:
             "rasterio": rasterio.__version__,
         },
         "inputs": {
-            "svi": _file_record(svi_path),
-            "official_lsoa11_shapefile": _shapefile_records(official_path),
-            "health_rasters": [_file_record(path) for path in raster_paths.values()],
+            "svi": _file_record(svi_path, data_root),
+            "official_lsoa11_shapefile": _shapefile_records(official_path, data_root),
+            "health_rasters": [
+                _file_record(path, data_root) for path in raster_paths.values()
+            ],
         },
         "outputs": {
-            "zonal_csv": _file_record(output_csv),
-            "crosswalk_csv": _file_record(crosswalk_csv),
-            "vulnerability_gpkg": _file_record(vulnerability_gpkg),
+            "zonal_csv": _file_record(output_csv, repository_root),
+            "crosswalk_csv": _file_record(crosswalk_csv, repository_root),
+            "vulnerability_gpkg": _file_record(vulnerability_gpkg, repository_root),
         },
         "quality_control": qa_rows,
     }

@@ -48,15 +48,12 @@ vulnerability_labels <- c(
   SVI = "SVI"
 )
 
-output_dir <- "./figures/equity_map_biscale"
+output_dir <- "./figures/equity_map_biscale_revised_equal_area"
 population_file <- "./data/derived/lsoa_population_2021_by_lsoa11cd.csv"
-health_zonal_file <- paste0(
-  "./data/derived/health_lsoa_invest3202_population_weighted_2021_",
-  "nodata_harmonized.csv"
-)
-green30_mc_file <- "./data/derived/green30_nodata_harmonized_city_total_draws_by_cause.csv"
-target30_mc_file <- "./data/derived/target30_nodata_harmonized_city_total_draws_by_cause.csv"
-svi_file <- "./data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg"
+health_zonal_file <- "./data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv"
+green30_mc_file <- "./data/derived/green30_revised_equal_area_25c_city_total_draws_by_cause.csv"
+target30_mc_file <- "./data/derived/target30_revised_equal_area_25c_city_total_draws_by_cause.csv"
+svi_file <- "./data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg"
 ```
 
 ## Load and validate data
@@ -74,7 +71,11 @@ if (!file.exists(svi_file)) {
 svi_lsoa <- read_sf(svi_file, quiet = TRUE) %>%
   rename(SVI = overall_score)
 health_rows <- read_csv(health_zonal_file, show_col_types = FALSE) %>%
-  filter(temperature_setting_c == 25, cause == "all_cause") %>%
+  filter(
+    temperature_setting_c == 25,
+    cause == "all_cause",
+    lc_scenario %in% scenario_keep
+  ) %>%
   transmute(
     LSOA11CD, LSOA11NM, Neighborhood_name,
     indicator, lc_scenario, cases = deaths_averted,

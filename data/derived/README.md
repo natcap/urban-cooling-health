@@ -91,3 +91,25 @@ Each file must contain `draw` and `all_cause`. The production analysis pairs
 matching draw numbers and reports uncertainty in the citywide difference. This
 captures exposure-response uncertainty only; it does not propagate uncertainty
 in temperature, population or baseline mortality.
+
+## Revised equal-area Figure 7 inputs
+
+The final revised workflow keeps its inputs separate from the historical
+Green30/Target30-v4 artifacts:
+
+- `health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv` — the
+  four Green30/Target30 primary and sensitivity combinations, five causes and
+  4,835 LSOAs;
+- `health_lsoa_fig7_revised_equal_area_population_weighted_2021.manifest.json` —
+  input checksums, crosswalk and zonal-sum QA;
+- `svi_lsoa11_crosswalk_fig7_revised_equal_area.csv` and
+  `fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg` — scenario-independent
+  official-code crosswalk and Figure 7 geometry copied under versioned names;
+- `green30_revised_equal_area_25c_city_total_draws_by_cause.csv`; and
+- `target30_revised_equal_area_25c_city_total_draws_by_cause.csv`.
+
+The last two files contain the paired 2,000-draw all-cause uncertainty inputs
+for the primary 25°C Figure 7 comparison. The 28°C health results are retained
+in the external versioned health workspace and are numerically equivalent for
+deaths averted because the matched baseline and scenario temperature fields
+both shift by 3°C.

@@ -1,0 +1,46 @@
+metric,metric_label,benefit_Green30_group,benefit_Target30_group,n_LSOA,pct_within_Green30_class
+SVI,SVI,Low,Low,11,1.500682128240109
+SVI,SVI,Low,Moderate,29,3.956343792633015
+SVI,SVI,Low,High,693,94.54297407912688
+SVI,SVI,Moderate,Low,32,6.751054852320675
+SVI,SVI,Moderate,Moderate,51,10.759493670886076
+SVI,SVI,Moderate,High,391,82.48945147679325
+SVI,SVI,High,Low,30,7.407407407407407
+SVI,SVI,High,Moderate,95,23.45679012345679
+SVI,SVI,High,High,280,69.1358024691358
+p5under,Age <5,Low,Low,50,6.784260515603799
+p5under,Age <5,Low,Moderate,57,7.734056987788331
+p5under,Age <5,Low,High,630,85.48168249660787
+p5under,Age <5,Moderate,Low,149,27.850467289719628
+p5under,Age <5,Moderate,Moderate,81,15.14018691588785
+p5under,Age <5,Moderate,High,305,57.00934579439252
+p5under,Age <5,High,Low,159,47.18100890207715
+p5under,Age <5,High,Moderate,70,20.771513353115726
+p5under,Age <5,High,High,108,32.047477744807125
+p75over,Age 75+,Low,Low,214,46.420824295010846
+p75over,Age 75+,Low,Moderate,64,13.882863340563992
+p75over,Age 75+,Low,High,183,39.69631236442516
+p75over,Age 75+,Moderate,Low,319,55.28596187175043
+p75over,Age 75+,Moderate,Moderate,113,19.584055459272097
+p75over,Age 75+,Moderate,High,145,25.12998266897747
+p75over,Age 75+,High,Low,416,72.98245614035088
+p75over,Age 75+,High,Moderate,87,15.263157894736842
+p75over,Age 75+,High,High,67,11.75438596491228
+pBAME,Ethnic minority,Low,Low,4,0.4830917874396135
+pBAME,Ethnic minority,Low,Moderate,32,3.864734299516908
+pBAME,Ethnic minority,Low,High,792,95.65217391304348
+pBAME,Ethnic minority,Moderate,Low,30,5.7915057915057915
+pBAME,Ethnic minority,Moderate,Moderate,47,9.073359073359073
+pBAME,Ethnic minority,Moderate,High,441,85.13513513513513
+pBAME,Ethnic minority,High,Low,22,8.270676691729323
+pBAME,Ethnic minority,High,Moderate,59,22.18045112781955
+pBAME,Ethnic minority,High,High,185,69.54887218045113
+pIncomeDeprivation,Income deprivation,Low,Low,16,2.391629297458894
+pIncomeDeprivation,Income deprivation,Low,Moderate,45,6.726457399103139
+pIncomeDeprivation,Income deprivation,Low,High,608,90.88191330343797
+pIncomeDeprivation,Income deprivation,Moderate,Low,44,9.341825902335456
+pIncomeDeprivation,Income deprivation,Moderate,Moderate,66,14.012738853503185
+pIncomeDeprivation,Income deprivation,Moderate,High,361,76.64543524416136
+pIncomeDeprivation,Income deprivation,High,Low,38,8.11965811965812
+pIncomeDeprivation,Income deprivation,High,Moderate,119,25.427350427350426
+pIncomeDeprivation,Income deprivation,High,High,311,66.45299145299145

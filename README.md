@@ -22,6 +22,8 @@ Current blockers and the recommended order of work are tracked in
 The effect of replacing the legacy area-weighted mortality surface with the
 revised population-weighted workflow is summarized in
 [`code/health_assessment/HEALTH_VERSION_COMPARISON.md`](code/health_assessment/HEALTH_VERSION_COMPARISON.md).
+Results from the final equal-area Green/Target rerun are summarized in
+[`code/health_assessment/REVISED_EQUAL_AREA_HEALTH_RESULTS.md`](code/health_assessment/REVISED_EQUAL_AREA_HEALTH_RESULTS.md).
 
 ## Current analysis convention
 
@@ -116,7 +118,7 @@ IDs, missing benefit values and population coverage before producing outputs.
 ### 4. Inspect the outputs
 
 The workflow writes the following files to
-`figures/equity_map_biscale/`:
+`figures/equity_map_biscale_revised_equal_area/`:
 
 - `fig7_ab_upgraded.png`: comparable bivariate maps using common thresholds;
 - `fig7_cd_upgraded.png`: paired scenario comparison and transition summary;
@@ -127,7 +129,7 @@ The workflow writes the following files to
 - `fig7_run_metadata.csv`: run settings and fixed thresholds; and
 - `fig7_session_info.txt`: the R environment used for the run.
 
-![Figure 7 maps comparing Green30 and Target30](figures/equity_map_biscale/fig7_ab_upgraded.png)
+![Figure 7 maps comparing Green30 and Target30](figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png)
 
 ![Figure 7 paired equity comparison](figures/equity_map_biscale/fig7_cd_upgraded.png)
 

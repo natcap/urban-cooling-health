@@ -354,11 +354,10 @@ Complete the remaining work in this order to avoid unnecessary model reruns:
 2. [x] validate all fourteen revised UCM configurations at 25 C and 28 C;
 3. [x] add the official-code crosswalk and 2021 LSOA population;
 4. [x] run the fourteen revised baseline/Green/Target UCM configurations with InVEST 3.20.2;
-5. [ ] rerun the twelve revised health models with paired Monte Carlo settings
-   (all input/grid preflight checks have passed);
-6. [ ] regenerate LSOA zonal outputs using official `LSOA11CD` (Figure 7 now
+5. [x] rerun the twelve revised health models with paired Monte Carlo settings;
+6. [x] regenerate revised Green30/Target30 LSOA zonal outputs using official `LSOA11CD` (Figure 7 now
    reads this table directly, superseding regeneration of `health_sf.rds`);
-7. [ ] run `Rscript code/run-fig7.R` and visually inspect both output figures;
+7. [x] run `Rscript code/run-fig7.R` and visually inspect both revised output figures;
 8. reconcile the revised output CSVs with the manuscript text, caption and abstract;
 9. save the input manifest, run metadata and software environment with the
    publication archive.
