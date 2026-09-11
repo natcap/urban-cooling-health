@@ -1,0 +1,77 @@
+2025-09-18 10:53:40,051 (natcap.invest.utils) utils.prepare_workspace(161) Level 100 Writing log messages to [G:\Shared drives\Wellcome Trust Project Data\1_preprocess\UrbanCoolingModel\EP_preliminary_tests\clipped_lulc\UKECH\InVEST-natcap.invest.scenario_gen_proximity-log-2025-09-18--10_53_40.txt]
+2025-09-18 10:53:40,061 (__main__) cli.main(459) Level 100 Starting model with parameters: 
+Arguments for InVEST natcap.invest.scenario_gen_proximity 3.14.1:
+aoi_path                    
+area_to_convert             6200
+base_lulc_path              G:\Shared drives\Wellcome Trust Project Data\1_preprocess\UrbanCoolingModel\EP_preliminary_tests\clipped_lulc\UKECH\LCM2023_London_10m_clip2aoi_tcc24.tif
+convert_farthest_from_edge  False
+convert_nearest_to_edge     True
+convertible_landcover_codes 1 2 4 20 21
+focal_landcover_codes       1 2 4 20 21
+n_fragmentation_steps       2
+n_workers                   -1
+replacement_lucode          100
+results_suffix              _20prc_canopy_increase
+workspace_dir               G:\Shared drives\Wellcome Trust Project Data\1_preprocess\UrbanCoolingModel\EP_preliminary_tests\clipped_lulc\UKECH
+
+2025-09-18 10:53:40,162 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity.execute(297) INFO executing nearest_to_edge scenario
+2025-09-18 10:53:40,626 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:53:40,628 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-1 (stats_worker), started daemon 15116)>
+2025-09-18 10:53:44,049 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:53:44,052 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:53:44,415 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity._convert_landscape(477) INFO step 1 of 2
+2025-09-18 10:53:44,415 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity._convert_landscape(486) INFO create distance transform for current landcover
+2025-09-18 10:53:44,674 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:53:44,675 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-2 (stats_worker), started daemon 24908)>
+2025-09-18 10:53:45,708 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:53:45,708 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:53:47,590 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:53:50,780 (pygeoprocessing.geoprocessing_core) geoprocessing.distance_transform_edt(2965) INFO Distance Transform Phase 2
+2025-09-18 10:53:58,617 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:53:58,620 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-3 (stats_worker), started daemon 12920)>
+2025-09-18 10:53:59,673 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:53:59,674 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:54:01,206 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:54:04,808 (pygeoprocessing.geoprocessing_core) geoprocessing.distance_transform_edt(2965) INFO Distance Transform Phase 2
+2025-09-18 10:54:14,047 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:54:14,051 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-4 (stats_worker), started daemon 8424)>
+2025-09-18 10:54:16,597 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:54:16,598 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:54:19,893 (pygeoprocessing.geoprocessing) geoprocessing.convolve_2d(3209) INFO starting convolve
+2025-09-18 10:54:19,938 (pygeoprocessing.geoprocessing) geoprocessing.convolve_2d(3257) INFO 414 sent to workers, wait for worker results
+2025-09-18 10:54:23,669 (pygeoprocessing.geoprocessing) geoprocessing.convolve_2d(3321) INFO convolution worker 100.0% complete on nearest_to_edge_distance_20prc_canopy_increase.tif
+2025-09-18 10:54:31,587 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:54:31,589 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-7 (stats_worker), started daemon 20868)>
+2025-09-18 10:54:36,384 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:54:36,385 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:54:38,755 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity._convert_landscape(550) INFO convert 310000 pixels to lucode 100
+2025-09-18 10:54:46,296 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity._convert_by_score(860) INFO converted 1 of 310000 pixels
+2025-09-18 10:54:56,963 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity._convert_landscape(477) INFO step 2 of 2
+2025-09-18 10:54:56,964 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity._convert_landscape(486) INFO create distance transform for current landcover
+2025-09-18 10:54:57,917 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:54:57,921 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-8 (stats_worker), started daemon 24020)>
+2025-09-18 10:54:58,693 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:54:58,694 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:54:59,905 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:55:03,106 (pygeoprocessing.geoprocessing_core) geoprocessing.distance_transform_edt(2965) INFO Distance Transform Phase 2
+2025-09-18 10:55:11,462 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:55:11,465 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-9 (stats_worker), started daemon 19168)>
+2025-09-18 10:55:12,289 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:55:12,289 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:55:13,616 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:55:17,141 (pygeoprocessing.geoprocessing_core) geoprocessing.distance_transform_edt(2965) INFO Distance Transform Phase 2
+2025-09-18 10:55:26,555 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:55:26,559 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-10 (stats_worker), started daemon 25324)>
+2025-09-18 10:55:29,618 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:55:29,619 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:55:33,545 (pygeoprocessing.geoprocessing) geoprocessing.convolve_2d(3209) INFO starting convolve
+2025-09-18 10:55:33,602 (pygeoprocessing.geoprocessing) geoprocessing.convolve_2d(3257) INFO 414 sent to workers, wait for worker results
+2025-09-18 10:55:36,688 (pygeoprocessing.geoprocessing) geoprocessing.convolve_2d(3321) INFO convolution worker 100.0% complete on nearest_to_edge_distance_20prc_canopy_increase.tif
+2025-09-18 10:55:43,007 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(495) INFO starting stats_worker
+2025-09-18 10:55:43,011 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(501) INFO started stats_worker <Thread(Thread-13 (stats_worker), started daemon 23688)>
+2025-09-18 10:55:45,786 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(580) INFO 100.0% complete
+2025-09-18 10:55:45,787 (pygeoprocessing.geoprocessing) geoprocessing.raster_calculator(583) INFO Waiting for raster stats worker result.
+2025-09-18 10:55:48,220 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity._convert_landscape(550) INFO convert 310000 pixels to lucode 100
+2025-09-18 10:55:55,047 (natcap.invest.scenario_gen_proximity) scenario_gen_proximity._convert_by_score(860) INFO converted 1 of 310000 pixels
+2025-09-18 10:55:58,305 (natcap.invest.utils) utils.prepare_workspace(169) INFO Elapsed time: 2m 18.24000000000001s
+2025-09-18 10:55:58,306 (natcap.invest.utils) utils.prepare_workspace(172) INFO Execution finished

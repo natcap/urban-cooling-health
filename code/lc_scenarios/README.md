@@ -4,11 +4,12 @@ This folder contains the scripts and notebooks used to prepare the baseline
 land-cover raster and construct the Green and vulnerability-targeted tree
 scenarios. Read this file before running any scenario script: the historical
 rasters are useful evidence, but the current Green/Target pairs do not yet meet
-the revised common-eligibility and equal-realized-canopy definition.
+the revised equal-realized-canopy and source-class checks.
 
 ## Current scientific definition
 
-The revised comparison uses one definition for every Green and Target scenario:
+The revised comparison uses one canopy-accounting definition for every Green
+and Target scenario, while retaining their different spatial designs:
 
 ```text
 Existing canopy codes:        1, 2, 100
@@ -16,7 +17,7 @@ Existing canopy codes:        1, 2, 100
   2 = Coniferous woodland
   100 = Tree Cover
 
-Eligible planting codes:      4, 20, 21
+Allowed source codes:         4, 20, 21
   4 = Improved grassland
   20 = Urban
   21 = Suburban
@@ -62,11 +63,12 @@ The baseline follows the UKCEH LCM2023 class codes, with project-specific code
 | 21 | Suburban | Eligible planting class |
 | 100 | Project tree-canopy overlay/new canopy | Existing canopy, focal and replacement |
 
-Codes `4`, `20` and `21` are a common analytical eligibility definition, not a
-claim that every cell is physically or legally plantable. Before treating the
-maps as an implementation plan, add finer opportunity constraints for
-buildings, roads and rail, hard surfaces, sports fields, utilities, protected
-habitats and land access/ownership.
+Codes `4`, `20` and `21` are shared allowed source classes, not a claim that
+every cell is physically or legally plantable. Green uses these broad classes
+to define an idealized area-based canopy scenario. Target additionally uses
+screened street-tree candidate points. The Target Methods document does not
+define Green eligibility; see
+[`TARGET_OPPORTUNITY_METHOD_AUDIT.md`](TARGET_OPPORTUNITY_METHOD_AUDIT.md).
 
 ## Required external data layout
 
@@ -89,12 +91,17 @@ root, this workflow uses:
     ├── LULC_Scenario520.tif
     └── LULC_Scenario530.tif
 └── lc_green_scenarios_output/
-    └── revised_v2_invest_3.20.2_2026-09-10/
+    ├── revised_v2_invest_3.20.2_2026-09-10/
         ├── Green10_equal_area_eligible_v2.tif
         ├── Green20_equal_area_eligible_v2.tif
         ├── Green30_equal_area_eligible_v2.tif
         ├── green_scenario_manifest_revised.json
         └── invest_workspaces/
+    └── sensitivity_no_urban_equal_area_invest_3.20.2_2026-09-10/
+        ├── Green10_equal_area_eligible_v2.tif
+        ├── Green20_equal_area_eligible_v2.tif
+        ├── Green30_equal_area_eligible_v2.tif
+        └── green_scenario_manifest_revised.json
 ```
 
 Do not commit the source, scenario or UCM rasters until the UKCEH licence
@@ -141,6 +148,11 @@ The logs were recovered from the shared-data folder
 `EP_preliminary_tests/clipped_lulc/UKECH/`. They confirm that the main runs used
 InVEST **3.14.1**, no AOI, nearest-to-edge conversion, two fragmentation steps,
 replacement code `100`, and the following parameters:
+
+The colleague-supplied Green20 log is retained unchanged in this folder as
+`InVEST-natcap.invest.scenario_gen_proximity-log-2025-09-18--10_53_40.txt`.
+Its SHA-256 is
+`dd3e32890f4d3c3edf6199e862f5165f13f003d18ab9a7f8754ba6a3a4b14974`.
 
 | Scenario | Maximum area (ha) | Focal codes | Convertible codes |
 |---|---:|---|---|
@@ -210,7 +222,7 @@ follows:
 | Parameter | Recommended setting | Reason |
 |---|---|---|
 | Focal codes | `1 2 100` | Represents all existing canopy used in this project |
-| Convertible codes | `4 20 21` | Uses the same eligible planting mask as Target scenarios |
+| Convertible codes | `4 20 21` | Uses the shared allowed source classes while retaining Green's area-based design |
 | Replacement code | `100` | Preserves the project-specific new-canopy class |
 | Direction | nearest to edge only | Expands canopy outwards from existing canopy |
 | Conversion steps | `1` per tier | Makes each tier's distance calculation explicit and avoids an arbitrary within-tier recalculation count |
@@ -246,6 +258,24 @@ LULC folder. Its final transitions from the original baseline are:
 | Green20 | 138,011 | 148,736 | 308,337 | 595,084 |
 | Green30 | 194,268 | 242,156 | 457,825 | 894,249 |
 
+### No-Urban Green sensitivity
+
+Because LCM Urban mixes potentially plantable hard-surface contexts with
+buildings and other unsuitable surfaces, an equal-area Green sensitivity was
+also generated using only `{4,21}`. It keeps the same focal codes, sequence and
+cumulative areas as the main Green scenarios:
+
+| Scenario | `4 -> 100` | `21 -> 100` | Total |
+|---|---:|---:|---:|
+| Green10 | 92,813 | 214,955 | 307,768 |
+| Green20 | 181,685 | 413,399 | 595,084 |
+| Green30 | 260,492 | 633,757 | 894,249 |
+
+Spatial overlap with the main `{4,20,21}` Green masks is 76.38%, 73.71% and
+71.78% at Green10, Green20 and Green30. Use these outputs to test sensitivity
+to Urban inclusion, not as proof that every code-4 or code-21 cell is a
+feasible planting site.
+
 For a version-comparison audit only, use `--profile historical-audit`. Do not
 use that profile for manuscript production because it intentionally retains
 the historical focal/eligibility problems.
@@ -270,6 +300,15 @@ The existing rasterizer excludes only NoData. It does not enforce allowed
 source codes, which is why the historical Target rasters include changes from
 water, wetland, coastal and woodland classes.
 
+The supplied `Methods.docx` confirms that Target candidates were generated
+from selected OSM street classes and filtered by existing-canopy distance,
+building distance and point spacing before being ranked by UTCI and social
+vulnerability. The full evidence and remaining provenance gaps are recorded in
+[`TARGET_OPPORTUNITY_METHOD_AUDIT.md`](TARGET_OPPORTUNITY_METHOD_AUDIT.md).
+The ranked data contain tied scores at each historical selection cutoff, so
+revised selection must use the retained `FID` as a deterministic secondary
+sort key rather than `rank` alone.
+
 ## Revised regeneration procedure
 
 Do not overwrite historical files. The next implementation should perform
@@ -282,9 +321,9 @@ these stages in order:
 2. **Generate revised Green scenarios.** Run the recommended InVEST profile
    above. Expected cumulative new-canopy counts are 307,768, 595,084 and
    894,249 cells.
-3. **Validate the target ranking.** Confirm that each selected trial vector is
-   a geometry-and-rank prefix of its approved full ranked layer. Stop if any
-   prefix check fails.
+3. **Validate the target ranking.** Use the supplied screened candidate points,
+   preserve `FID`, and sort by `(rank, FID)`. Record the tie group and final
+   selected `FID` at every scenario cutoff.
 4. **Build each Target from the baseline.** Rasterize candidates in ascending
    rank, accept only baseline `{4,20,21}` cells, and stop at the corresponding
    corrected Green count. Do not extend a historical raster containing
@@ -314,6 +353,8 @@ LULC_Target30_equal_area_eligible_v2.tif
 | `reclassify-lulc-using-tcc.ipynb` | Overlay 2024 tree-canopy polygons as code 100 | Baseline lineage; retains machine-specific paths |
 | `scenario_1_pavement_and_2_opportunity_trees.ipynb` | Early pavement and opportunity-tree scenarios | Exploratory/legacy; not the Green10/20/30 generator |
 | `generate_green_scenarios_invest.py` | Reproduce historical parameters or generate corrected nested Green scenarios | Recommended Green generator; requires InVEST 3.20.2 |
+| `build_tree_opportunity_mask.py` | Rasterize screened Target candidates using a 5 m crown and pixel-centre rule | Target audit and regeneration input; not the primary Green definition |
+| `TARGET_OPPORTUNITY_METHOD_AUDIT.md` | Record Target Methods evidence, data checks, capacity and provenance gaps | Current decision record |
 | `tree_equity_1_number_of_trees_to_polygon.py` | Select and buffer ranked Target candidates | Historical construction; configuration is hard-coded |
 | `tree_equity_2_scenario_engine.py` | Burn Target buffers into baseline | Historical construction; lacks eligibility masking |
 | `tree_equity_3_lulc_stats.py` | Summarize LULC classes | Diagnostic; active filenames are legacy aliases |

@@ -155,14 +155,26 @@ scenario names, and one documented input raster maps to each Target scenario.
 - [x] Audit Target10 and Target20. Target10 adds 276,430 pixels versus
   Green10's 320,000 (13.616% short); Target20 adds 542,985 versus Green20's
   620,000 (12.422% short).
+- [x] Review the supplied Target `Methods.docx` and supporting folder. Document
+  the street classes, 5 m spacing, canopy/building exclusions, UTCI-SVI rank
+  method and remaining provenance gaps in
+  `code/lc_scenarios/TARGET_OPPORTUNITY_METHOD_AUDIT.md`.
+- [x] Build the reproducible Target opportunity mask from 3,378,103 screened
+  points. It contains 158.4883 km² on `{4,20,21}`, including 97.0168 km² on
+  Urban; store its raster and JSON audit in `tree_opportunity_mask/`
+  `revised_v1_2026-09-10/`.
+- [x] Generate the equal-area no-Urban Green sensitivity with `{4,21}`. It
+  retains the 30.7768/59.5084/89.4249 km² budgets and is stored separately
+  under `lc_green_scenarios_output/`.
 - [ ] Generalize the transition audit to accept canopy and eligibility code
   sets and export the complete source-to-target transition matrix.
 - [x] Run the tested revised Green generator into the permanent versioned
   shared folder `lc_green_scenarios_output/`
   `revised_v2_invest_3.20.2_2026-09-10/`; retain its three rasters, raw InVEST
   workspaces and JSON manifest.
-- [ ] Validate each selected Target vector as a prefix of its approved full
-  ranked layer.
+- [ ] Replace rank-only Target selection with deterministic `(rank, FID)`
+  ordering. All three historical cutoffs intersect tied-score groups, so
+  `nsmallest(N, "rank")` alone is not a reproducible prefix rule.
 - [ ] Generate all three Target rasters from the baseline, restricted to
   `{4,20,21}`, and stop at the corresponding corrected Green count.
 - [ ] Require exact counts, zero ineligible transitions, unchanged NoData,
@@ -175,6 +187,10 @@ regeneration. The full Target ranking has now been located at
 `.cpg` sidecars). Before Target regeneration, validate that its `rank` field,
 CRS, feature count and first-ranked geometries reproduce the approved trial
 vectors. Do not substitute intermediate rasters or similarly named vectors.
+The supplied Methods record does not identify the exact building file, OSM
+download/version, 1 m canopy raster filename, or source-generation script;
+retain these as provenance requests rather than blockers to regeneration from
+the final screened points.
 
 **Current result:** the earlier audit tables correctly record code-100
 transitions but not total new canopy under the revised definition. Target30 v4
