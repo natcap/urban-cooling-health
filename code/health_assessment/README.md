@@ -253,6 +253,25 @@ An end-to-end test with project geospatial data remains required.
 
 ## Run the revised health model
 
+For the final revised Green10/20/30 and Target10/20/30 comparison, use
+`health-analysis-revised-equal-area.example.json`. It points to the versioned
+equal-area InVEST 3.20.2 outputs and writes to a new health-results root. The
+older `health-analysis-v2.example.json` remains the historical Green30/Target30
+v4 record and must not be used for the final scenario comparison.
+
+Validate every enabled revised scenario with:
+
+```bash
+export HEALTH_DATA_ROOT=/path/to/Wellcome\ Trust\ Project\ Data
+python code/health_assessment/run_health_scenario_set.py \
+  --config code/health_assessment/health-analysis-revised-equal-area.example.json \
+  --validate-only
+```
+
+After all twelve scenario-temperature combinations validate, rerun without
+`--validate-only`. The batch runner invokes the same strict windowed model for
+each scenario and stops immediately if any run fails.
+
 Before running the health model, use the reviewed Green30 LULC copy with the
 same NoData sentinel (`0`) as baseline and Target30. Create it once with
 `prepare_green30_nodata_harmonized.py`; the script refuses to overwrite files,

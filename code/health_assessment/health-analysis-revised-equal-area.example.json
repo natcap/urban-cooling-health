@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "data_root": "${HEALTH_DATA_ROOT}",
+  "output_root": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10",
+  "design": {
+    "population_year": 2021,
+    "mortality_year": 2021,
+    "primary_temperature_setting_c": 25,
+    "sensitivity_temperature_settings_c": [28],
+    "interpretation": "25 C and 28 C temperature scenarios evaluated under fixed 2021 population and mortality",
+    "scenario_comparison": "Green and Target use equal realized canopy and shared allowed LCM source classes but different spatial allocation methods"
+  },
+  "population_2021": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/pop_raster/resampled_10m/gbr_pop_2021_10m_count_preserved_bng.tif",
+  "monte_carlo": {
+    "n_draws": 2000,
+    "seed": 20260908
+  },
+  "causes": [
+    {
+      "name": "all_cause",
+      "rr_1c": 1.02,
+      "rr_low_1c": 1.014,
+      "rr_high_1c": 1.026,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_all_cause_population_weighted_2021.tif"
+    },
+    {
+      "name": "mental_disorder",
+      "rr_1c": 1.026,
+      "rr_low_1c": 1.013,
+      "rr_high_1c": 1.04,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_mental_disorder_population_weighted_2021.tif"
+    },
+    {
+      "name": "cardiovascular",
+      "rr_1c": 1.0344,
+      "rr_low_1c": 1.031,
+      "rr_high_1c": 1.0378,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_cardiovascular_population_weighted_2021.tif"
+    },
+    {
+      "name": "respiratory",
+      "rr_1c": 1.036,
+      "rr_low_1c": 1.0318,
+      "rr_high_1c": 1.0402,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_respiratory_population_weighted_2021.tif"
+    },
+    {
+      "name": "self_harm",
+      "rr_1c": 1.012,
+      "rr_low_1c": 1.003,
+      "rr_high_1c": 1.021,
+      "mortality_raster": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/health_rasters_population_weighted_2021_count_preserved/baseline_deaths_self_harm_population_weighted_2021.tif"
+    }
+  ],
+  "scenarios": {
+    "green10_25c": {
+      "enabled": true,
+      "label": "Revised Green10 - 25 C",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/green10/T_air_london_green10_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "target10_25c": {
+      "enabled": true,
+      "label": "Revised Target10 - 25 C",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/target10/T_air_london_target10_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "green20_25c": {
+      "enabled": true,
+      "label": "Revised Green20 - 25 C",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/green20/T_air_london_green20_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "target20_25c": {
+      "enabled": true,
+      "label": "Revised Target20 - 25 C",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/target20/T_air_london_target20_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "green30_25c": {
+      "enabled": true,
+      "label": "Revised Green30 - 25 C",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/green30/T_air_london_green30_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "target30_25c": {
+      "enabled": true,
+      "label": "Revised Target30 - 25 C",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/target30/T_air_london_target30_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "green10_28c": {
+      "enabled": true,
+      "label": "Revised Green10 - 28 C",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/green10/T_air_london_green10_28deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "target10_28c": {
+      "enabled": true,
+      "label": "Revised Target10 - 28 C",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/target10/T_air_london_target10_28deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "green20_28c": {
+      "enabled": true,
+      "label": "Revised Green20 - 28 C",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/green20/T_air_london_green20_28deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "target20_28c": {
+      "enabled": true,
+      "label": "Revised Target20 - 28 C",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/target20/T_air_london_target20_28deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "green30_28c": {
+      "enabled": true,
+      "label": "Revised Green30 - 28 C",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/green30/T_air_london_green30_28deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "target30_28c": {
+      "enabled": true,
+      "label": "Revised Target30 - 28 C",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/target30/T_air_london_target30_28deg_5uhi_45hum_revised_equal_area.tif"
+    }
+  }
+}

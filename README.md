@@ -381,9 +381,9 @@ Data-selection and allocation decisions are documented in
    million. Confirm that temperature, corrected population and revised
    mortality rasters share the intended grid, extent and units.
 3. After the six revised Green/Target LULC rasters pass the scenario gates,
-   validate and run their 25°C and 28°C pairs with `health_modeling_v2.py`.
-   The current configuration reproduces the historical code-100-matched
-   Green30/Target30 v4 analysis and must be updated before the final rerun.
+   validate and run their 25°C and 28°C pairs with
+   [`run_health_scenario_set.py`](code/health_assessment/run_health_scenario_set.py)
+   and `health-analysis-revised-equal-area.example.json`.
 4. Use 2,000 paired cause-stable draws and seed `20260908`, as recorded in
    `health-analysis-v2.example.json`. Legacy Windows batch launchers are kept
    only for historical comparison.
