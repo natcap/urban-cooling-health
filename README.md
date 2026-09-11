@@ -61,11 +61,12 @@ Scenario names used in the analysis are defined centrally in
 | AllBuilt | `scenario1` | Counterfactual built-land scenario |
 | TreeRisk | `scenario2_TR` | Loss of trees considered at climatic risk |
 | TreeOpp | `scenario3_TO` | Tree-planting opportunity scenario |
-| Green10/20/30 | `scenario4_10/20/30` | Historical proximity-based general-greening scenarios; revised eligible-area versions pending |
-| Target10/20/30 | `scenario510/520/530` | Vulnerability-targeted planting at corresponding intervention levels |
+| Green10/20/30 | `scenario4_10/20/30` | Revised nested proximity-based general-greening scenarios |
+| Target10/20/30 | `scenario510/520/530` | Revised ranked vulnerability-targeted planting scenarios |
 
-The Green–Target comparison requires the same definition of existing canopy,
-eligible planting land and realized additional canopy. Transition-level review
+The Green–Target comparison uses the same definition of existing canopy,
+allowed LCM source classes and realized additional canopy, while preserving
+Green's area-based design and Target's screened street-candidate design. Transition-level review
 found that the earlier audit counted every transition to code 100, including
 relabeling woodland codes 1 and 2 and converting ineligible classes. Therefore
 the existing UCM, health and Figure 7 outputs are retained as reproducibility
@@ -240,20 +241,16 @@ Run only the components needed for the scenarios under study:
    [`scenario_1_pavement_and_2_opportunity_trees.ipynb`](code/lc_scenarios/scenario_1_pavement_and_2_opportunity_trees.ipynb).
 4. Build the tree-risk scenario using the `tree-at-climate-risk-*` scripts in
    [`code/lc_scenarios/`](code/lc_scenarios/).
-5. Review how the historical Green10/20/30 rasters were created and construct
-   corrected common-eligibility copies using
-   [`code/lc_scenarios/README.md`](code/lc_scenarios/README.md). Do not rerun
-   the historical configuration by inference: its original Scenario Generator
-   log/datastack is missing.
-6. Create Target10/20/30 planting polygons and rasters, in order, with:
-   - [`tree_equity_1_number_of_trees_to_polygon.py`](code/lc_scenarios/tree_equity_1_number_of_trees_to_polygon.py)
-   - [`tree_equity_2_scenario_engine.py`](code/lc_scenarios/tree_equity_2_scenario_engine.py)
-   - [`tree_equity_3_lulc_stats.py`](code/lc_scenarios/tree_equity_3_lulc_stats.py)
+5. Review the recovered historical Green logs and generate the revised nested
+   Green scenarios with
+   [`generate_green_scenarios_invest.py`](code/lc_scenarios/generate_green_scenarios_invest.py).
+6. Generate Target10/20/30 directly from the final screened ranked points with
+   [`generate_target_scenarios.py`](code/lc_scenarios/generate_target_scenarios.py).
 
 **Configuration gate:** checksum verification records the historical selections
 as `710v2 -> 510` (Target10), `730v2 -> 520` (Target20), and `730v3 -> 530`
 (legacy Target30). The Target20 mapping is intentionally non-sequential. The
-currently active generator uses different `710v3/720v3/730v3` defaults, so do
+legacy polygon generator uses different `710v3/720v3/730v3` defaults, so do
 not infer or substitute inputs from their filenames. Use
 [`SCENARIO_NAMING_AUDIT.md`](code/health_assessment/SCENARIO_NAMING_AUDIT.md)
 as the authoritative crosswalk.
@@ -264,23 +261,21 @@ the intended data snapshot.
 
 ### 4. Validate intervention areas
 
-Before comparing Green30 with Target30, run:
+Before comparing the revised Green and Target scenarios, run:
 
 ```bash
-python code/lc_scenarios/validate_scenario_canopy_budget.py \
+python code/lc_scenarios/validate_green_target_scenarios.py \
   --baseline /path/to/baseline_lulc.tif \
-  --green30 /path/to/green30_lulc.tif \
-  --target30 /path/to/target30_lulc.tif \
-  --output figures/equity_map_biscale/fig7_canopy_budget_check.csv
+  --green /path/to/Green10.tif /path/to/Green20.tif /path/to/Green30.tif \
+  --target /path/to/Target10.tif /path/to/Target20.tif /path/to/Target30.tif \
+  --output-json /path/to/green_target_pair_qa.json \
+  --output-csv /path/to/green_target_pair_qa.csv
 ```
 
-The current script counts code-100 transitions only and is retained as a
-diagnostic. It must be generalized before production use. The approved
-definition treats `{1,2,100}` as existing canopy, permits planting only on
-`{4,20,21}`, and matches each Target to the corrected Green count. The
-historical Green reference counts under that definition are 307,768, 595,084
-and 894,249 cells. Exact validation and regeneration steps are in the scenario
-README.
+The validator treats `{1,2,100}` as existing canopy, permits new planting only
+on `{4,20,21}`, checks complete transitions and matches each Target to its
+Green count: 307,768, 595,084 and 894,249 cells. Exact regeneration results are
+in the scenario README.
 
 ### 5. Run the InVEST Urban Cooling Model
 
@@ -293,6 +288,18 @@ python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_curre
   "G:/Shared drives/Wellcome Trust Project Data" --eap
 ```
 
+For the final revised equal-area comparison, validate and run the dedicated
+seven-scenario runner. It writes to a new versioned output root and never
+overwrites legacy UCM workspaces:
+
+```bash
+conda run -n urban-cooling-invest-3.20.2 python \
+  code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_revised_scenarios.py \
+  /path/to/Wellcome\ Trust\ Project\ Data --validate-only
+
+# After all configurations validate, rerun without --validate-only.
+```
+
 The dedicated Target30 v4 runner preserves the legacy `scenario530` outputs
 and runs the 25°C primary and 28°C sensitivity settings in a separate
 health-only workspace:
@@ -302,9 +309,9 @@ python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_targe
   /path/to/Wellcome\ Trust\ Project\ Data
 ```
 
-This runner reproduces the historical code-100-matched v4 analysis. Do not use
-it for the final comparison until its input is replaced by a reviewed
-common-eligibility Target30 raster.
+This runner reproduces the historical code-100-matched v4 analysis only. Keep
+it for provenance; use the revised seven-scenario runner above for the final
+comparison.
 
 The default omits productivity and building-energy valuation because neither
 affects the air-temperature raster used by the health model. Add

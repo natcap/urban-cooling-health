@@ -90,6 +90,15 @@ root, this workflow uses:
     ├── LULC_Scenario510.tif
     ├── LULC_Scenario520.tif
     └── LULC_Scenario530.tif
+    └── revised_v2_rank_fid_equal_area_2026-09-10/
+        ├── LULC_Target10_equal_area_eligible_v2.tif
+        ├── LULC_Target20_equal_area_eligible_v2.tif
+        ├── LULC_Target30_equal_area_eligible_v2.tif
+        ├── target_scenario_manifest_revised.json
+        ├── target_transition_audit.csv
+        ├── green_target_pair_qa.json
+        ├── green_target_pair_qa.csv
+        └── target_change_masks.png
 └── lc_green_scenarios_output/
     ├── revised_v2_invest_3.20.2_2026-09-10/
         ├── Green10_equal_area_eligible_v2.tif
@@ -309,15 +318,61 @@ The ranked data contain tied scores at each historical selection cutoff, so
 revised selection must use the retained `FID` as a deterministic secondary
 sort key rather than `rank` alone.
 
-## Revised regeneration procedure
+### Revised Target10/20/30 results
 
-Do not overwrite historical files. The next implementation should perform
-these stages in order:
+[`generate_target_scenarios.py`](generate_target_scenarios.py) sorts all
+3,378,103 screened candidates by `(rank, FID)`, accepts unique pixel centres
+strictly within a 5 m candidate radius, restricts conversions to `{4,20,21}`
+and stops at the revised Green budgets. The production outputs are nested and
+contain:
 
-1. **Generalize the transition audit.** Update
-   [`validate_scenario_canopy_budget.py`](validate_scenario_canopy_budget.py)
-   to accept canopy codes `{1,2,100}` and eligible source codes `{4,20,21}` and
-   to export the full source-to-target transition matrix.
+| Scenario | `4 -> 100` | `20 -> 100` | `21 -> 100` | Total |
+|---|---:|---:|---:|---:|
+| Target10 | 21,412 | 219,337 | 67,019 | 307,768 |
+| Target20 | 43,287 | 411,309 | 140,488 | 595,084 |
+| Target30 | 67,752 | 602,026 | 224,471 | 894,249 |
+
+Urban accounts for 71.3%, 69.1% and 67.3% of revised Target additions, versus
+23.6%, 25.0% and 27.1% in the corresponding revised Green scenarios. This is
+not blanket conversion of LCM Urban: every Target location comes from the
+screened street-tree candidate dataset. Nevertheless, this composition
+difference must be reported when interpreting the Green–Target comparison.
+
+Relative to the manuscript's historical Target aliases, all historically
+eligible cells are retained. The revised scenarios add 34,526, 59,347 and
+36,128 eligible cells and exclude 3,188, 7,248 and 11,323 historical changes
+from ineligible land-cover classes at levels 10, 20 and 30, respectively.
+
+Run the generator and independent paired QA with:
+
+```bash
+python code/lc_scenarios/generate_target_scenarios.py \
+  --baseline /path/to/LCM2023_London_10m_clip2aoi_tcc24.tif \
+  --candidate-points /path/to/Potential_Tree_Points_Ranked.shp \
+  --output-dir /path/to/new/versioned/target_scenarios \
+  --repo-root /path/to/urban-cooling-health
+
+python code/lc_scenarios/validate_green_target_scenarios.py \
+  --baseline /path/to/baseline.tif \
+  --green /path/to/Green10.tif /path/to/Green20.tif /path/to/Green30.tif \
+  --target /path/to/Target10.tif /path/to/Target20.tif /path/to/Target30.tif \
+  --output-json /path/to/green_target_pair_qa.json \
+  --output-csv /path/to/green_target_pair_qa.csv
+```
+
+The paired QA passed exact budgets, allowed transitions, NoData/grid identity,
+canopy retention and nesting. Same-level Green–Target overlap is 0.85%, 2.03%
+and 3.64%, confirming that the area-based and vulnerability-targeted methods
+allocate the same canopy quantities to substantially different locations.
+
+## Completed revised regeneration procedure
+
+Historical files were not overwritten. The revised workflow performs these
+stages in order:
+
+1. **Validate complete transitions.** Use
+   [`validate_green_target_scenarios.py`](validate_green_target_scenarios.py)
+   with canopy codes `{1,2,100}` and source codes `{4,20,21}`.
 2. **Generate revised Green scenarios.** Run the recommended InVEST profile
    above. Expected cumulative new-canopy counts are 307,768, 595,084 and
    894,249 cells.
@@ -331,9 +386,9 @@ these stages in order:
 5. **Run scenario QA.** Require identical grid/NoData, exact Green–Target
    counts, no changes outside `{4,20,21}`, no lost canopy, and nested
    10-within-20-within-30 masks. Write a checksum manifest for every output.
-6. **Review before modeling.** Visually compare the six change masks and review
-   the transition tables and rank cutoffs. Only then run InVEST 3.20.2 at the
-   approved 25 C primary and 28 C sensitivity settings.
+6. **Review before modeling.** Review the change-mask preview, transition
+   tables, rank cutoffs and paired QA. Then validate InVEST 3.20.2 at the
+   approved 25 C primary and 28 C sensitivity settings before running it.
 
 Suggested new filenames:
 
@@ -355,6 +410,8 @@ LULC_Target30_equal_area_eligible_v2.tif
 | `generate_green_scenarios_invest.py` | Reproduce historical parameters or generate corrected nested Green scenarios | Recommended Green generator; requires InVEST 3.20.2 |
 | `build_tree_opportunity_mask.py` | Rasterize screened Target candidates using a 5 m crown and pixel-centre rule | Target audit and regeneration input; not the primary Green definition |
 | `TARGET_OPPORTUNITY_METHOD_AUDIT.md` | Record Target Methods evidence, data checks, capacity and provenance gaps | Current decision record |
+| `generate_target_scenarios.py` | Sort screened candidates by `(rank, FID)` and generate exact nested Target rasters | Recommended Target generator |
+| `validate_green_target_scenarios.py` | Independently validate the six revised Green/Target rasters | Recommended scenario gate |
 | `tree_equity_1_number_of_trees_to_polygon.py` | Select and buffer ranked Target candidates | Historical construction; configuration is hard-coded |
 | `tree_equity_2_scenario_engine.py` | Burn Target buffers into baseline | Historical construction; lacks eligibility masking |
 | `tree_equity_3_lulc_stats.py` | Summarize LULC classes | Diagnostic; active filenames are legacy aliases |

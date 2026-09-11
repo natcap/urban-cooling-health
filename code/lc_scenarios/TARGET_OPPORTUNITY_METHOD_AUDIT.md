@@ -143,3 +143,35 @@ Request or record, when available:
 These gaps do not prevent a controlled regeneration from the supplied final
 candidate points, but they prevent independent reconstruction of those points
 from raw source data.
+
+## Revised Target outputs and validation
+
+The deterministic generator in Git commit `4f8062d` created the versioned
+Target outputs under:
+
+```text
+OfficialWorkingInputs/LULC/lc_tree_equity_scenarios_output/
+└── revised_v2_rank_fid_equal_area_2026-09-10/
+```
+
+| Scenario | Final accepted rank | Final FID | Added pixels | Added area (km²) |
+|---|---:|---:|---:|---:|
+| Target10 | 636,844 | 3,366,330 | 307,768 | 30.7768 |
+| Target20 | 1,252,090 | 1,904,899 | 595,084 | 59.5084 |
+| Target30 | 1,890,948 | 2,952,258 | 894,249 | 89.4249 |
+
+The source records are rank-sorted but are not FID-sorted within tied ranks;
+the generator therefore imposes `(rank, FID)` ordering explicitly. Independent
+paired validation found exact Green–Target budgets, no ineligible changes, no
+canopy removal, identical grids and NoData footprints, and complete nesting.
+
+The original eligible Target cells are subsets of the revised outputs. The
+revised procedure extends each ranked selection until its eligible realized
+area matches Green, while excluding historical changes from woodland, arable,
+water, wetland and other disallowed classes.
+
+The candidate DBF is approximately 2.7 GB because it includes many attributes
+not required for scenario construction. Cloud-backed runs may first need the
+shapefile sidecars made available offline or copied to temporary local storage;
+the generator reads only `rank`, `FID` and point coordinates and records
+checksums for every authoritative shapefile component.

@@ -166,18 +166,18 @@ scenario names, and one documented input raster maps to each Target scenario.
 - [x] Generate the equal-area no-Urban Green sensitivity with `{4,21}`. It
   retains the 30.7768/59.5084/89.4249 km² budgets and is stored separately
   under `lc_green_scenarios_output/`.
-- [ ] Generalize the transition audit to accept canopy and eligibility code
-  sets and export the complete source-to-target transition matrix.
+- [x] Add `validate_green_target_scenarios.py` to validate configurable canopy
+  and source-code sets, full transitions, equal budgets, nesting and NoData.
 - [x] Run the tested revised Green generator into the permanent versioned
   shared folder `lc_green_scenarios_output/`
   `revised_v2_invest_3.20.2_2026-09-10/`; retain its three rasters, raw InVEST
   workspaces and JSON manifest.
-- [ ] Replace rank-only Target selection with deterministic `(rank, FID)`
+- [x] Replace rank-only Target selection with deterministic `(rank, FID)`
   ordering. All three historical cutoffs intersect tied-score groups, so
   `nsmallest(N, "rank")` alone is not a reproducible prefix rule.
-- [ ] Generate all three Target rasters from the baseline, restricted to
+- [x] Generate all three Target rasters from the baseline, restricted to
   `{4,20,21}`, and stop at the corresponding corrected Green count.
-- [ ] Require exact counts, zero ineligible transitions, unchanged NoData,
+- [x] Require exact counts, zero ineligible transitions, unchanged NoData,
   identical grids and nested 10-within-20-within-30 masks before UCM runs.
 
 **Data to locate or add:** no additional source raster is needed for the Green
@@ -192,12 +192,11 @@ download/version, 1 m canopy raster filename, or source-generation script;
 retain these as provenance requests rather than blockers to regeneration from
 the final screened points.
 
-**Current result:** the earlier audit tables correctly record code-100
-transitions but not total new canopy under the revised definition. Target30 v4
-has 917,794 eligible new-canopy cells versus Green30's 894,249, an excess of
-23,545 cells (2.3545 km²; 2.633%). The prior UCM and health reruns remain
-reproducibility evidence and must be superseded after all six corrected
-scenarios pass validation.
+**Current result:** all six revised Green/Target rasters pass the scenario
+gate. Each pair adds exactly 307,768/595,084/894,249 eligible cells, all tiers
+are nested, and there are no ineligible transitions or NoData differences.
+The prior Target30 v4, UCM and health reruns remain historical reproducibility
+evidence and must be superseded by the revised outputs.
 
 **Done when:** the audit records a pass and identifies the three final rasters.
 
@@ -351,14 +350,14 @@ scenario version, units and values.
 
 Complete the remaining work in this order to avoid unnecessary model reruns:
 
-1. approve the remaining Target10/20 scenario versions (Target30 is resolved);
-2. [x] add the official-code crosswalk and 2021 LSOA population;
-3. [x] validate Green30–Target30 realized canopy equivalence;
-4. [x] rerun baseline, Green30 and approved Target30 UCM inputs with InVEST 3.20.2;
-5. [x] rerun Green30 and Target30 health models with paired Monte Carlo settings;
-6. [x] regenerate LSOA zonal outputs using official `LSOA11CD` (Figure 7 now
+1. [x] generate and validate revised Target10/20/30 scenario versions;
+2. [x] validate all fourteen revised UCM configurations at 25 C and 28 C;
+3. [x] add the official-code crosswalk and 2021 LSOA population;
+4. [ ] run the fourteen revised baseline/Green/Target UCM configurations with InVEST 3.20.2;
+5. [ ] rerun the revised health models with paired Monte Carlo settings;
+6. [ ] regenerate LSOA zonal outputs using official `LSOA11CD` (Figure 7 now
    reads this table directly, superseding regeneration of `health_sf.rds`);
-7. [x] run `Rscript code/run-fig7.R` and visually inspect both output figures;
+7. [ ] run `Rscript code/run-fig7.R` and visually inspect both output figures;
 8. reconcile the revised output CSVs with the manuscript text, caption and abstract;
 9. save the input manifest, run metadata and software environment with the
    publication archive.
