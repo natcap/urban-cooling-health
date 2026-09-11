@@ -36,6 +36,15 @@ def _sum_field(vector_path: Path, field_name: str) -> tuple[float, int, int]:
     if dataset is None:
         raise ValueError(f"Could not open vector: {vector_path}")
     layer = dataset.GetLayer()
+    # Skip geometry and unused attributes; large building shapefiles then scan
+    # the DBF only, which is substantially faster and uses less memory.
+    definition = layer.GetLayerDefn()
+    ignored = [
+        definition.GetFieldDefn(index).GetName()
+        for index in range(definition.GetFieldCount())
+        if definition.GetFieldDefn(index).GetName() != field_name
+    ]
+    layer.SetIgnoredFields(["OGR_GEOMETRY", *ignored])
     total = 0.0
     valid = 0
     missing = 0

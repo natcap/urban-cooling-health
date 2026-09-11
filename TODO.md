@@ -269,10 +269,17 @@ scenario rasters and must not be combined with the revised health results.
 - [x] Add documented citywide and borough summary processing that sums energy
   once across unique buildings and quantifies any borough-intersection
   duplication.
-- [ ] Complete all seven 25°C valuation runs in a new versioned output folder.
-- [ ] Generate Hothaps rasters and reconcile citywide/borough summaries.
-- [ ] Compare revised energy and productivity results with manuscript-era
-  values, then update Figures 4–5 and their text.
+- [x] Complete all seven 25°C valuation runs in the versioned
+  `revised_equal_area_invest3202_2026-09-11_valuations` output folder.
+- [x] Generate seven Hothaps rasters and reconcile citywide/borough summaries.
+  All 2,223,481 buildings have energy values; borough intersection duplication
+  is quantified in the saved summary.
+- [x] Compare revised energy and productivity results with manuscript-era
+  values using scenario gains relative to baseline and paired common-footprint
+  productivity changes. The archived Green10 derived productivity TIFF is
+  corrupt, so the comparison is reproducibly recalculated from archived WBGT.
+- [ ] Update Figures 4–5 and their manuscript text from the revised summaries.
+  This is intentionally held for the next work session.
 
 **Done when:** all seven scenarios have matching energy, WBGT and Hothaps
 outputs; summary CSVs pass reconciliation checks; and the manuscript uses only

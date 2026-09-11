@@ -42,6 +42,23 @@ def _workability(wbgt: numpy.ndarray, alpha1: float, alpha2: float) -> numpy.nda
 def _raster_summary(path: Path) -> dict[str, object]:
     info = pygeoprocessing.get_raster_info(str(path))
     stats = info.get("statistics")
+    if stats and stats[0] is not None:
+        statistics = list(stats[0])
+    else:
+        # Newly written rasters do not always have GDAL statistics metadata.
+        nodata = info["nodata"][0]
+        minimum = numpy.inf
+        maximum = -numpy.inf
+        for _, block in pygeoprocessing.iterblocks((str(path), 1)):
+            valid = numpy.isfinite(block)
+            if nodata is not None:
+                valid &= ~numpy.isclose(block, nodata)
+            if valid.any():
+                minimum = min(minimum, float(block[valid].min()))
+                maximum = max(maximum, float(block[valid].max()))
+        if not numpy.isfinite(minimum):
+            raise ValueError(f"Raster has no valid pixels: {path}")
+        statistics = [minimum, maximum, None, None]
     return {
         "path": str(path),
         "sha256": _sha256(path),
@@ -51,7 +68,7 @@ def _raster_summary(path: Path) -> dict[str, object]:
         "bounding_box": list(info["bounding_box"]),
         "projection_wkt": info["projection_wkt"],
         "nodata": list(info["nodata"]),
-        "statistics": list(stats[0]) if stats else None,
+        "statistics": statistics,
     }
 
 

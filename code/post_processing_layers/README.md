@@ -14,6 +14,7 @@ scenario mappings.
 | Run the final baseline/Green/Target UCM scenarios | `../Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_revised_scenarios.py` | Current |
 | Convert WBGT to heavy-work productivity | `updated_work_intensity/new_work_intensity.py` | Current |
 | Summarize energy and productivity | `summarize_revised_energy_productivity.py` | Current |
+| Compare revised and manuscript-era summaries | `compare_revised_to_original_energy_productivity.py` | Current |
 | Legacy zonal statistics and manuscript plots | notebooks and `*.Rmd` files listed below | Historical; migrate only the required plot logic |
 
 The final scenario set is baseline plus Green10/20/30 and Target10/20/30,
@@ -126,6 +127,29 @@ Productivity is summarized as the area-weighted mean across valid 10 m pixels.
 If an exposure- or worker-weighted interpretation is desired, add a suitable
 worker-location raster and report that as a separate sensitivity analysis.
 
+### 5. Compare with the manuscript-era results
+
+```bash
+conda run -n urban-cooling-invest-3.20.2 python \
+  code/post_processing_layers/compare_revised_to_original_energy_productivity.py \
+  /path/to/UCM_official_runs \
+  /path/to/versioned/valuation-output/summary/citywide_energy_productivity_summary.csv
+```
+
+The comparison uses the preserved `scenario0`, `scenario41/42/43` and
+`scenario510/520/530` 25°C building outputs. It recalculates historical
+Hothaps workability directly from WBGT because the archived Green10 derived
+productivity TIFF contains an unreadable compressed tile. Productivity gains
+are paired cell by cell against the matching baseline on their common valid
+footprint; separate raster means are not used to infer a change when the old
+Green rasters have a smaller valid footprint. Energy gains are calculated
+against each model version's own baseline.
+
+The resulting CSV and JSON manifest are written to the revised run's
+`summary/` directory. `--reuse-energy-from-output` is only a resume aid after
+the energy columns have already been produced by a complete run; omit it for
+an independent rebuild.
+
 ## Validation checklist
 
 Before updating figures or manuscript text, confirm:
@@ -140,6 +164,10 @@ Before updating figures or manuscript text, confirm:
 7. scenario changes are calculated against the matching-temperature baseline;
 8. all displayed values reconcile exactly to saved CSVs; and
 9. no restricted raster or building input is added to Git.
+
+The source building layer currently produces polygon winding-order warnings;
+GDAL/InVEST autocorrects them during processing. Record the warning and confirm
+that all 2,223,481 buildings receive energy values, as in the current run.
 
 ## Historical files
 

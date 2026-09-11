@@ -4,8 +4,8 @@
 
 The final revised scenario set was run with InVEST 3.20.2 at the approved
 25°C primary and 28°C sensitivity settings. The batch includes the baseline
-and Green10/20/30 and Target10/20/30, uses identical model parameters, omits
-energy and productivity valuation, and writes to a new versioned directory:
+and Green10/20/30 and Target10/20/30, uses identical model parameters, and
+writes temperature-only results to a new versioned directory:
 
 ```text
 2_postprocess_intermediate/UCM_official_runs/
@@ -55,3 +55,24 @@ Run the population-weighted health analysis using
 `health-analysis-revised-equal-area.example.json`. It fixes 2021 population,
 2021 registered mortality, 2,000 cause-stable draws and seed `20260908` across
 all twelve Green/Target scenario-temperature combinations.
+
+## Energy and productivity valuation addendum
+
+The same seven final scenarios were rerun at the primary 25°C setting with
+InVEST 3.20.2 energy valuation and WBGT enabled. Results are isolated from the
+temperature/health workspaces under:
+
+```text
+2_postprocess_intermediate/UCM_official_runs/
+└── revised_equal_area_invest3202_2026-09-11_valuations/
+```
+
+Each scenario contains a unique-building energy layer, WBGT raster and run
+manifest. Project-specific heavy-work productivity was then calculated with
+the continuous Hothaps equation, not InVEST's built-in threshold classes. The
+versioned `summary/` directory contains citywide, borough and
+revised-versus-original tables plus their manifests. These aggregate results
+remain on the restricted shared drive until publication in Git is explicitly
+approved. See
+[`../post_processing_layers/README.md`](../post_processing_layers/README.md)
+for the complete commands, validation rules and historical comparison method.
