@@ -15,7 +15,9 @@ import hashlib
 import json
 import logging
 import platform
+import re
 import subprocess
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -72,6 +74,24 @@ def _input_record(path: Path) -> dict[str, object]:
     return {"path": str(path), "size_bytes": path.stat().st_size, "sha256": _sha256(path)}
 
 
+def _source_record(path: Path) -> dict[str, object]:
+    """Record a file or every component of an ESRI Shapefile dataset."""
+    if path.suffix.lower() != ".shp":
+        return _input_record(path)
+    components = sorted(
+        component
+        for component in path.parent.glob(f"{path.stem}.*")
+        if component.is_file()
+    )
+    if not components:
+        raise FileNotFoundError(f"Shapefile dataset not found: {path}")
+    return {
+        "path": str(path),
+        "dataset_format": "ESRI Shapefile",
+        "components": [_input_record(component) for component in components],
+    }
+
+
 def _raster_record(path: Path) -> dict[str, object]:
     info = pygeoprocessing.get_raster_info(str(path))
     statistics = info.get("statistics")
@@ -109,8 +129,13 @@ def _parse_overrides(values: list[str]) -> dict[str, Path]:
         if "=" not in value:
             raise ValueError("Scenario overrides must use NAME=/absolute/path.tif")
         name, raw_path = value.split("=", 1)
-        if name not in SCENARIOS:
-            raise ValueError(f"Unknown scenario override: {name}")
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", name):
+            raise ValueError(
+                f"Invalid scenario name {name!r}; use lowercase letters, numbers "
+                "and underscores"
+            )
+        if name in overrides:
+            raise ValueError(f"Duplicate scenario override: {name}")
         overrides[name] = Path(raw_path).expanduser().resolve()
     return overrides
 
@@ -118,7 +143,15 @@ def _parse_overrides(values: list[str]) -> dict[str, Path]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("data_root", type=Path)
-    parser.add_argument("--scenarios", nargs="+", choices=sorted(SCENARIOS), default=list(SCENARIOS))
+    parser.add_argument(
+        "--scenarios",
+        nargs="+",
+        default=list(SCENARIOS),
+        help=(
+            "Scenario names to run. Names outside the built-in defaults must "
+            "also be supplied with --scenario-lulc."
+        ),
+    )
     parser.add_argument("--temperatures", nargs="+", type=float, default=[25, 28])
     parser.add_argument("--uhi-max", type=float, default=5)
     parser.add_argument("--humidity", type=float, default=45)
@@ -137,6 +170,16 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--valuation-temperatures",
+        nargs="+",
+        type=float,
+        help=(
+            "Calculate energy and WBGT only at these requested temperatures. "
+            "Use this instead of --include-valuations to avoid unnecessary "
+            "valuation runs at sensitivity temperatures."
+        ),
+    )
+    parser.add_argument(
         "--building-vector",
         type=Path,
         help="Override the default energy-buildings vector.",
@@ -147,7 +190,23 @@ def main() -> int:
         help="Override the default energy-consumption table.",
     )
     parser.add_argument("--validate-only", action="store_true")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Skip completed runs only after their manifest and inputs match.",
+    )
     args = parser.parse_args()
+
+    if args.include_valuations and args.valuation_temperatures:
+        parser.error("Use either --include-valuations or --valuation-temperatures, not both")
+    requested_temperatures = set(args.temperatures)
+    valuation_temperatures = (
+        requested_temperatures
+        if args.include_valuations
+        else set(args.valuation_temperatures or [])
+    )
+    if not valuation_temperatures <= requested_temperatures:
+        parser.error("Every valuation temperature must also be listed in --temperatures")
 
     if natcap.invest.__version__ != REQUIRED_INVEST_VERSION:
         parser.error(
@@ -168,6 +227,14 @@ def main() -> int:
         overrides = _parse_overrides(args.scenario_lulc)
     except ValueError as error:
         parser.error(str(error))
+    undefined_scenarios = sorted(
+        name for name in args.scenarios if name not in SCENARIOS and name not in overrides
+    )
+    if undefined_scenarios:
+        parser.error(
+            "No LULC path was provided for scenario(s): "
+            + ", ".join(undefined_scenarios)
+        )
     common_inputs = {
         "aoi_vector_path": input_root / "AOIs/London_Borough_aoi.shp",
         "biophysical_table_path": (
@@ -177,8 +244,9 @@ def main() -> int:
             input_root / "evapotranspiration/et0_V3_07_clipped_reprojected.tif"
         ),
     }
-    if args.include_valuations:
-        common_inputs.update({
+    valuation_inputs = {}
+    if valuation_temperatures:
+        valuation_inputs = {
             "building_vector_path": (
                 args.building_vector.expanduser().resolve()
                 if args.building_vector
@@ -189,17 +257,35 @@ def main() -> int:
                 if args.energy_table
                 else input_root / "energy_buildings/_UCM_Energy Consumption Table.csv"
             ),
-        })
+        }
+
+    input_record_cache: dict[Path, dict[str, object]] = {}
+    validation_context = tempfile.TemporaryDirectory(prefix="ucm-validation-") if args.validate_only else None
+    validation_root = Path(validation_context.name) if validation_context else None
+
+    def input_record(path: Path) -> dict[str, object]:
+        if path not in input_record_cache:
+            input_record_cache[path] = _source_record(path)
+        return input_record_cache[path]
 
     for scenario_name in args.scenarios:
-        lulc_path = overrides.get(scenario_name, input_root / SCENARIOS[scenario_name])
+        lulc_path = overrides.get(scenario_name)
+        if lulc_path is None:
+            lulc_path = input_root / SCENARIOS[scenario_name]
         workspace = output_root / scenario_name
-        required_inputs = [*common_inputs.values(), lulc_path]
-        missing = [path for path in required_inputs if not path.is_file()]
-        if missing:
-            parser.error("Missing required input(s): " + ", ".join(map(str, missing)))
-        workspace.mkdir(parents=True, exist_ok=True)
         for temperature in args.temperatures:
+            include_valuations = temperature in valuation_temperatures
+            required_inputs = [*common_inputs.values(), lulc_path]
+            if include_valuations:
+                required_inputs.extend(valuation_inputs.values())
+            missing = [path for path in required_inputs if not path.is_file()]
+            if missing:
+                parser.error("Missing required input(s): " + ", ".join(map(str, missing)))
+            current_inputs = (
+                [input_record(path) for path in required_inputs]
+                if not args.validate_only
+                else []
+            )
             temperature_label = f"{temperature:g}"
             suffix = (
                 f"london_{scenario_name}_{temperature_label}deg_"
@@ -207,8 +293,6 @@ def main() -> int:
             )
             output_path = workspace / f"T_air_{suffix}.tif"
             manifest_path = workspace / f"run_manifest_{suffix}.json"
-            if not args.validate_only and (output_path.exists() or manifest_path.exists()):
-                raise FileExistsError(f"Refusing to overwrite a documented run: {output_path}")
             run_args = {
                 "aoi_vector_path": str(common_inputs["aoi_vector_path"]),
                 "avg_rel_humidity": args.humidity,
@@ -217,8 +301,8 @@ def main() -> int:
                 "cc_weight_albedo": "",
                 "cc_weight_eti": "",
                 "cc_weight_shade": "",
-                "do_energy_valuation": args.include_valuations,
-                "do_productivity_valuation": args.include_valuations,
+                "do_energy_valuation": include_valuations,
+                "do_productivity_valuation": include_valuations,
                 "green_area_cooling_distance": 450,
                 "lulc_raster_path": str(lulc_path),
                 "ref_eto_raster_path": str(common_inputs["ref_eto_raster_path"]),
@@ -226,13 +310,17 @@ def main() -> int:
                 "t_air_average_radius": 500,
                 "t_ref": temperature,
                 "uhi_max": args.uhi_max,
-                "workspace_dir": str(workspace),
+                "workspace_dir": str(
+                    validation_root / scenario_name if validation_root else workspace
+                ),
             }
-            if args.include_valuations:
+            if validation_root:
+                Path(run_args["workspace_dir"]).mkdir(parents=True, exist_ok=True)
+            if include_valuations:
                 run_args.update({
-                    "building_vector_path": str(common_inputs["building_vector_path"]),
+                    "building_vector_path": str(valuation_inputs["building_vector_path"]),
                     "energy_consumption_table_path": str(
-                        common_inputs["energy_consumption_table_path"]
+                        valuation_inputs["energy_consumption_table_path"]
                     ),
                 })
             warnings = natcap.invest.urban_cooling_model.validate(run_args)
@@ -248,12 +336,79 @@ def main() -> int:
                 LOGGER.info("Validated %s at %s C", scenario_name, temperature_label)
                 continue
 
+            workspace.mkdir(parents=True, exist_ok=True)
+
+            if output_path.exists() or manifest_path.exists():
+                if not args.resume or not (output_path.is_file() and manifest_path.is_file()):
+                    raise FileExistsError(
+                        f"Refusing incomplete or unapproved overwrite: {output_path}"
+                    )
+                saved = json.loads(manifest_path.read_text(encoding="utf-8"))
+                if saved.get("schema_version") != 2:
+                    raise ValueError(
+                        f"Cannot resume {scenario_name} at {temperature_label} C: "
+                        "the run manifest predates complete output and shapefile checksums"
+                    )
+                saved_inputs = sorted(
+                    saved.get("inputs", []), key=lambda record: record.get("path", "")
+                )
+                current_inputs = sorted(current_inputs, key=lambda record: record["path"])
+                expected_additional = []
+                if include_valuations:
+                    expected_additional = [
+                        workspace / f"buildings_with_stats_{suffix}.shp",
+                        workspace / "intermediate" / f"wbgt_{suffix}.tif",
+                    ]
+                differences = []
+                if saved.get("model_arguments") != run_args:
+                    saved_args = saved.get("model_arguments", {})
+                    changed_keys = sorted(
+                        key
+                        for key in set(saved_args) | set(run_args)
+                        if saved_args.get(key) != run_args.get(key)
+                    )
+                    differences.append(f"model arguments changed: {changed_keys}")
+                if saved_inputs != current_inputs:
+                    saved_by_path = {record.get("path"): record for record in saved_inputs}
+                    current_by_path = {record["path"]: record for record in current_inputs}
+                    changed_paths = sorted(
+                        path
+                        for path in set(saved_by_path) | set(current_by_path)
+                        if saved_by_path.get(path) != current_by_path.get(path)
+                    )
+                    differences.append(f"inputs changed: {changed_paths}")
+                if saved.get("software", {}).get("invest") != REQUIRED_INVEST_VERSION:
+                    differences.append("InVEST version changed")
+                if saved.get("output") != _raster_record(output_path):
+                    differences.append("temperature output changed")
+                missing_additional = [
+                    str(path) for path in expected_additional if not path.is_file()
+                ]
+                if missing_additional:
+                    differences.append(f"outputs missing: {missing_additional}")
+                elif include_valuations:
+                    current_additional = [
+                        _raster_record(path)
+                        if path.suffix.lower() == ".tif"
+                        else _source_record(path)
+                        for path in expected_additional
+                    ]
+                    if saved.get("additional_outputs") != current_additional:
+                        differences.append("valuation outputs changed")
+                if differences:
+                    raise ValueError(
+                        f"Cannot resume {scenario_name} at {temperature_label} C: "
+                        + "; ".join(differences)
+                    )
+                LOGGER.info("Resuming: verified and skipped %s at %s C", scenario_name, temperature_label)
+                continue
+
             LOGGER.info("Running %s at %s C", scenario_name, temperature_label)
             natcap.invest.urban_cooling_model.execute(run_args)
             if not output_path.is_file():
                 raise FileNotFoundError(f"Expected output was not created: {output_path}")
             additional_outputs = []
-            if args.include_valuations:
+            if include_valuations:
                 additional_outputs = [
                     workspace / f"buildings_with_stats_{suffix}.shp",
                     workspace / "intermediate" / f"wbgt_{suffix}.tif",
@@ -265,21 +420,23 @@ def main() -> int:
                         + ", ".join(map(str, missing_outputs))
                     )
             manifest = {
-                "schema_version": 1,
+                "schema_version": 2,
                 "created_utc": datetime.now(timezone.utc).isoformat(),
                 "scenario": scenario_name,
                 "purpose": (
                     "Air temperature, building energy and WBGT for revised "
                     "scenario comparison"
-                    if args.include_valuations
+                    if include_valuations
                     else "Air-temperature input for population-weighted health assessment"
                 ),
                 "temperature_setting_c": temperature,
                 "model_arguments": run_args,
-                "inputs": [_input_record(path) for path in required_inputs],
+                "inputs": current_inputs,
                 "output": _raster_record(output_path),
                 "additional_outputs": [
-                    _raster_record(path) if path.suffix.lower() == ".tif" else _input_record(path)
+                    _raster_record(path)
+                    if path.suffix.lower() == ".tif"
+                    else _source_record(path)
                     for path in additional_outputs
                 ],
                 "software": {
@@ -292,6 +449,8 @@ def main() -> int:
             }
             manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
             LOGGER.info("Documented run in %s", manifest_path)
+    if validation_context is not None:
+        validation_context.cleanup()
     return 0
 
 

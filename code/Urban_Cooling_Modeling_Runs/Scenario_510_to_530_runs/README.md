@@ -20,7 +20,7 @@ For production, use:
 
 ```text
 code/Urban_Cooling_Modeling_Runs/
-└── execute_invest_urban_cooling_model_revised_scenarios.py
+└── run_ucm_scenarios.py
 ```
 
 That runner maps the canonical scenario names `target10`, `target20` and

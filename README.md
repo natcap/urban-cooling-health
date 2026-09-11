@@ -281,22 +281,34 @@ in the scenario README.
 
 ### 5. Run the InVEST Urban Cooling Model
 
-Scripts are grouped under
-[`code/Urban_Cooling_Modeling_Runs/`](code/Urban_Cooling_Modeling_Runs/).
-They accept the external data root as the first argument. For example:
+For a new production run, use the unified configuration-driven workflow. It
+runs each requested UCM temperature once, applies valuations only at the
+selected temperatures, calculates Hothaps workability and produces summaries:
 
 ```bash
-python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_current_lulc.py \
-  "G:/Shared drives/Wellcome Trust Project Data" --eap
+export URBAN_COOLING_DATA_ROOT="/path/to/Wellcome Trust Project Data"
+
+# Copy the example to a dated config, replace YYYY-MM-DD inside that copy,
+# and commit it before the production run (2026-09-11 is illustrative here).
+conda run -n urban-cooling-invest-3.20.2 python \
+  code/workflows/run_ucm_pipeline.py \
+  --config code/workflows/configs/ucm_pipeline_2026-09-11.json \
+  --validate-only
+
+# After validation, rerun without --validate-only.
 ```
 
-For the final revised equal-area comparison, validate and run the dedicated
-seven-scenario runner. It writes to a new versioned output root and never
-overwrites legacy UCM workspaces:
+The example runs 25°C once with energy and WBGT and 28°C once as a
+temperature-only sensitivity, eliminating the former duplicate 25°C run. Use
+`--resume` after an interruption; completed UCM and Hothaps outputs are skipped
+only after their manifests, parameters and checksums match. See the
+[`workflow README`](code/workflows/README.md).
+
+Use the UCM component directly only for a model-only run:
 
 ```bash
 conda run -n urban-cooling-invest-3.20.2 python \
-  code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_revised_scenarios.py \
+  code/Urban_Cooling_Modeling_Runs/run_ucm_scenarios.py \
   /path/to/Wellcome\ Trust\ Project\ Data --validate-only
 
 # After all configurations validate, rerun without --validate-only.
@@ -315,12 +327,12 @@ This runner reproduces the historical code-100-matched v4 analysis only. Keep
 it for provenance; use the revised seven-scenario runner above for the final
 comparison.
 
-The default omits productivity and building-energy valuation because neither
-affects the air-temperature raster used by the health model. Add
-`--include-valuations` only when those additional outputs are required; they
-substantially increase runtime. The manuscript does not use InVEST's built-in
-threshold-based work-loss values. Generate the WBGT layer with this option and
-then run the documented project-specific Hothaps calculation in
+The component defaults to temperature only. Prefer
+`--valuation-temperatures 25` when energy and WBGT are needed at the primary
+temperature but not at sensitivity temperatures. `--include-valuations`
+remains available when every requested temperature needs valuation. The
+manuscript does not use InVEST's built-in threshold-based work-loss values;
+the unified pipeline runs the documented project-specific Hothaps calculation in
 [`code/post_processing_layers/README.md`](code/post_processing_layers/README.md).
 
 Run the matching baseline and Green30 health inputs with the production runner:
@@ -347,9 +359,12 @@ conda run -n urban-cooling-invest-3.20.2 \
 
 The verified Apple Silicon installation resolves to InVEST 3.20.2, Python
 3.12, GDAL 3.12.4 and pygeoprocessing 2.4.11. Preserve the conda environment
-export with final run metadata. InVEST 3.20.2 writes `T_air` in the workspace
-root; the health configuration already uses this location. Run the command
-without `--validate-only` only after both temperature settings pass validation.
+export with final run metadata. The environment also installs `proj-data` so
+British National Grid overlap checks work offline rather than depending on an
+optional remote transformation grid. InVEST 3.20.2 writes `T_air` in the
+workspace root; the health configuration already uses this location. Run the
+command without `--validate-only` only after both temperature settings pass
+validation.
 
 For an exact comparison with historical model behavior only, see
 `environment-invest-3.14.1.yml` and clearly label those outputs as historical.
@@ -462,6 +477,8 @@ urban-cooling-health/
 ├── figures/
 │   └── equity_map_biscale/           # Figure 7 data, figures and metadata
 ├── code/
+│   ├── README.md                    # production-script and naming guide
+│   ├── workflows/                   # one-command production orchestration
 │   ├── preprocessing_layers/        # align and prepare spatial inputs
 │   ├── lc_scenarios/                # construct and validate LULC scenarios
 │   ├── Urban_Cooling_Modeling_Runs/ # execute InVEST UCM scenarios

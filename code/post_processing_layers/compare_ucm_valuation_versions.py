@@ -12,7 +12,10 @@ from pathlib import Path
 import numpy
 import pygeoprocessing
 
-from summarize_revised_energy_productivity import _sum_field
+try:
+    from .summarize_ucm_valuations import _sum_field
+except ImportError:  # Direct command-line execution.
+    from summarize_ucm_valuations import _sum_field
 
 
 # These are the preserved manuscript-era outputs documented in this project.

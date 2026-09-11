@@ -13,7 +13,7 @@ writes temperature-only results to a new versioned directory:
 ```
 
 Use
-[`execute_invest_urban_cooling_model_revised_scenarios.py`](execute_invest_urban_cooling_model_revised_scenarios.py)
+[`run_ucm_scenarios.py`](run_ucm_scenarios.py)
 to validate or reproduce the run. Each of the fourteen temperature rasters has
 a colocated JSON manifest containing input and output checksums, model
 arguments, grid metadata, software versions and Git commit `f54b2cd`.

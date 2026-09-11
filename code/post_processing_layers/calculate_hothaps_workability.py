@@ -88,7 +88,15 @@ def main() -> int:
     parser.add_argument("--alpha2", type=float, default=DEFAULT_ALPHA2)
     parser.add_argument("--validate-only", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Skip outputs only after their manifests and checksums match.",
+    )
     args = parser.parse_args()
+
+    if args.overwrite and args.resume:
+        parser.error("Use either --overwrite or --resume, not both")
 
     input_root = args.ucm_output_root.expanduser().resolve()
     output_root = (
@@ -115,8 +123,24 @@ def main() -> int:
                 raise ValueError(f"WBGT raster lacks an explicit valid grid: {wbgt_path}")
             print(f"Validated {wbgt_path}")
             continue
-        if not args.overwrite and (target_path.exists() or manifest_path.exists()):
-            raise FileExistsError(f"Refusing to overwrite {target_path}")
+        if target_path.exists() or manifest_path.exists():
+            if args.resume and target_path.is_file() and manifest_path.is_file():
+                saved = json.loads(manifest_path.read_text(encoding="utf-8"))
+                current_input = _raster_summary(wbgt_path)
+                current_output = _raster_summary(target_path)
+                if (
+                    saved.get("parameters")
+                    != {"alpha1": args.alpha1, "alpha2": args.alpha2}
+                    or saved.get("input", {}).get("sha256") != current_input["sha256"]
+                    or saved.get("output", {}).get("sha256") != current_output["sha256"]
+                ):
+                    raise ValueError(
+                        f"Cannot resume {scenario}: manifest or checksum mismatch"
+                    )
+                print(f"Resuming: verified and skipped {target_path}")
+                continue
+            if not args.overwrite:
+                raise FileExistsError(f"Refusing incomplete or unapproved overwrite: {target_path}")
 
         scenario_output.mkdir(parents=True, exist_ok=True)
         pygeoprocessing.raster_map(

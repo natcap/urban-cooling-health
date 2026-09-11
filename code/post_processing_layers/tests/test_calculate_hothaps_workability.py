@@ -4,7 +4,11 @@ import unittest
 
 import numpy
 
-from new_work_intensity import DEFAULT_ALPHA1, DEFAULT_ALPHA2, _workability
+from code.post_processing_layers.calculate_hothaps_workability import (
+    DEFAULT_ALPHA1,
+    DEFAULT_ALPHA2,
+    _workability,
+)
 
 
 class HothapsEquationTests(unittest.TestCase):

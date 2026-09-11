@@ -11,10 +11,11 @@ scenario mappings.
 
 | Purpose | Production entry point | Status |
 |---|---|---|
-| Run the final baseline/Green/Target UCM scenarios | `../Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_revised_scenarios.py` | Current |
-| Convert WBGT to heavy-work productivity | `updated_work_intensity/new_work_intensity.py` | Current |
-| Summarize energy and productivity | `summarize_revised_energy_productivity.py` | Current |
-| Compare revised and manuscript-era summaries | `compare_revised_to_original_energy_productivity.py` | Current |
+| Run the full production workflow | `../workflows/run_ucm_pipeline.py` | Recommended |
+| Run final UCM scenarios only | `../Urban_Cooling_Modeling_Runs/run_ucm_scenarios.py` | Production component |
+| Convert WBGT to heavy-work productivity | `calculate_hothaps_workability.py` | Production component |
+| Summarize energy and productivity | `summarize_ucm_valuations.py` | Production component |
+| Compare revised and manuscript-era summaries | `compare_ucm_valuation_versions.py` | Optional production component |
 | Legacy zonal statistics and manuscript plots | notebooks and `*.Rmd` files listed below | Historical; migrate only the required plot logic |
 
 The final scenario set is baseline plus Green10/20/30 and Target10/20/30,
@@ -51,7 +52,7 @@ to insert a local drive letter.
 
 ```bash
 conda run -n urban-cooling-invest-3.20.2 python \
-  code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_revised_scenarios.py \
+  code/Urban_Cooling_Modeling_Runs/run_ucm_scenarios.py \
   /path/to/Wellcome\ Trust\ Project\ Data \
   --temperatures 25 \
   --include-valuations \
@@ -84,7 +85,7 @@ They are retained only because WBGT is generated in the same model branch.
 
 ```bash
 conda run -n urban-cooling-invest-3.20.2 python \
-  code/post_processing_layers/updated_work_intensity/new_work_intensity.py \
+  code/post_processing_layers/calculate_hothaps_workability.py \
   /path/to/versioned/valuation-output --validate-only
 
 # After validation, rerun without --validate-only.
@@ -105,7 +106,7 @@ manifest for every raster.
 
 ```bash
 conda run -n urban-cooling-invest-3.20.2 python \
-  code/post_processing_layers/summarize_revised_energy_productivity.py \
+  code/post_processing_layers/summarize_ucm_valuations.py \
   /path/to/versioned/valuation-output \
   "/path/to/OfficialWorkingInputs/AOIs/London_Borough_aoi.shp"
 ```
@@ -131,7 +132,7 @@ worker-location raster and report that as a separate sensitivity analysis.
 
 ```bash
 conda run -n urban-cooling-invest-3.20.2 python \
-  code/post_processing_layers/compare_revised_to_original_energy_productivity.py \
+  code/post_processing_layers/compare_ucm_valuation_versions.py \
   /path/to/UCM_official_runs \
   /path/to/versioned/valuation-output/summary/citywide_energy_productivity_summary.csv
 ```

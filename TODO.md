@@ -360,10 +360,20 @@ scenario version, units and values.
 
 ### 11. Convert notebooks and legacy scripts into explicit stages
 
-- [ ] Identify the authoritative notebook or script for every workflow stage.
+- [x] Add a single configuration-driven UCM pipeline for mixed temperature and
+  valuation runs, Hothaps processing, summaries and optional version
+  comparison. It supports dry-run, validation, strict resume and a stage-level
+  manifest; see `code/workflows/README.md`.
+- [x] Standardize the active UCM/post-processing filenames on action-based
+  `run_*`, `calculate_*`, `summarize_*` and `compare_*` names, and add
+  `code/README.md` as the production-script index.
+- [ ] Identify the authoritative notebook or script for every remaining
+  manuscript workflow stage.
 - [ ] Move obsolete alternatives to an archive directory with a short reason.
 - [ ] Clear misleading saved notebook output and document expected inputs and
   outputs at the top of each active notebook.
+- [ ] Parameterize the health-to-Figure-7 handoff before extending the unified
+  pipeline across that scientific review gate.
 
 ### 12. Add citation and data-access guidance
 

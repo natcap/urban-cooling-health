@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "output_root": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_full_pipeline_YYYY-MM-DD",
+  "temperatures_c": [25, 28],
+  "valuation_temperatures_c": [25],
+  "uhi_max_c": 5,
+  "relative_humidity_pct": 45,
+  "borough_vector": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.shp",
+  "scenarios": {
+    "baseline": "LULC/LCM2023_London_10m_clip2aoi_tcc24.tif",
+    "green10": "LULC/lc_green_scenarios_output/revised_v2_invest_3.20.2_2026-09-10/Green10_equal_area_eligible_v2.tif",
+    "green20": "LULC/lc_green_scenarios_output/revised_v2_invest_3.20.2_2026-09-10/Green20_equal_area_eligible_v2.tif",
+    "green30": "LULC/lc_green_scenarios_output/revised_v2_invest_3.20.2_2026-09-10/Green30_equal_area_eligible_v2.tif",
+    "target10": "LULC/lc_tree_equity_scenarios_output/revised_v2_rank_fid_equal_area_2026-09-10/LULC_Target10_equal_area_eligible_v2.tif",
+    "target20": "LULC/lc_tree_equity_scenarios_output/revised_v2_rank_fid_equal_area_2026-09-10/LULC_Target20_equal_area_eligible_v2.tif",
+    "target30": "LULC/lc_tree_equity_scenarios_output/revised_v2_rank_fid_equal_area_2026-09-10/LULC_Target30_equal_area_eligible_v2.tif"
+  },
+  "historical_comparison": {
+    "enabled": false,
+    "original_ucm_root": "2_postprocess_intermediate/UCM_official_runs"
+  }
+}

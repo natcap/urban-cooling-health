@@ -6,3 +6,6 @@ dependencies:
   # solved together. This avoids platform-specific pip build failures.
   - python=3.12
   - natcap.invest=3.20.2
+  # Include transformation grids so British National Grid validation works
+  # offline instead of relying on PROJ's optional network download.
+  - proj-data
