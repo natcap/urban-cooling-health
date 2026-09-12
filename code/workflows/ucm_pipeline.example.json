@@ -8,6 +8,9 @@
   "borough_vector": "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.shp",
   "scenarios": {
     "baseline": "LULC/LCM2023_London_10m_clip2aoi_tcc24.tif",
+    "allbuilt": "LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario1_pavement.tif",
+    "treerisk": "LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario3_TreeRisk.tif",
+    "treeopp": "LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario2_opp2treecover.tif",
     "green10": "LULC/lc_green_scenarios_output/revised_v2_invest_3.20.2_2026-09-10/Green10_equal_area_eligible_v2.tif",
     "green20": "LULC/lc_green_scenarios_output/revised_v2_invest_3.20.2_2026-09-10/Green20_equal_area_eligible_v2.tif",
     "green30": "LULC/lc_green_scenarios_output/revised_v2_invest_3.20.2_2026-09-10/Green30_equal_area_eligible_v2.tif",
@@ -18,5 +21,16 @@
   "historical_comparison": {
     "enabled": false,
     "original_ucm_root": "2_postprocess_intermediate/UCM_official_runs"
+  },
+  "figure4": {
+    "enabled": false,
+    "health_output_root": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10",
+    "temperature_c": 25,
+    "price_basis": "late-2025 input-price assumptions"
+  },
+  "figure5": {
+    "enabled": false,
+    "health_output_root": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10",
+    "temperature_c": 25
   }
 }

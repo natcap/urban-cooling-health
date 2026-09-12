@@ -19,6 +19,9 @@ The recommended design runs:
 - 28°C once as a temperature-only sensitivity;
 - Hothaps workability only for temperatures with WBGT outputs;
 - citywide and borough summaries; and
+- manuscript Figure 4 plus aggregation-sensitivity outputs when
+  `figure4.enabled` is `true`;
+- Figure 5 borough co-benefit maps when `figure5.enabled` is `true`; and
 - the manuscript-era comparison only when explicitly enabled.
 
 This avoids the previous duplicate 25°C UCM run.
@@ -108,6 +111,17 @@ Use selected stages only when their upstream outputs already exist. The
 historical comparison stage runs only when `historical_comparison.enabled` is
 `true`; keeping it off avoids reading several gigabytes of archived building
 outputs during ordinary production runs.
+
+The Figure 4 stage is similarly opt-in because health assessment is a separate
+review gate. After the reviewed health run exists, set `figure4.enabled` to
+`true` and point `figure4.health_output_root` to it. The stage produces the
+citywide manuscript figure and aggregation-sensitivity artifacts under
+`summary/figure4/` without rerunning UCM.
+
+Enable `figure5` after the same health review gate to produce the configured-scenario
+borough maps under `summary/figure5/`. If its health path is omitted, the
+pipeline reuses `figure4.health_output_root`; otherwise provide the reviewed
+health output explicitly.
 
 ## What remains separate
 

@@ -32,6 +32,11 @@ LOGGER = logging.getLogger(__name__)
 REQUIRED_INVEST_VERSION = "3.20.2"
 SCENARIOS = {
     "baseline": "LULC/LCM2023_London_10m_clip2aoi_tcc24.tif",
+    # Original manuscript counterfactuals, rerun here with the same current
+    # model version and climate settings as the revised Green/Target set.
+    "allbuilt": "LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario1_pavement.tif",
+    "treerisk": "LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario3_TreeRisk.tif",
+    "treeopp": "LULC/LCM2023_London_10m_clip2aoi_tcc24_scenario2_opp2treecover.tif",
     "green10": (
         "LULC/lc_green_scenarios_output/revised_v2_invest_3.20.2_2026-09-10/"
         "Green10_equal_area_eligible_v2.tif"

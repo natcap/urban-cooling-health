@@ -40,6 +40,8 @@ class PipelineCommandTest(unittest.TestCase):
         self.assertIn("[hothaps]", result.stdout)
         self.assertIn("[summarize]", result.stdout)
         self.assertNotIn("[compare]", result.stdout)
+        self.assertNotIn("[figure4]", result.stdout)
+        self.assertNotIn("[figure5]", result.stdout)
 
     def test_placeholder_date_blocks_an_accidental_production_run(self) -> None:
         with tempfile.TemporaryDirectory() as data_root:

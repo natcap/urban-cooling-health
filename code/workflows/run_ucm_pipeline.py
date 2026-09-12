@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-STAGES = ("ucm", "hothaps", "summarize", "compare")
+STAGES = ("ucm", "hothaps", "summarize", "compare", "figure4", "figure5")
 
 
 def _sha256(path: Path) -> str:
@@ -115,6 +115,12 @@ def main() -> int:
     compare_config = config.get("historical_comparison", {})
     if not compare_config.get("enabled", False):
         selected_stages = [stage for stage in selected_stages if stage != "compare"]
+    figure4_config = config.get("figure4", {})
+    if not figure4_config.get("enabled", False):
+        selected_stages = [stage for stage in selected_stages if stage != "figure4"]
+    figure5_config = config.get("figure5", {})
+    if not figure5_config.get("enabled", False):
+        selected_stages = [stage for stage in selected_stages if stage != "figure5"]
     if args.validate_only:
         selected_stages = ["ucm"]
 
@@ -122,6 +128,8 @@ def main() -> int:
     hothaps_runner = repo_root / "code/post_processing_layers/calculate_hothaps_workability.py"
     summary_runner = repo_root / "code/post_processing_layers/summarize_ucm_valuations.py"
     comparison_runner = repo_root / "code/post_processing_layers/compare_ucm_valuation_versions.py"
+    figure4_runner = repo_root / "code/post_processing_layers/plot_figure4_citywide.R"
+    figure5_runner = repo_root / "code/post_processing_layers/plot_figure5_borough_cobenefits.R"
 
     ucm_command = [
         sys.executable,
@@ -178,6 +186,49 @@ def main() -> int:
             str(comparison_runner),
             str(_resolve(data_root, compare_config["original_ucm_root"])),
             str(output_root / "summary/citywide_energy_productivity_summary.csv"),
+        ]
+    if figure4_config.get("enabled", False):
+        if not figure4_config.get("health_output_root"):
+            parser.error("figure4.health_output_root is required when Figure 4 is enabled")
+        commands["figure4"] = [
+            "Rscript",
+            str(figure4_runner),
+            "--citywide-summary",
+            str(output_root / "summary/citywide_energy_productivity_summary.csv"),
+            "--borough-summary",
+            str(output_root / "summary/borough_energy_productivity_summary.csv"),
+            "--health-root",
+            str(_resolve(data_root, figure4_config["health_output_root"])),
+            "--temperature",
+            str(figure4_config.get("temperature_c", 25)),
+            "--price-basis",
+            str(figure4_config.get(
+                "price_basis", "late-2025 input-price assumptions"
+            )),
+            "--output-dir",
+            str(output_root / "summary/figure4"),
+        ]
+    if figure5_config.get("enabled", False):
+        health_output_root = figure5_config.get(
+            "health_output_root", figure4_config.get("health_output_root")
+        )
+        if not health_output_root:
+            parser.error(
+                "figure5.health_output_root is required when Figure 5 is enabled"
+            )
+        commands["figure5"] = [
+            "Rscript",
+            str(figure5_runner),
+            "--borough-summary",
+            str(output_root / "summary/borough_energy_productivity_summary.csv"),
+            "--health-root",
+            str(_resolve(data_root, health_output_root)),
+            "--borough-vector",
+            str(borough_path),
+            "--temperature",
+            str(figure5_config.get("temperature_c", 25)),
+            "--output-dir",
+            str(output_root / "summary/figure5"),
         ]
 
     if args.dry_run or args.validate_only:
