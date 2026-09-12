@@ -47,7 +47,7 @@ Carlo settings constant between them.
 |---|---|---:|
 | View the current results | [Figure 7 outputs](#4-inspect-the-outputs) | No |
 | See outstanding work and required data | [Project TODO](TODO.md) | No |
-| Reproduce Figure 7 | [Quick reproduction of Figure 7](#quick-reproduction-of-figure-7) | No for the current absolute-benefit version; yes for population-normalized results |
+| Reproduce Figure 7 | [Quick reproduction of Figure 7](#quick-reproduction-of-figure-7) | No; the population-normalized derived inputs are tracked |
 | Rerun the health model | [Health assessment](#6-run-the-health-assessment) | Yes |
 | Rebuild every scenario and result | [Full end-to-end workflow](#full-end-to-end-workflow) | Yes |
 | Check Green30 and Target30 planting equivalence | [Validate intervention budgets](#4-validate-intervention-budgets) | Yes |
@@ -59,20 +59,19 @@ Scenario names used in the analysis are defined centrally in
 
 | Analysis label | Internal label | Description |
 |---|---|---|
-| Baseline | `scenario0` | Current/reference land cover |
-| AllBuilt | `scenario1` | Counterfactual built-land scenario |
-| TreeRisk | `scenario2_TR` | Loss of trees considered at climatic risk |
-| TreeOpp | `scenario3_TO` | Tree-planting opportunity scenario |
-| Green10/20/30 | `scenario4_10/20/30` | Revised nested proximity-based general-greening scenarios |
-| Target10/20/30 | `scenario510/520/530` | Revised ranked vulnerability-targeted planting scenarios |
+| Baseline | `baseline` | Current/reference land cover |
+| Green10/20/30 | `green10/green20/green30` | Revised nested proximity-based general-greening scenarios |
+| Target10/20/30 | `target10/target20/target30` | Revised ranked vulnerability-targeted planting scenarios |
 
 The Green–Target comparison uses the same definition of existing canopy,
 allowed LCM source classes and realized additional canopy, while preserving
 Green's area-based design and Target's screened street-candidate design. Transition-level review
 found that the earlier audit counted every transition to code 100, including
-relabeling woodland codes 1 and 2 and converting ineligible classes. Therefore
-the existing UCM, health and Figure 7 outputs are retained as reproducibility
-evidence but are not the final equal-area comparison. See the complete
+relabeling woodland codes 1 and 2 and converting ineligible classes. Those
+earlier UCM, health and Figure 7 outputs are retained as historical evidence;
+the current revised-equal-area outputs are the production comparison. Archived
+aliases such as `scenario4_10` and `scenario510` are documented in
+`code/func_colors.R` but must not be written by new runs. See the complete
 historical lineage and approved regeneration method in
 [`code/lc_scenarios/README.md`](code/lc_scenarios/README.md).
 
@@ -90,12 +89,12 @@ cd urban-cooling-health
 ### 2. Install the required R packages
 
 The last validated package versions are recorded in
-[`fig7_session_info.txt`](figures/equity_map_biscale/fig7_session_info.txt).
+[`fig7_session_info.txt`](figures/equity_map_biscale_revised_equal_area/fig7_session_info.txt).
 Install R and the packages below if they are not already available:
 
 ```r
 install.packages(c(
-  "biscale", "cowplot", "dplyr", "ggplot2", "knitr", "purrr",
+  "biscale", "cowplot", "digest", "dplyr", "ggplot2", "knitr", "purrr",
   "ragg", "readr", "rmarkdown", "scales", "sf", "tidyr"
 ))
 ```
@@ -128,10 +127,14 @@ The workflow writes the following files to
 - `fig7_citywide_tradeoff.csv`: citywide deaths-averted comparison;
 - `fig7_run_metadata.csv`: run settings and fixed thresholds; and
 - `fig7_session_info.txt`: the R environment used for the run.
+- `fig7_ab_upgraded.{pdf,svg}` and `fig7_cd_upgraded.{pdf,svg}`: editable
+  vector exports; and
+- `fig7_file_manifest.csv`: SHA-256 checksums for the production inputs and
+  outputs.
 
 ![Figure 7 maps comparing Green30 and Target30](figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png)
 
-![Figure 7 paired equity comparison](figures/equity_map_biscale/fig7_cd_upgraded.png)
+![Figure 7 paired equity comparison](figures/equity_map_biscale_revised_equal_area/fig7_cd_upgraded.png)
 
 ### 5. Use the validated 2021 LSOA population lookup
 
@@ -143,7 +146,7 @@ count-preserved WorldPop surface with:
 
 ```bash
 Rscript code/health_assessment/prepare_lsoa_population_2021.R \
-  data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg \
+  data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg \
   /path/to/gbr_pop_2021_10m_count_preserved_bng.tif \
   data/derived/lsoa_population_2021_by_lsoa11cd.csv \
   data/derived/lsoa_population_2021_by_lsoa11cd.manifest.json
@@ -442,8 +445,9 @@ row-order ID retained for compatibility.
 | Climate context / Figure 1 | [`gcm-data-clip-stats-viz.Rmd`](code/gcm-data-clip-stats-viz.Rmd) |
 | Temperature and canopy equity / Figure 2 | [`equity-temp-tcc.Rmd`](code/equity-temp-tcc.Rmd) |
 | Temperature results / Figure 3 | [`invest_result_zonal_viz_1_temp.Rmd`](code/invest_result_zonal_viz_1_temp.Rmd) |
-| Energy, productivity and health summaries / Figures 4–5 | the `invest_result_zonal_viz_*`, health-output and [`viz-es-change-due-to-lc.Rmd`](code/viz-es-change-due-to-lc.Rmd) workflows |
-| Health-equity models / Figure 6 and supplementary table | [`equity-health.Rmd`](code/equity-health.Rmd) |
+| Energy, productivity and health / Figure 4 | [`invest_result_zonal_viz_2_energy.Rmd`](code/invest_result_zonal_viz_2_energy.Rmd), [`invest_result_zonal_viz_3_pd_NEW.Rmd`](code/invest_result_zonal_viz_3_pd_NEW.Rmd), and [`health-modeling-output-plot-city.Rmd`](code/health_assessment/health-modeling-output-plot-city.Rmd); combined by [`plot_figure4_citywide.R`](code/post_processing_layers/plot_figure4_citywide.R) |
+| Borough co-benefit maps / Figure 5 | [`viz-es-change-due-to-lc.Rmd`](code/viz-es-change-due-to-lc.Rmd), using [`plot_figure5_borough_cobenefits.R`](code/post_processing_layers/plot_figure5_borough_cobenefits.R) |
+| Health-equity models / Figure 6 and supplementary table | [`equity-health.Rmd`](code/equity-health.Rmd), currently exploratory; complete the gates in [`FIGURES6_7_REVIEW.md`](code/health_assessment/FIGURES6_7_REVIEW.md) before final reporting |
 | Paired Green30–Target30 equity comparison / Figure 7 | [`equity-health-fig7-production.Rmd`](code/equity-health-fig7-production.Rmd), preferably through [`run-fig7.R`](code/run-fig7.R) |
 
 Treat [`equity-health-fig7-upgrade.Rmd`](code/equity-health-fig7-upgrade.Rmd)
@@ -475,7 +479,8 @@ urban-cooling-health/
 ├── data/
 │   └── derived/                      # small documented Figure 7 inputs
 ├── figures/
-│   └── equity_map_biscale/           # Figure 7 data, figures and metadata
+│   ├── equity_map_biscale_revised_equal_area/ # current Figure 7 outputs
+│   └── equity_map_biscale/           # historical Figure 7 evidence
 ├── code/
 │   ├── README.md                    # production-script and naming guide
 │   ├── workflows/                   # one-command production orchestration
@@ -491,16 +496,19 @@ urban-cooling-health/
 
 ## Reproducibility status and limitations
 
-- **Historical Figure 7:** directly runnable from the tracked, documented
+- **Current Figure 7:** directly runnable from the tracked revised-equal-area
   vulnerability, LSOA health, 2021 population and paired-draw inputs under
-  `data/derived/`; it predates the common-eligibility scenario correction.
+  `data/derived/`.
 - **Historical UCM and health rerun:** validated on InVEST 3.20.2 for baseline,
   Green30 and code-100-matched Target30 v4 at 25°C and 28°C.
-- **Final equal-area comparison:** complete. All six revised Green/Target
-  rasters pass equal-budget, eligibility, nesting, grid and NoData checks; all
-  fourteen 25°C/28°C InVEST 3.20.2 temperature runs and twelve revised health
-  runs are complete. Use `figures/equity_map_biscale_revised_equal_area/` for
-  the current Figure 7 outputs.
+- **Final equal-area and Figure 4 comparison:** complete. All six revised
+  Green/Target rasters pass equal-budget, eligibility, nesting, grid and NoData
+  checks. The three retained counterfactual rasters (AllBuilt, TreeRisk and
+  TreeOpp) were also rerun rather than mixed with legacy InVEST 3.14.1 output.
+  All twenty 25°C/28°C InVEST 3.20.2 temperature runs and eighteen revised
+  population-weighted health runs are complete. Use
+  `figures/equity_map_biscale_revised_equal_area/` for the current Figure 7
+  outputs.
 - **Full model chain:** requires external raw and intermediate geospatial data
   that are not stored in this repository.
 - **Historical result recreation:** requires the original versioned input

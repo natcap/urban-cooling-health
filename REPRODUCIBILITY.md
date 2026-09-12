@@ -10,11 +10,11 @@ forecast of London's demographic composition in 2050.
 
 The repository contains the documented inputs needed for the current Figure 7:
 
-- `data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg`;
-- `data/derived/health_lsoa_invest3202_population_weighted_2021_nodata_harmonized.csv`;
+- `data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg`;
+- `data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv`;
 - `data/derived/lsoa_population_2021_by_lsoa11cd.csv`; and
-- paired 25°C Green30 and Target30 `_nodata_harmonized_city_total_draws_by_cause.csv`
-  files.
+- `data/derived/green30_revised_equal_area_25c_city_total_draws_by_cause.csv` and
+  `data/derived/target30_revised_equal_area_25c_city_total_draws_by_cause.csv`.
 
 Their manifests and official-code crosswalk are in the same folder. The
 historical `figures/equity_map_biscale/health_sf.rds` is retained for audit but
@@ -27,6 +27,10 @@ From any directory, run the production wrapper. It does not require Pandoc:
 ```text
 Rscript code/run-fig7.R
 ```
+
+By default, outputs go to
+`figures/equity_map_biscale_revised_equal_area/`. For a non-destructive test
+run, set `URBAN_COOLING_FIG7_OUTPUT_DIR` to a temporary or versioned folder.
 
 To create the accompanying HTML notebook when Pandoc is available, run:
 
@@ -41,7 +45,9 @@ The workflow checks official-code and scenario pairing, duplicate IDs, missing
 benefit values and population join coverage. It writes the maps, paired
 comparison, headline tables, age-75+ diagnostics, paired citywide uncertainty,
 run metadata and R session information to
-`figures/equity_map_biscale/`.
+`figures/equity_map_biscale_revised_equal_area/`. It also writes editable
+PDF/SVG figures and `fig7_file_manifest.csv`, which records SHA-256 checksums
+for the production inputs and outputs.
 
 ## Verify equal intervention budgets
 
@@ -53,7 +59,7 @@ python code/lc_scenarios/validate_scenario_canopy_budget.py \
   --baseline <baseline_lulc.tif> \
   --green30 <green30_lulc.tif> \
   --target30 <target30_lulc.tif> \
-  --output figures/equity_map_biscale/fig7_canopy_budget_check.csv
+  --output figures/equity_map_biscale_revised_equal_area/fig7_canopy_budget_check.csv
 ```
 
 The comparison passes only when both scenarios use the same grid and their
@@ -68,3 +74,9 @@ the resulting CSV as Figure 7 provenance.
 4. Confirm both model runs used seed `20260908` and 2,000 paired draws.
 5. Inspect both exported PNGs at full size for clipped labels and legends.
 6. Quote the fixed-2021-population assumption in Methods and figure captions.
+7. Confirm `fig7_file_manifest.csv` matches the files supplied with the
+   manuscript.
+
+Figure 6 is not reproduced by this workflow. Its unresolved estimand and
+spatial-inference decisions are listed in
+`code/health_assessment/FIGURES6_7_REVIEW.md`.

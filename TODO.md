@@ -278,10 +278,28 @@ scenario rasters and must not be combined with the revised health results.
   values using scenario gains relative to baseline and paired common-footprint
   productivity changes. The archived Green10 derived productivity TIFF is
   corrupt, so the comparison is reproducibly recalculated from archived WBGT.
-- [ ] Update Figures 4–5 and their manuscript text from the revised summaries.
-  This is intentionally held for the next work session.
+- [x] Add a production Figure 4 builder using citywide unique-building energy,
+  area-weighted continuous Hothaps productivity and population-weighted health,
+  with health-only exposure-response uncertainty bars.
+- [x] Add an equal-weight borough sensitivity figure and explicitly label its
+  spread as spatial variation rather than model uncertainty.
+- [x] Revise the three established Figure 4 source notebooks to use the
+  reviewed citywide summaries and all nine manuscript scenarios, retaining
+  AllBuilt, TreeRisk and TreeOpp before the six matched Green/Target scenarios.
+- [x] Revise `viz-es-change-due-to-lc.Rmd` as the canonical Figure 5 notebook
+  and generate six-scenario borough maps for energy, productivity and health.
+- [x] Add a static Extended Data comparison of citywide and unweighted-borough
+  energy/productivity summaries with independent, clearly labelled scales.
+- [x] Document the recommended Figure 4 estimands, pros/cons, currency basis
+  and copy-ready Figure 4, Figure 5, Extended Data and Methods text in
+  `code/post_processing_layers/FIGURE4_METHODS.md`.
+- [ ] Replace the Figure 4 image and legend in the manuscript document and
+  update the associated Results text after the manuscript source file is made
+  available. Insert the revised Figure 5 and Extended Data figure/captions in
+  the manuscript or supplement at the same time.
 
-**Done when:** all seven scenarios have matching energy, WBGT and Hothaps
+**Done when:** the baseline and all nine manuscript scenarios have matching
+energy, WBGT and Hothaps
 outputs; summary CSVs pass reconciliation checks; and the manuscript uses only
 the revised results. See
 [`code/post_processing_layers/README.md`](code/post_processing_layers/README.md).
@@ -326,6 +344,15 @@ for method reproduction and historical-result reproduction.
 
 ### 8. Synchronize manuscript claims and generated evidence
 
+- [ ] Replace the exploratory Figure 6 data join with the revised
+  `LSOA11CD`-keyed inputs and use deaths averted per 100,000 residents as the
+  primary response; retain absolute deaths as a sensitivity.
+- [ ] Test Figure 6 residual spatial autocorrelation, add a pre-specified
+  spatial adjustment if needed, and move 1st–99th percentile trimming to a
+  labelled sensitivity analysis.
+- [ ] Produce a clean Figure 6 production script with exact curve data,
+  diagnostics, input/output checksums, session information and PNG/PDF/SVG
+  exports. See `code/health_assessment/FIGURES6_7_REVIEW.md`.
 - [ ] Update Figure 7 caption, Results, Methods and abstract using only the
   regenerated population-normalized outputs.
 - [ ] State “2050 temperature scenarios evaluated under 2021 population and
@@ -412,6 +439,18 @@ Complete the remaining work in this order to avoid unnecessary model reruns:
 8. reconcile the revised output CSVs with the manuscript text, caption and abstract;
 9. save the input manifest, run metadata and software environment with the
    publication archive.
+
+### Figure 4 scenario-completeness correction
+
+- [x] Restore canonical AllBuilt, TreeRisk and TreeOpp identifiers, labels and
+  colours in the current workflow.
+- [x] Validate their original LULC rasters against the InVEST 3.20.2 inputs and
+  common baseline grid.
+- [x] Complete the 25 C InVEST 3.20.2 energy/WBGT reruns and 28 C temperature
+  sensitivity reruns for these three scenarios.
+- [x] Run Hothaps and regenerate the nine-scenario energy/productivity summary.
+- [x] Run population-weighted health for AllBuilt, TreeRisk and TreeOpp, then
+  regenerate and visually review all three Figure 4 panels.
 
 ## Maintaining this list
 
