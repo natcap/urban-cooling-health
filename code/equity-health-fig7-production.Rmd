@@ -27,6 +27,7 @@ library(ggplot2)
 library(scales)
 library(cowplot)
 library(biscale)
+library(digest)
 
 outcome_keep <- "All_cause"
 scenario_keep <- c("Green30", "Target30")
@@ -48,7 +49,10 @@ vulnerability_labels <- c(
   SVI = "SVI"
 )
 
-output_dir <- "./figures/equity_map_biscale_revised_equal_area"
+output_dir <- Sys.getenv(
+  "URBAN_COOLING_FIG7_OUTPUT_DIR",
+  unset = "./figures/equity_map_biscale_revised_equal_area"
+)
 population_file <- "./data/derived/lsoa_population_2021_by_lsoa11cd.csv"
 health_zonal_file <- "./data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv"
 green30_mc_file <- "./data/derived/green30_revised_equal_area_25c_city_total_draws_by_cause.csv"
@@ -635,6 +639,16 @@ ggsave(
   file.path(output_dir, "fig7_cd_upgraded.png"), fig7_cd_upgraded,
   width = 7, height = 6.8, dpi = 600, bg = "white", device = ragg::agg_png
 )
+for (extension in c("pdf", "svg")) {
+  ggsave(
+    file.path(output_dir, paste0("fig7_ab_upgraded.", extension)),
+    fig7_ab_upgraded, width = 7, height = 6.2, bg = "white"
+  )
+  ggsave(
+    file.path(output_dir, paste0("fig7_cd_upgraded.", extension)),
+    fig7_cd_upgraded, width = 7, height = 6.8, bg = "white"
+  )
+}
 
 run_metadata <- tibble(
   run_timestamp_utc = format(Sys.time(), tz = "UTC", usetz = TRUE),
@@ -657,6 +671,44 @@ session_info_lines <- sub(
   "[[:space:]]+$", "", capture.output(sessionInfo())
 )
 writeLines(session_info_lines, file.path(output_dir, "fig7_session_info.txt"))
+
+# A compact checksum table makes it possible to verify that a manuscript
+# figure and its exact inputs/outputs still match after files are copied.
+input_paths <- c(
+  population_file, health_zonal_file, green30_mc_file, target30_mc_file,
+  svi_file
+)
+output_paths <- file.path(output_dir, c(
+  "fig7_quantitative_headline_results.csv",
+  "fig7_paired_transition_matrix.csv",
+  "fig7_citywide_tradeoff.csv",
+  "fig7_age75_group_summary.csv",
+  "fig7_age75_correlations.csv",
+  "fig7_age75_transition_summary.csv",
+  "fig7_run_metadata.csv",
+  "fig7_session_info.txt",
+  "fig7_ab_upgraded.png", "fig7_ab_upgraded.pdf", "fig7_ab_upgraded.svg",
+  "fig7_cd_upgraded.png", "fig7_cd_upgraded.pdf", "fig7_cd_upgraded.svg"
+))
+if (file.exists(file.path(output_dir, "fig7_citywide_uncertainty.csv"))) {
+  output_paths <- c(
+    output_paths, file.path(output_dir, "fig7_citywide_uncertainty.csv")
+  )
+}
+manifest_paths <- c(input_paths[file.exists(input_paths)], output_paths)
+write_csv(
+  tibble(
+    role = c(
+      rep("input", sum(file.exists(input_paths))),
+      rep("output", length(output_paths))
+    ),
+    path = manifest_paths,
+    sha256 = map_chr(
+      manifest_paths, ~ digest(file = .x, algo = "sha256", serialize = FALSE)
+    )
+  ),
+  file.path(output_dir, "fig7_file_manifest.csv")
+)
 
 print(headline_results)
 print(citywide_results)

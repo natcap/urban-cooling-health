@@ -20,6 +20,9 @@ population-weighted allocation and Target30 identity is recorded in
 [`DATA_SELECTION_AND_METHOD_DECISIONS.md`](DATA_SELECTION_AND_METHOD_DECISIONS.md).
 The quantitative old-versus-new results are in
 [`HEALTH_VERSION_COMPARISON.md`](HEALTH_VERSION_COMPARISON.md).
+The statistical and reproducibility review for Figures 6–7 is in
+[`FIGURES6_7_REVIEW.md`](FIGURES6_7_REVIEW.md). Figure 6 remains exploratory;
+Figure 7 is the current production equity comparison.
 
 ## Workflow status
 
@@ -34,8 +37,8 @@ Two workflows are retained with different authority:
   `s510/s520/s530` launchers, are historical evidence and must not be used to
   produce current manuscript values.
 
-The revised mortality preparation, fourteen InVEST 3.20.2 UCM temperature
-runs, twelve Green/Target deterministic health runs, paired 2,000-draw
+The revised mortality preparation, twenty InVEST 3.20.2 UCM temperature
+runs, eighteen nine-scenario deterministic health runs, paired 2,000-draw
 uncertainty runs and scripted LSOA11 aggregation have passed project-data QA.
 Figure 7 now reads the revised equal-area LSOA table directly and no longer
 depends on the opaque historical `health_sf.rds`.
@@ -255,7 +258,8 @@ An end-to-end test with project geospatial data remains required.
 
 ## Run the revised health model
 
-For the final revised Green10/20/30 and Target10/20/30 comparison, use
+For the final Figure 4 set (AllBuilt, TreeRisk, TreeOpp, Green10/20/30 and
+Target10/20/30), use
 `health-analysis-revised-equal-area.example.json`. It points to the versioned
 equal-area InVEST 3.20.2 outputs and writes to a new health-results root. The
 older `health-analysis-v2.example.json` remains the historical Green30/Target30
@@ -270,7 +274,7 @@ python code/health_assessment/run_health_scenario_set.py \
   --validate-only
 ```
 
-After all twelve scenario-temperature combinations validate, rerun without
+After all eighteen scenario-temperature combinations validate, rerun without
 `--validate-only`. The batch runner invokes the same strict windowed model for
 each scenario and stops immediately if any run fails.
 
@@ -360,10 +364,10 @@ official LSOA11 codes with:
 ```bash
 python code/health_assessment/prepare_health_lsoa_zonal_stats.py \
   "$HEALTH_DATA_ROOT" \
-  --output-csv data/derived/health_lsoa_invest3202_population_weighted_2021_nodata_harmonized.csv \
-  --crosswalk-csv data/derived/svi_lsoa11_crosswalk_nodata_harmonized.csv \
-  --vulnerability-gpkg data/derived/fig7_vulnerability_lsoa11_nodata_harmonized.gpkg \
-  --manifest data/derived/health_lsoa_invest3202_population_weighted_2021_nodata_harmonized.manifest.json
+  --output-csv data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv \
+  --crosswalk-csv data/derived/svi_lsoa11_crosswalk_fig7_revised_equal_area.csv \
+  --vulnerability-gpkg data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg \
+  --manifest data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.manifest.json
 ```
 
 The script checks a one-to-one match between the 4,835 vulnerability polygons
@@ -371,8 +375,10 @@ and the official 2011 London LSOAs. It assigns only valid boundary-edge cells
 outside the generalized LSOA outline to the nearest LSOA, records the maximum
 distance, and requires zero unassigned valid cells before writing outputs.
 
-Then copy the paired 25°C draw tables to the filenames documented under
-`data/derived/README.md` and run:
+For the current production analysis, `HEALTH_DATA_ROOT` is the versioned
+`health_v3_revised_equal_area_population_weighted_2021_2026-09-10` workspace.
+Copy the paired 25°C draw tables to the revised-equal-area filenames documented
+under `data/derived/README.md`, then run:
 
 ```bash
 HEALTH_DATA_ROOT="$HEALTH_DATA_ROOT" Rscript code/run-fig7.R
@@ -380,10 +386,11 @@ HEALTH_DATA_ROOT="$HEALTH_DATA_ROOT" Rscript code/run-fig7.R
 
 ## Target-scenario status
 
-The existing Target30 v4 raster passed the earlier code-100 transition audit,
-and its InVEST 3.20.2, population-weighted health and Figure 7 runs are retained
-as reproducibility evidence. A later transition-level review showed that this
-audit relabeled woodland and did not enforce common eligible source codes.
-All six Green/Target rasters must therefore be rebuilt and reviewed before the
-final health rerun. The exact affected files are listed in
-[`SCENARIO_NAMING_AUDIT.md`](SCENARIO_NAMING_AUDIT.md).
+The revised Green10/20/30 and Target10/20/30 rasters now use the documented
+common eligible source classes and matched realized added-canopy areas. The
+current InVEST 3.20.2 valuation workspace and the `health_v3` population-
+weighted workspace were generated from those revised rasters. The older
+Target30-v4 and NoData-harmonized runs are retained only as reproducibility
+evidence and must not be mixed with the revised-equal-area manuscript results.
+See [`SCENARIO_NAMING_AUDIT.md`](SCENARIO_NAMING_AUDIT.md) for the historical
+lineage and `../lc_scenarios/README.md` for the current scenario procedure.

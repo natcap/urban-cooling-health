@@ -1,8 +1,14 @@
 ---
-title: "Untitled"
+title: "Exploratory health-equity analysis (Figure 6; archived Figure 7 code)"
 output: html_document
-date: "2025-11-20"
+date: "2026-09-11"
 ---
+
+> **Reproducibility status.** The Figure 6 analysis in this notebook remains
+> exploratory and requires the estimand and spatial-inference review gates in
+> `code/health_assessment/FIGURES6_7_REVIEW.md`. Do not use its current values
+> as final manuscript results. Production Figure 7 is generated only with
+> `Rscript code/run-fig7.R`.
 
 
 
@@ -949,10 +955,10 @@ for (m in metrics) {
   # For families with an estimated dispersion parameter (like Gaussian), it uses an F-test and names the column "F".
   # For families with a known dispersion parameter (and certain robust families), it uses a Chi-Square test and names the column "Chi.sq".
   if ("F" %in% colnames(summ$s.table)) {
-    stat_val  <- summ$s.table
+    stat_val  <- summ$s.table[1, "F"]
     stat_type <- "F-statistic"
   } else if ("Chi.sq" %in% colnames(summ$s.table)) {
-    stat_val  <- summ$s.table
+    stat_val  <- summ$s.table[1, "Chi.sq"]
     stat_type <- "Chi-square"
   } else {
     stat_val  <- NA
@@ -1006,15 +1012,19 @@ for (m in metrics) {
   # This makes "Predicted Change" accurate and aligns with y=0 line.
   # preds <- predict(gam_model , newdata = pred_data, type = "terms", se.fit = TRUE)
   
-  # # Predict values (fit) and standard error (se.fit)
-  preds <- predict(gam_model , newdata = pred_data, se.fit = TRUE)
+  # Plot the centred smooth term so zero means the model's average effect.
+  # This matches the Figure 6 y-axis and must not be described as a predicted
+  # number of deaths.
+  preds <- predict(
+    gam_model, newdata = pred_data, type = "terms", se.fit = TRUE
+  )
   
   # Store clean dataframe
   plot_data_list[[m]] <- data.frame(
     Metric = m,
     x = pred_data[,1], # The Z-score
-    y = preds$fit,     # The predicted Cases
-    se = preds$se.fit  # The Error
+    y = drop(preds$fit),
+    se = drop(preds$se.fit)
   )
 }
 
@@ -2151,8 +2161,8 @@ When `data/derived/lsoa_population_2021.csv` is available, the distributional
 benefit is expressed per 100,000 residents.
 
 ```{r fig-7-production, echo=FALSE, out.width='100%'}
-fig7_ab_path <- "./figures/equity_map_biscale/fig7_ab_upgraded.png"
-fig7_cd_path <- "./figures/equity_map_biscale/fig7_cd_upgraded.png"
+fig7_ab_path <- "./figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png"
+fig7_cd_path <- "./figures/equity_map_biscale_revised_equal_area/fig7_cd_upgraded.png"
 
 if (!all(file.exists(c(fig7_ab_path, fig7_cd_path)))) {
   stop(
