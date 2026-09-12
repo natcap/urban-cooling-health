@@ -1,8 +1,83 @@
 ---
-title: "Untitled"
+title: "Figure 5 — borough-scale changes in co-benefits"
 output: html_document
-date: "2025-12-15"
+date: "2026-09-11"
 ---
+
+## Production map (revised six-scenario analysis)
+
+This section replaces the three manually saved `viz_sf_*` objects with the
+reviewed borough summary and population-weighted health rasters. It maps all
+six scenarios using a common colour scale within each outcome row, so Green
+and Target strategies can be compared at the same 10%, 20% and 30% canopy
+budgets. Set `URBAN_COOLING_DATA_ROOT` before knitting.
+
+```{r production-setup, message=FALSE, warning=FALSE}
+library(here)
+library(knitr)
+
+source(here("code", "post_processing_layers", "figure4_panel_helpers.R"))
+
+data_root <- figure4_data_root()
+valuation_root <- file.path(
+  data_root, "2_postprocess_intermediate", "UCM_official_runs",
+  "revised_equal_area_invest3202_2026-09-11_valuations"
+)
+health_root <- file.path(
+  data_root, "2_postprocess_intermediate", "UCM_official_runs",
+  "health_v3_revised_equal_area_population_weighted_2021_2026-09-10"
+)
+borough_summary <- file.path(
+  valuation_root, "summary", "borough_energy_productivity_summary.csv"
+)
+borough_vector <- file.path(
+  data_root, "1_preprocess", "UrbanCoolingModel", "OfficialWorkingInputs",
+  "AOIs", "London_Borough_aoi.shp"
+)
+output_dir <- figure4_output_dir(file.path(valuation_root, "summary", "figure5"))
+map_builder <- here(
+  "code", "post_processing_layers", "plot_figure5_borough_cobenefits.R"
+)
+stopifnot(
+  file.exists(borough_summary), file.exists(borough_vector),
+  dir.exists(health_root), file.exists(map_builder)
+)
+```
+
+```{r production-build-map}
+# The batch builder also writes the exact plotting CSV and a checksum manifest.
+status <- system2(
+  "Rscript",
+  c(
+    shQuote(map_builder),
+    "--borough-summary", shQuote(borough_summary),
+    "--health-root", shQuote(health_root),
+    "--borough-vector", shQuote(borough_vector),
+    "--temperature", "25",
+    "--output-dir", shQuote(output_dir)
+  )
+)
+stopifnot(status == 0)
+```
+
+```{r production-display-map, echo=FALSE, out.width='100%'}
+include_graphics(file.path(output_dir, "figure5_borough_cobenefits.png"))
+```
+
+Energy and productivity are calculated relative to the matching borough
+baseline. Health is the borough sum of each scenario-minus-baseline 10 m
+mortality raster, expressed as deaths averted. The health maps show
+deterministic spatial allocations; borough-level confidence intervals are not
+available and are not implied by the colour variation.
+
+## Archived manuscript-era workflow
+
+The code below is retained to document how the earlier Figure 5 was assembled
+from manually saved R objects. It is not executed when this notebook is knit.
+
+```{r archive-options, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
 
 ## load data - borough level
 
@@ -197,5 +272,3 @@ f <- file.path(dir.fig, paste0("es_change_lc_effect_map_", yr, '_', ymd, '_', n_
 # Use ggsave on the final patchwork object
 ggsave(f, plot = final_plot, width = 7, height = 1* length(vars), units = "in", dpi = 300)
 ```
-
-

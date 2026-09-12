@@ -1,8 +1,110 @@
 ---
-title: "Untitled"
+title: "Figure 4c — citywide heat-related deaths averted"
 output: html_document
-date: "2025-09-26"
+date: "2026-09-11"
 ---
+
+## Production panel (nine manuscript scenarios)
+
+This section reads the reviewed population-weighted health run. All scenarios
+use 2021 population and deaths registered in calendar year 2021; the land-use
+comparison is made under identical 25°C mid-century climate conditions. Set
+`URBAN_COOLING_DATA_ROOT` before knitting.
+
+```{r production-setup, message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(here)
+
+source(here("code", "post_processing_layers", "figure4_panel_helpers.R"))
+
+data_root <- figure4_data_root()
+health_root <- file.path(
+  data_root, "2_postprocess_intermediate", "UCM_official_runs",
+  "health_v3_revised_equal_area_population_weighted_2021_2026-09-10"
+)
+valuation_root <- file.path(
+  data_root, "2_postprocess_intermediate", "UCM_official_runs",
+  "revised_equal_area_invest3202_2026-09-11_valuations"
+)
+output_dir <- figure4_output_dir(
+  file.path(valuation_root, "summary", "figure4", "source_panels")
+)
+temperature_c <- 25
+stopifnot(dir.exists(health_root))
+dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+```
+
+```{r production-health-data}
+health_panel_data <- lapply(figure4_scenarios, function(scenario_id) {
+  scenario_dir <- file.path(
+    health_root, sprintf("%s_%gc", scenario_id, temperature_c)
+  )
+  deterministic_path <- file.path(
+    scenario_dir, "city_totals_deterministic.csv"
+  )
+  draws_path <- file.path(scenario_dir, "city_total_draws_by_cause.csv")
+  stopifnot(file.exists(deterministic_path), file.exists(draws_path))
+
+  deterministic <- read.csv(deterministic_path, stringsAsFactors = FALSE) %>%
+    filter(cause == "all_cause")
+  draws <- read.csv(draws_path, stringsAsFactors = FALSE)
+  stopifnot(nrow(deterministic) == 1, "all_cause" %in% names(draws))
+
+  # Health files store excess-death changes; reverse the draw sign so positive
+  # values consistently represent deaths averted in the figure.
+  averted_draws <- -as.numeric(draws$all_cause)
+  data.frame(
+    scenario = scenario_id,
+    estimate = deterministic$deaths_averted,
+    lower95 = unname(quantile(averted_draws, 0.025, na.rm = TRUE)),
+    upper95 = unname(quantile(averted_draws, 0.975, na.rm = TRUE))
+  )
+}) %>%
+  bind_rows() %>%
+  figure4_prepare_scenarios()
+
+write.csv(
+  health_panel_data,
+  file.path(output_dir, "figure4c_health_citywide_data.csv"),
+  row.names = FALSE
+)
+```
+
+```{r production-health-plot, fig.width=5.2, fig.height=4.2}
+figure4c <- ggplot(
+  health_panel_data, aes(x = scenario, y = estimate, fill = strategy)
+) +
+  geom_hline(yintercept = 0, colour = "#777777", linewidth = 0.3) +
+  geom_vline(xintercept = 3.5, colour = "#B8B8B8", linewidth = 0.35) +
+  geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25) +
+  geom_errorbar(
+    aes(ymin = lower95, ymax = upper95),
+    width = 0.18, linewidth = 0.5
+  ) +
+  scale_fill_manual(values = figure4_colours) +
+  scale_y_continuous(expand = expansion(mult = c(0.08, 0.10))) +
+  labs(
+    x = NULL, y = "Heat-related deaths averted (annual deaths)",
+    fill = "Scenario strategy"
+  ) +
+  figure4_panel_theme()
+
+figure4c
+figure4_save_panel(figure4c, output_dir, "figure4c_health_citywide")
+```
+
+The plotted quantity is a citywide total using 2021 population and registered
+mortality. Error bars are 95% intervals from paired exposure-response draws.
+
+## Archived manuscript-era workflow
+
+The code below is retained for tracing the older folder-discovery and scenario
+recoding approach. It is not executed when this notebook is knit.
+
+```{r archive-options, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
 
 ```{r setup, include=FALSE}
 
@@ -404,4 +506,3 @@ stat_both_l <- stats_p %>%
 func_plot_change_point(data = stat_both_l, level = sp_scale, digits = 0, plot_h = 4, plot_avg = T)
 
 ```
-

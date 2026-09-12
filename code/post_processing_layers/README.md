@@ -16,12 +16,17 @@ scenario mappings.
 | Convert WBGT to heavy-work productivity | `calculate_hothaps_workability.py` | Production component |
 | Summarize energy and productivity | `summarize_ucm_valuations.py` | Production component |
 | Compare revised and manuscript-era summaries | `compare_ucm_valuation_versions.py` | Optional production component |
-| Legacy zonal statistics and manuscript plots | notebooks and `*.Rmd` files listed below | Historical; migrate only the required plot logic |
+| Build and export the combined manuscript Figure 4 | `plot_figure4_citywide.R` | Recommended final assembly |
+| Inspect Figure 4 source panels | `../invest_result_zonal_viz_2_energy.Rmd`, `../invest_result_zonal_viz_3_pd_NEW.Rmd`, `../health_assessment/health-modeling-output-plot-city.Rmd` | Current nine-scenario notebooks |
+| Build Figure 5 borough maps | `../viz-es-change-due-to-lc.Rmd` or `plot_figure5_borough_cobenefits.R` | Current six-scenario workflow |
+| Legacy zonal statistics and archived plot sections | non-production sections retained in the notebooks | Historical reference only |
 
-The final scenario set is baseline plus Green10/20/30 and Target10/20/30,
-generated from the revised equal-realized-canopy rasters and run with InVEST
-3.20.2. Do not mix these outputs with the manuscript-era `scenario4` or
-`scenario510/520/530` folders.
+The Figure 4 scenario set is baseline plus AllBuilt, TreeRisk, TreeOpp,
+Green10/20/30 and Target10/20/30. All nine comparisons must be run with InVEST
+3.20.2. The first three retain their original LULC rasters; the Green/Target
+set uses the revised equal-realized-canopy rasters. Do not mix these outputs
+with the InVEST 3.14.1 manuscript-era folders or the archived `scenario4` and
+`scenario510/520/530` outputs.
 
 ## Required external inputs
 
@@ -38,10 +43,12 @@ workflow expects:
 ```
 
 The building vector must contain an integer `type` field matching every type
-in the energy table. The energy table currently includes a `cost` column, so
-InVEST's `energy_sav` result is cost-adjusted. Record the currency, price year
-and period represented by that table before using a currency symbol in the
-manuscript.
+in the energy table. The table's `cost` field is in £ per kWh, so InVEST's
+`energy_sav` result is cost-adjusted and can be reported in pounds. The
+supporting materials were assembled in late 2025 and cite Q4 2025 tariff
+context, but a formally harmonized price year is not recorded for every
+building-type rate. Use the qualified label **late-2025 input-price
+assumptions** rather than claiming a single exact price year.
 
 ## Reproduce the revised energy and productivity results
 
@@ -65,7 +72,7 @@ The primary manuscript comparison uses 25°C. Add `28` only when the energy and
 productivity sensitivity analysis is required. Validation checks all model
 inputs and enforces InVEST 3.20.2.
 
-### 2. Run the seven scenarios
+### 2. Run the baseline and nine scenarios
 
 Repeat the command without `--validate-only`. The runner refuses to overwrite
 an existing temperature raster or run manifest. It records input checksums,
@@ -169,6 +176,67 @@ Before updating figures or manuscript text, confirm:
 The source building layer currently produces polygon winding-order warnings;
 GDAL/InVEST autocorrects them during processing. Record the warning and confirm
 that all 2,223,481 buildings receive energy values, as in the current run.
+
+## Build manuscript Figure 4
+
+Figure 4 pools energy, productivity and health as citywide co-benefits. Its
+primary bars therefore use the natural London-wide estimand for each outcome:
+
+- energy: total avoided cost summed once across unique buildings;
+- productivity: area-weighted mean continuous Hothaps workability change over
+  valid 10 m pixels; and
+- health: total deaths averted using fixed 2021 population and registered
+  mortality.
+
+Run:
+
+```bash
+Rscript code/post_processing_layers/plot_figure4_citywide.R \
+  --citywide-summary /path/to/run/summary/citywide_energy_productivity_summary.csv \
+  --borough-summary /path/to/run/summary/borough_energy_productivity_summary.csv \
+  --health-root /path/to/health_v3_revised_equal_area_population_weighted_2021_2026-09-10 \
+  --temperature 25 \
+  --output-dir /path/to/run/summary/figure4
+```
+
+The script writes PNG, PDF and SVG versions of the primary figure, its exact
+plotting data, and a provenance manifest. When `--borough-summary` is supplied,
+it also writes a boxplot and source table showing the equal-weight distribution
+across 33 boroughs, plus a four-panel Extended Data comparison of the citywide
+and unweighted-borough estimands. These borough results describe spatial
+variation; they are not model confidence intervals.
+
+Only the health panel has uncertainty bars. They are the 2.5th and 97.5th
+percentiles of paired exposure-response draws. Energy and productivity remain
+deterministic unless their parameter uncertainty is propagated separately.
+Do not reuse the borough standard error as uncertainty around a citywide total.
+
+See `FIGURE4_METHODS.md` for the manuscript recommendation, estimand wording
+and revised legend.
+
+The three established Figure 4 R Markdown notebooks remain the transparent
+panel-level entry points. Their production sections now read the same reviewed
+summary files, include Green10/20/30 and Target10/20/30, and share ordering and
+styling from `figure4_panel_helpers.R`. Their older code is retained below an
+explicit archived heading and is not executed during knitting.
+
+## Build manuscript Figure 5
+
+Knit `../viz-es-change-due-to-lc.Rmd`, or run its batch builder directly:
+
+```bash
+Rscript code/post_processing_layers/plot_figure5_borough_cobenefits.R \
+  --borough-summary /path/to/run/summary/borough_energy_productivity_summary.csv \
+  --health-root /path/to/reviewed/health-output \
+  --borough-vector /path/to/London_Borough_aoi.shp \
+  --temperature 25 \
+  --output-dir /path/to/run/summary/figure5
+```
+
+The builder writes the mapped data, PNG/PDF/SVG figures and a checksum
+manifest. A common scale is used across the six scenarios within each outcome
+row. Health is aggregated from the reviewed all-cause mortality-change raster
+by borough; no borough uncertainty interval is inferred.
 
 ## Historical files
 

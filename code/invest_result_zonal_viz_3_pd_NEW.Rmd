@@ -1,9 +1,88 @@
 ---
-title: "Untitled"
+title: "Figure 4b — citywide heavy-work capacity"
 output: html_document
-date: "2025-11-10"
+date: "2026-09-11"
 ---
 
+## Production panel (nine manuscript scenarios)
+
+This section uses the project-specific continuous Hothaps workability output,
+not InVEST's built-in threshold work-loss layers. The citywide estimate is an
+area-weighted mean over common valid 10 m pixels. It is not worker-weighted.
+Set `URBAN_COOLING_DATA_ROOT` before knitting.
+
+```{r production-setup, message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(here)
+
+source(here("code", "post_processing_layers", "figure4_panel_helpers.R"))
+
+data_root <- figure4_data_root()
+valuation_root <- file.path(
+  data_root, "2_postprocess_intermediate", "UCM_official_runs",
+  "revised_equal_area_invest3202_2026-09-11_valuations"
+)
+summary_path <- file.path(
+  valuation_root, "summary", "citywide_energy_productivity_summary.csv"
+)
+output_dir <- figure4_output_dir(
+  file.path(valuation_root, "summary", "figure4", "source_panels")
+)
+temperature_c <- 25
+stopifnot(file.exists(summary_path))
+dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+```
+
+```{r production-productivity-data}
+# The summary builder pairs each scenario with the matching-temperature
+# baseline on the common valid raster footprint and reports percentage points.
+productivity_panel_data <- read.csv(summary_path, stringsAsFactors = FALSE) %>%
+  filter(temperature_c == .env$temperature_c, scenario %in% figure4_scenarios) %>%
+  figure4_prepare_scenarios() %>%
+  transmute(
+    scenario_id, scenario, strategy,
+    estimate = productivity_change_vs_baseline_pp
+  )
+
+write.csv(
+  productivity_panel_data,
+  file.path(output_dir, "figure4b_productivity_citywide_data.csv"),
+  row.names = FALSE
+)
+```
+
+```{r production-productivity-plot, fig.width=5.2, fig.height=4.2}
+figure4b <- ggplot(
+  productivity_panel_data, aes(x = scenario, y = estimate, fill = strategy)
+) +
+  geom_hline(yintercept = 0, colour = "#777777", linewidth = 0.3) +
+  geom_vline(xintercept = 3.5, colour = "#B8B8B8", linewidth = 0.35) +
+  geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25) +
+  scale_fill_manual(values = figure4_colours) +
+  scale_y_continuous(expand = expansion(mult = c(0.08, 0.10))) +
+  labs(
+    x = NULL, y = "Heavy-work capacity gain (percentage points)",
+    fill = "Scenario strategy"
+  ) +
+  figure4_panel_theme()
+
+figure4b
+figure4_save_panel(figure4b, output_dir, "figure4b_productivity_citywide")
+```
+
+The plotted quantity is a citywide area-weighted mean over common valid 10 m
+pixels relative to baseline. It is a deterministic modeled-capacity index.
+
+## Archived manuscript-era workflow
+
+The code below is retained to document the older borough-zonal workflow. It
+uses historical scenario names and machine-specific paths and is not executed
+when this notebook is knit.
+
+```{r archive-options, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
 
 ## Setup 
 
@@ -177,7 +256,7 @@ df_stats_00 <- func_calculate_change_from_yr0_lc0(data = pd_sf_filter, aoi = aoi
 
 ### Load data - lsoa level 
   
-```{r - data stats, eval=FALSE, include=FALSE}
+```{r archive-lsoa-data-stats, eval=FALSE, include=FALSE}
 
 sp_scale = "lsoa"
 
@@ -264,8 +343,3 @@ saveRDS(df_change_sf_input, f)
 func_plot_map(data = df_change_sf_input, level = sp_scale)
 
 ```
-
-
-
-
-

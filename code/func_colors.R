@@ -3,6 +3,9 @@
 scenario_colors <- c(
   # Canonical names written by the revised production runner.
   "baseline" = "gray20",
+  "allbuilt" = "#d95f0e",
+  "treerisk" = "#fec44f",
+  "treeopp" = "#d9f0a3",
   "green10" = "#78c679",
   "green20" = "#238443",
   "green30" = "#004529",
@@ -26,6 +29,9 @@ scenario_colors <- c(
 # canonical keys; scenario510/520/530 are accepted only when reading archives.
 scenario_labels <- c(
   'baseline'     = 'Baseline',
+  'allbuilt'     = 'AllBuilt',
+  'treerisk'     = 'TreeRisk',
+  'treeopp'      = 'TreeOpp',
   'green10'      = 'Green10',
   'green20'      = 'Green20',
   'green30'      = 'Green30',

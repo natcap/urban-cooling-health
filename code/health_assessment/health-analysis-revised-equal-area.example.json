@@ -53,6 +53,27 @@
     }
   ],
   "scenarios": {
+    "allbuilt_25c": {
+      "enabled": true,
+      "label": "AllBuilt - 25 C (InVEST 3.20.2 rerun)",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-11_valuations/allbuilt/T_air_london_allbuilt_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "treerisk_25c": {
+      "enabled": true,
+      "label": "TreeRisk - 25 C (InVEST 3.20.2 rerun)",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-11_valuations/treerisk/T_air_london_treerisk_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "treeopp_25c": {
+      "enabled": true,
+      "label": "TreeOpp - 25 C (InVEST 3.20.2 rerun)",
+      "temperature_setting_c": 25,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-11_valuations/treeopp/T_air_london_treeopp_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
     "green10_25c": {
       "enabled": true,
       "label": "Revised Green10 - 25 C",
@@ -94,6 +115,27 @@
       "temperature_setting_c": 25,
       "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_25deg_5uhi_45hum_revised_equal_area.tif",
       "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/target30/T_air_london_target30_25deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "allbuilt_28c": {
+      "enabled": true,
+      "label": "AllBuilt - 28 C (InVEST 3.20.2 rerun)",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/allbuilt/T_air_london_allbuilt_28deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "treerisk_28c": {
+      "enabled": true,
+      "label": "TreeRisk - 28 C (InVEST 3.20.2 rerun)",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/treerisk/T_air_london_treerisk_28deg_5uhi_45hum_revised_equal_area.tif"
+    },
+    "treeopp_28c": {
+      "enabled": true,
+      "label": "TreeOpp - 28 C (InVEST 3.20.2 rerun)",
+      "temperature_setting_c": 28,
+      "t_baseline": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/baseline/T_air_london_baseline_28deg_5uhi_45hum_revised_equal_area.tif",
+      "t_scenario": "2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-10/treeopp/T_air_london_treeopp_28deg_5uhi_45hum_revised_equal_area.tif"
     },
     "green10_28c": {
       "enabled": true,
