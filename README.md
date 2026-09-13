@@ -301,6 +301,13 @@ conda run -n urban-cooling-invest-3.20.2 python \
 # After validation, rerun without --validate-only.
 ```
 
+R users can configure the same path once by copying [`.Renviron.example`](.Renviron.example)
+to their user-level `~/.Renviron`, replacing the placeholder path and
+restarting R. The `invest_result_zonal_viz_*` notebooks then load packages,
+shared functions, standard directories and the 2021 baseline through
+[`code/ucm_analysis_setup.R`](code/ucm_analysis_setup.R), avoiding local paths
+inside tracked notebooks.
+
 The example runs 25°C once with energy and WBGT and 28°C once as a
 temperature-only sensitivity, eliminating the former duplicate 25°C run. Use
 `--resume` after an interruption; completed UCM and Hothaps outputs are skipped

@@ -16,6 +16,29 @@ other folders contain reusable pipeline components and historical analyses.
 | Figure 6 exploratory analysis | `equity-health.Rmd` — not final until review gates are complete |
 | Figure 7 | `run-fig7.R` |
 
+## Shared R notebook setup
+
+The `invest_result_zonal_viz_*` notebooks use one setup module instead of
+repeating package imports, helper sources, baseline year and machine-specific
+paths:
+
+```r
+source(here::here("code", "ucm_analysis_setup.R"))
+ucm_config <- ucm_analysis_setup(export_legacy_names = TRUE)
+```
+
+Set `URBAN_COOLING_DATA_ROOT` once in your user-level `~/.Renviron`; copy the
+template line from [`.Renviron.example`](../.Renviron.example), replace the
+placeholder locally and restart R. Do not add a personal path to a tracked
+notebook. `export_legacy_names = TRUE` supplies `dir.g`, `dir.aoi`, `dir.fig`,
+`dir_ucm_out`, `dir_prod_new`, `year_baseline` and `ymd` for the existing
+notebooks. New code should instead use explicit fields such as
+`ucm_config$paths$ucm_output_dir` and `ucm_config$baseline_year`.
+
+For an exactly reproducible rerun of legacy date-stamped filenames, also set
+`URBAN_COOLING_RUN_DATE=YYYYMMDD`; otherwise it defaults to the run date. The
+setup stops early with a named missing-package or missing-directory error.
+
 ## Naming convention
 
 New production scripts use `verb_subject.py`:

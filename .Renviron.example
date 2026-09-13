@@ -1,0 +1,9 @@
+# Copy the relevant line to ~/.Renviron and restart R. Do not commit your
+# personal ~/.Renviron file or replace these placeholders with a user path.
+URBAN_COOLING_DATA_ROOT="/absolute/path/to/Wellcome Trust Project Data"
+
+# Optional: fix date-stamped legacy output names for a reproducible rerun.
+# URBAN_COOLING_RUN_DATE="20260913"
+
+# Optional: redirect Figure 4 exports without editing a notebook.
+# URBAN_COOLING_FIGURE_OUTPUT_DIR="/absolute/path/to/figure/output"

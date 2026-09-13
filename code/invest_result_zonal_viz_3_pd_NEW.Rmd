@@ -12,13 +12,11 @@ area-weighted mean over common valid 10 m pixels. It is not worker-weighted.
 Set `URBAN_COOLING_DATA_ROOT` before knitting.
 
 ```{r production-setup, message=FALSE, warning=FALSE}
-library(dplyr)
-library(ggplot2)
-library(here)
+source(here::here("code", "ucm_analysis_setup.R"))
+ucm_config <- ucm_analysis_setup()
+source(here::here("code", "post_processing_layers", "figure4_panel_helpers.R"))
 
-source(here("code", "post_processing_layers", "figure4_panel_helpers.R"))
-
-data_root <- figure4_data_root()
+data_root <- ucm_config$paths$data_root
 valuation_root <- file.path(
   data_root, "2_postprocess_intermediate", "UCM_official_runs",
   "revised_equal_area_invest3202_2026-09-11_valuations"
@@ -93,25 +91,10 @@ knitr::opts_chunk$set(eval = FALSE)
 
 ```{r}
 
-# # To clear your environment 
-remove(list = ls())
-
-library(here)
-source(here::here('code', 'func_packages.R'))
-
-
-here()
-source(here('code', 'func_ggsave.R'))
-source(here('code', 'func_get_color_scale.R'))
-source(here('code', 'func_colors.R')) # scenario_colors
-
+# The production setup above already loaded packages/helpers and resolved all
+# paths. These aliases are retained only for the archived code below.
+ucm_analysis_setup(export_legacy_names = TRUE)
 theme_set(theme_bw(base_size = 11))
-
-dir.g <- "G:/Shared drives/Wellcome Trust Project Data"
-dir.aoi      <- file.path(dir.g, "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs")
-dir_ucm_out  <- file.path(dir.g, '2_postprocess_intermediate/UCM_official_runs')
-dir_prod_new <- file.path(dir_ucm_out, 'new_work_intensity')
-dir.fig <- file.path(dir.g, "3_final/UCM_figures")
 
 
 # load functions 
@@ -218,8 +201,7 @@ pd_sf <- pd %>%
   left_join(., aoi, by = c("GSS_CODE"))
 
 
-## pick the baseline year for later comparison 
-year_baseline <- 2021
+## `year_baseline` comes from the shared analysis configuration.
 
 
 ## filter out 20_5, and 22_5, 25_2 for now 

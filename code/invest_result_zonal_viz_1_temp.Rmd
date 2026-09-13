@@ -6,21 +6,10 @@ date: "2025-09-16"
 
 ```{r setup}
 
-# # To clear your environment 
-remove(list = ls())
-
-# load common packages
-library(here)
-here()
-source(here('code', 'func_packages.R'))   # ymd
-source(here('code', 'func_ggsave.R'))
-source(here('code', 'func_get_color_scale.R'))
-source(here('code', 'func_colors.R'))     # scenario_colors, scenario_labels
-
-dir.g   <- "G:/Shared drives/Wellcome Trust Project Data"
-dir.aoi <- file.path(dir.g, "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs")
-dir.fig <- file.path(dir.g, "3_final/UCM_figures")
-dir_ucm_out <- file.path(dir.g, '2_postprocess_intermediate/UCM_official_runs')
+# One shared call loads common packages/helpers, validates the external data
+# root and exports the historical names used throughout this legacy notebook.
+source(here::here("code", "ucm_analysis_setup.R"))
+ucm_config <- ucm_analysis_setup(export_legacy_names = TRUE)
 ```
 
 
@@ -55,8 +44,7 @@ aoi_lsoa <- st_read(f, quiet = T) %>%
 
 ```{r}
 
-## pick the baseline year for later comparison 
-year_baseline <- 2021
+## `year_baseline` comes from the shared analysis configuration.
 
 #' the input data was generated from `invest_result_zonal_viz_0_data_prep.Rmd`
 
@@ -1352,4 +1340,3 @@ f <- file.path(dir.fig, paste("temp_scenarios_fromshp", ymd, which_test, ".png",
 print(f)
 func_ggsave(f, w = 7, h = 5, save_png = T)
 ```
-

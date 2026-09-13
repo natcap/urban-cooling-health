@@ -13,13 +13,11 @@ Set `URBAN_COOLING_DATA_ROOT` to
 the local **Wellcome Trust Project Data** folder before knitting.
 
 ```{r production-setup, message=FALSE, warning=FALSE}
-library(dplyr)
-library(ggplot2)
-library(here)
+source(here::here("code", "ucm_analysis_setup.R"))
+ucm_config <- ucm_analysis_setup()
+source(here::here("code", "post_processing_layers", "figure4_panel_helpers.R"))
 
-source(here("code", "post_processing_layers", "figure4_panel_helpers.R"))
-
-data_root <- figure4_data_root()
+data_root <- ucm_config$paths$data_root
 valuation_root <- file.path(
   data_root, "2_postprocess_intermediate", "UCM_official_runs",
   "revised_equal_area_invest3202_2026-09-11_valuations"
@@ -119,6 +117,8 @@ func_plot_map <- readRDS(f)
 ## AOI
 
 ```{r - borough}
+dir.g <- ucm_config$paths$data_root
+dir.aoi <- ucm_config$paths$aoi_dir
 
 #' borough level
 f <- file.path(dir.aoi, 'London_Borough_aoi.shp')
