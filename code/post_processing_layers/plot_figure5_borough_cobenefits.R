@@ -14,6 +14,11 @@ suppressPackageStartupMessages({
   library(tidyr)
 })
 
+script_argument <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
+if (!length(script_argument)) stop("Cannot resolve the Figure 5 script path", call. = FALSE)
+script_dir <- dirname(normalizePath(sub("^--file=", "", script_argument[[1]])))
+source(file.path(script_dir, "figure4_panel_helpers.R"))
+
 parse_args <- function(values) {
   result <- list(temperature = 25)
   index <- 1
@@ -36,12 +41,10 @@ required_path <- function(value, label, directory = FALSE) {
   path
 }
 
-scenario_order <- c("green10", "target10", "green20", "target20", "green30", "target30")
-scenario_labels <- c(
-  green10 = "Green 10%", target10 = "Target 10%",
-  green20 = "Green 20%", target20 = "Target 20%",
-  green30 = "Green 30%", target30 = "Target 30%"
-)
+scenario_order <- figure4_scenarios
+scenario_labels <- figure4_labels
+counterfactual_scenarios <- c("allbuilt", "treerisk", "treeopp")
+canopy_scenarios <- setdiff(scenario_order, counterfactual_scenarios)
 
 args <- parse_args(commandArgs(trailingOnly = TRUE))
 borough_summary_path <- required_path(args$borough_summary, "borough_summary")
@@ -83,7 +86,7 @@ borough_change <- summary_data %>%
       round(baseline_workability * 100, 2)
   )
 if (nrow(borough_change) != 33 * length(scenario_order)) {
-  stop("Energy/productivity input must contain 33 boroughs for all six scenarios", call. = FALSE)
+  stop("Energy/productivity input must contain 33 boroughs for all nine scenarios", call. = FALSE)
 }
 
 # Health rasters already encode scenario-minus-baseline excess mortality.
@@ -119,6 +122,7 @@ map_data <- borough_change %>%
     names_to = "metric", values_to = "value"
   ) %>%
   mutate(
+    scenario_id = scenario,
     scenario = factor(scenario, levels = scenario_order, labels = scenario_labels),
     metric = recode(
       metric,
@@ -139,7 +143,9 @@ write.csv(
     arrange(metric, scenario, borough_code) %>%
     transmute(
       borough, borough_code,
-      scenario = as.character(scenario), metric, value, unit
+      scenario = scenario_id,
+      scenario_label = gsub("\\n", " ", as.character(scenario)),
+      metric, value, unit
     ),
   file.path(output_dir, "figure5_borough_cobenefits_data.csv"),
   row.names = FALSE
@@ -148,43 +154,94 @@ write.csv(
 map_sf <- boroughs %>%
   left_join(map_data, by = c("borough", "borough_code"))
 
-make_map_row <- function(metric_name, palette, legend_title) {
-  ggplot(filter(map_sf, metric == metric_name)) +
+make_map_row <- function(metric_name, scenario_ids, legend_title, show_legend) {
+  # Use the same symmetric range for both scenario groups. This preserves
+  # direct colour comparability and makes zero the neutral midpoint.
+  metric_limit <- max(abs(filter(map_sf, metric == metric_name)$value), na.rm = TRUE)
+  plot_data <- filter(
+    map_sf, metric == metric_name, scenario_id %in% scenario_ids
+  ) %>%
+    mutate(scenario = droplevels(scenario))
+
+  ggplot(plot_data) +
     geom_sf(aes(fill = value), colour = "white", linewidth = 0.12) +
     facet_wrap(~scenario, nrow = 1) +
-    scale_fill_distiller(palette = palette, direction = 1, name = legend_title) +
+    scale_fill_gradient2(
+      low = "#B2182B", mid = "#F7F7F7", high = "#2166AC",
+      midpoint = 0, limits = c(-metric_limit, metric_limit),
+      name = legend_title,
+      guide = guide_colourbar(
+        title.position = "top", title.hjust = 0.5,
+        barheight = grid::unit(0.68, "in"),
+        barwidth = grid::unit(0.16, "in")
+      )
+    ) +
     coord_sf(datum = NA) +
     labs(title = metric_name) +
-    theme_void(base_size = 9) +
+    theme_void(base_size = 10) +
     theme(
       plot.title = element_text(face = "bold", size = 10, margin = margin(b = 3)),
-      strip.text = element_text(face = "bold", size = 8),
+      strip.text = element_text(face = "bold", size = 10),
       strip.background = element_rect(fill = "#F1F1F1", colour = NA),
-      legend.position = "right",
-      legend.key.height = grid::unit(0.45, "in"),
+      legend.position = if (show_legend) "right" else "none",
+      legend.title = element_text(size = 9),
+      legend.text = element_text(size = 9),
       plot.margin = margin(2, 2, 2, 2)
     )
 }
 
-combined_plot <-
-  make_map_row("Avoided energy cost", "YlOrBr", "£m/month") /
-  make_map_row("Heavy-work capacity gain", "PuBu", "Percentage\npoints") /
-  make_map_row("Heat-related deaths averted", "YlGnBu", "Annual\ndeaths") +
+metric_specs <- list(
+  c("Avoided energy cost", "£m/month"),
+  c("Heavy-work capacity gain", "Percentage\npoints"),
+  c("Heat-related deaths averted", "Annual\ndeaths")
+)
+
+make_group_heading <- function(label) {
+  ggplot() +
+    annotate("text", x = 0, y = 0.5, label = label, hjust = 0,
+             fontface = "bold", size = 3.9) +
+    xlim(0, 1) + ylim(0, 1) +
+    theme_void() +
+    theme(plot.margin = margin(0, 2, 0, 2))
+}
+
+counterfactual_rows <- wrap_plots(lapply(metric_specs, function(spec) {
+  make_map_row(spec[[1]], counterfactual_scenarios, spec[[2]], FALSE)
+}), ncol = 1)
+counterfactual_block <-
+  make_group_heading("a  Original counterfactuals") /
+  counterfactual_rows +
+  plot_layout(heights = c(0.12, 3))
+
+canopy_rows <- wrap_plots(lapply(metric_specs, function(spec) {
+  make_map_row(spec[[1]], canopy_scenarios, spec[[2]], TRUE)
+}), ncol = 1)
+canopy_block <-
+  make_group_heading("b  Canopy-addition scenarios") /
+  canopy_rows +
+  plot_layout(heights = c(0.12, 3))
+
+caption_text <- paste(strwrap(paste(
+  "Each map shows a borough-specific change; colours are comparable across",
+  "all nine scenarios within an outcome row. Red indicates a loss relative",
+  "to baseline, white indicates zero change and blue indicates a gain.",
+  "Health maps are deterministic spatial allocations and do not show",
+  "borough-level uncertainty."
+), width = 180), collapse = "\n")
+
+combined_plot <- (counterfactual_block | canopy_block) +
+  plot_layout(widths = c(3.2, 6.8)) +
   plot_annotation(
     title = "Borough-level co-benefits of alternative land-use scenarios",
     subtitle = paste0(
       "Scenario-minus-baseline changes under ", temperature_label,
       "°C mid-century climate conditions"
     ),
-    caption = paste(
-      "Each map shows a borough-specific change; colours are comparable across",
-      "the six scenarios within a row. Health maps are deterministic spatial",
-      "allocations and do not show borough-level uncertainty."
-    ),
+    caption = caption_text,
     theme = theme(
       plot.title = element_text(face = "bold", size = 13),
       plot.subtitle = element_text(size = 10),
-      plot.caption = element_text(hjust = 0, size = 8, colour = "#4A4A4A")
+      plot.caption = element_text(hjust = 0, size = 9.5, colour = "#4A4A4A")
     )
   )
 
@@ -203,12 +260,17 @@ artifact_names <- c(
   "figure5_borough_cobenefits.svg"
 )
 manifest <- list(
-  schema_version = 1,
+  schema_version = 2,
   created_utc = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
   temperature_c = temperature,
   estimand = "Scenario-minus-baseline change calculated separately within each borough",
   health_zonal_rule = "10 m raster-cell centre assigned to borough; values summed and sign reversed",
   uncertainty = "No borough confidence intervals; mapped variation is spatial heterogeneity",
+  scenarios = list(
+    original_counterfactuals = counterfactual_scenarios,
+    canopy_addition = canopy_scenarios
+  ),
+  colour_scale = "Shared symmetric diverging scale within each outcome; midpoint is zero",
   inputs = list(
     borough_summary = list(
       path = borough_summary_path,

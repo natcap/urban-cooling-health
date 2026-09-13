@@ -18,7 +18,7 @@ scenario mappings.
 | Compare revised and manuscript-era summaries | `compare_ucm_valuation_versions.py` | Optional production component |
 | Build and export the combined manuscript Figure 4 | `plot_figure4_citywide.R` | Recommended final assembly |
 | Inspect Figure 4 source panels | `../invest_result_zonal_viz_2_energy.Rmd`, `../invest_result_zonal_viz_3_pd_NEW.Rmd`, `../health_assessment/health-modeling-output-plot-city.Rmd` | Current nine-scenario notebooks |
-| Build Figure 5 borough maps | `../viz-es-change-due-to-lc.Rmd` or `plot_figure5_borough_cobenefits.R` | Current six-scenario workflow |
+| Build Figure 5 borough maps | `../viz-es-change-due-to-lc.Rmd` or `plot_figure5_borough_cobenefits.R` | Current nine-scenario workflow |
 | Legacy zonal statistics and archived plot sections | non-production sections retained in the notebooks | Historical reference only |
 
 The Figure 4 scenario set is baseline plus AllBuilt, TreeRisk, TreeOpp,
@@ -242,8 +242,15 @@ Rscript code/post_processing_layers/plot_figure5_borough_cobenefits.R \
   --output-dir /path/to/run/summary/figure5
 ```
 
+The production Figure 5 includes all nine manuscript scenarios. For
+readability, the three original counterfactuals (AllBuilt, TreeRisk and
+TreeOpp) form one block and the six Green/Target canopy-addition scenarios form
+a second block. Every outcome uses a symmetric diverging colour scale shared
+across both blocks, with zero as the neutral midpoint, so negative and positive
+scenario effects remain directly comparable.
+
 The builder writes the mapped data, PNG/PDF/SVG figures and a checksum
-manifest. A common scale is used across the six scenarios within each outcome
+manifest. A common scale is used across all nine scenarios within each outcome
 row. Health is aggregated from the reviewed all-cause mortality-change raster
 by borough; no borough uncertainty interval is inferred.
 

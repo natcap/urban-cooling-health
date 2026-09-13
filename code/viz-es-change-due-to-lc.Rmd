@@ -4,13 +4,15 @@ output: html_document
 date: "2026-09-11"
 ---
 
-## Production map (revised six-scenario analysis)
+## Production map (revised nine-scenario analysis)
 
 This section replaces the three manually saved `viz_sf_*` objects with the
-reviewed borough summary and population-weighted health rasters. It maps all
-six scenarios using a common colour scale within each outcome row, so Green
-and Target strategies can be compared at the same 10%, 20% and 30% canopy
-budgets. Set `URBAN_COOLING_DATA_ROOT` before knitting.
+reviewed borough summary and population-weighted health rasters. It restores
+all nine manuscript scenarios: AllBuilt, TreeRisk, TreeOpp, Green10/20/30 and
+Target10/20/30. The output separates the three original counterfactuals from
+the six canopy-addition scenarios while retaining one common, zero-centred
+colour scale within each outcome row. Set `URBAN_COOLING_DATA_ROOT` before
+knitting.
 
 ```{r production-setup, message=FALSE, warning=FALSE}
 library(here)
@@ -68,7 +70,8 @@ Energy and productivity are calculated relative to the matching borough
 baseline. Health is the borough sum of each scenario-minus-baseline 10 m
 mortality raster, expressed as deaths averted. The health maps show
 deterministic spatial allocations; borough-level confidence intervals are not
-available and are not implied by the colour variation.
+available and are not implied by the colour variation. Red indicates a loss
+relative to baseline, white zero change and blue a gain.
 
 ## Archived manuscript-era workflow
 

@@ -127,9 +127,12 @@ three-panel figure and records a single provenance manifest.
 > **Fig. 5 | Borough-scale changes in co-benefits under alternative land-use
 > scenarios.** Maps show scenario-minus-baseline changes in avoided monthly
 > energy cost, modeled heavy-work capacity and heat-related deaths averted for
-> each London borough under Green and Target scenarios with matched 10%, 20%
-> and 30% canopy budgets. Colour scales are held constant across the six
-> scenarios within each outcome row. Energy and productivity changes are
+> each London borough under AllBuilt, TreeRisk, TreeOpp and the Green and
+> Target scenarios with matched 10%, 20% and 30% canopy budgets. The original
+> counterfactuals and canopy-addition scenarios are displayed as separate
+> blocks. Within each outcome row, a symmetric diverging colour scale is held
+> constant across all nine scenarios and centred on zero; red denotes a loss
+> relative to baseline and blue a gain. Energy and productivity changes are
 > calculated relative to the matching borough baseline. Health values are
 > deterministic borough sums of the population-weighted 10 m mortality-change
 > rasters. Map variation represents spatial heterogeneity, not model
