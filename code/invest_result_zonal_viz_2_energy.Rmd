@@ -59,12 +59,17 @@ figure4a <- ggplot(
   geom_vline(xintercept = 3.5, colour = "#B8B8B8", linewidth = 0.35) +
   geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25) +
   scale_fill_manual(values = figure4_colours) +
+  guides(fill = guide_legend(nrow = 2, byrow = TRUE)) +
   scale_y_continuous(expand = expansion(mult = c(0.08, 0.10))) +
   labs(
     x = NULL, y = "Avoided energy cost (£ million/month)",
     fill = "Scenario strategy"
   ) +
   figure4_panel_theme()
+
+figure4a <- figure4_add_value_labels(
+  figure4a, energy_panel_data, digits = 1
+)
 
 figure4a
 figure4_save_panel(figure4a, output_dir, "figure4a_energy_citywide")

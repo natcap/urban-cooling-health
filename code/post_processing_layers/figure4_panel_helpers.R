@@ -70,12 +70,42 @@ figure4_prepare_scenarios <- function(data, column = "scenario") {
 }
 
 figure4_panel_theme <- function() {
-  theme_classic(base_size = 10) +
+  theme_classic(base_size = 11) +
     theme(
       legend.position = "top",
-      axis.text.x = element_text(size = 7.5),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 9),
+      axis.text.x = element_text(size = 8.5),
+      legend.title = element_text(size = 9),
+      legend.text = element_text(size = 9),
       plot.caption = element_text(hjust = 0, size = 8, colour = "#4A4A4A")
     )
+}
+
+# Add signed values in the style of func_plot_change_point(). For health,
+# labels are placed beyond the confidence interval so they remain legible.
+figure4_add_value_labels <- function(plot, data, digits, size = 3) {
+  if (!"lower95" %in% names(data)) data$lower95 <- NA_real_
+  if (!"upper95" %in% names(data)) data$upper95 <- NA_real_
+
+  label_data <- data %>%
+    mutate(
+      label = sprintf(paste0("%+.", digits, "f"), estimate),
+      label_anchor = ifelse(
+        estimate >= 0,
+        ifelse(is.na(upper95), estimate, upper95),
+        ifelse(is.na(lower95), estimate, lower95)
+      ),
+      label_vjust = ifelse(estimate >= 0, -0.45, 1.35)
+    )
+
+  plot +
+    geom_text(
+      data = label_data,
+      aes(y = label_anchor, label = label, vjust = label_vjust),
+      size = size, fontface = "bold", show.legend = FALSE
+    ) +
+    coord_cartesian(clip = "off")
 }
 
 figure4_save_panel <- function(plot, output_dir, stem) {

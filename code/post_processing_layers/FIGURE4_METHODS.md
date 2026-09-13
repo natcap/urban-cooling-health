@@ -160,3 +160,16 @@ health scenario set are complete. The script writes:
 
 The manifest records the input paths, energy-summary checksum, temperature,
 price-basis label, estimands and uncertainty treatment.
+
+## Figure typography and direct labels
+
+Figure 4 uses bold signed value labels to preserve the convention established
+by `func_plot_change_point()`. Precision is matched to the estimand: one decimal
+place for energy, two for productivity and whole deaths for health. Health
+labels sit beyond the corresponding 95% interval rather than on the bar end.
+The plotting code uses an 11-point base font and produces PDF and SVG output so
+the artwork can be scaled without rasterizing text. Before submission, verify
+that the effective text remains within the 5–7 point range in the
+[Nature research figure guide](https://research-figure-guide.nature.com/figures/building-and-exporting-figure-panels/)
+at the final typeset width and that no labels overlap after any publisher-side
+resizing.

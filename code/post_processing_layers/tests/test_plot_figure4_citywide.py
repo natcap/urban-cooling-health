@@ -90,6 +90,13 @@ class Figure4BuilderTest(unittest.TestCase):
             ):
                 self.assertTrue((output_dir / name).is_file(), name)
 
+            # The manuscript figure directly labels each estimand with its
+            # documented panel-specific precision.
+            svg = (output_dir / "figure4_citywide_cobenefits.svg").read_text()
+            self.assertIn("+1.0", svg)
+            self.assertIn("+0.10", svg)
+            self.assertIn("+90", svg)
+
 
 if __name__ == "__main__":
     unittest.main()

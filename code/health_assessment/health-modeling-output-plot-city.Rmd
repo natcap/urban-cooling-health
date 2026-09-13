@@ -83,12 +83,17 @@ figure4c <- ggplot(
     width = 0.18, linewidth = 0.5
   ) +
   scale_fill_manual(values = figure4_colours) +
+  guides(fill = guide_legend(nrow = 2, byrow = TRUE)) +
   scale_y_continuous(expand = expansion(mult = c(0.08, 0.10))) +
   labs(
     x = NULL, y = "Heat-related deaths averted (annual deaths)",
     fill = "Scenario strategy"
   ) +
   figure4_panel_theme()
+
+figure4c <- figure4_add_value_labels(
+  figure4c, health_panel_data, digits = 0
+)
 
 figure4c
 figure4_save_panel(figure4c, output_dir, "figure4c_health_citywide")

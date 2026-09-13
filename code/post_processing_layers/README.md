@@ -211,6 +211,15 @@ percentiles of paired exposure-response draws. Energy and productivity remain
 deterministic unless their parameter uncertainty is propagated separately.
 Do not reuse the borough standard error as uncertainty around a citywide total.
 
+Bars are directly labelled with signed values, following the established
+`func_plot_change_point()` convention. Energy uses one decimal place,
+productivity two decimal places and health whole deaths. Health labels are
+placed beyond the 95% interval to avoid obscuring its uncertainty bars. The
+shared theme uses an 11-point base font and exports vector PDF/SVG files for
+final typesetting. At the intended 183 mm double-column width, the combined
+figure scales to approximately 5–7 point text, matching Nature's current
+figure-artwork guidance; recheck this after any layout or publisher resizing.
+
 See `FIGURE4_METHODS.md` for the manuscript recommendation, estimand wording
 and revised legend.
 

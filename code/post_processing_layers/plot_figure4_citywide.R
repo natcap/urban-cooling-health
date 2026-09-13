@@ -12,6 +12,11 @@ suppressPackageStartupMessages({
   library(tidyr)
 })
 
+script_argument <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
+if (!length(script_argument)) stop("Cannot resolve the Figure 4 script path", call. = FALSE)
+script_dir <- dirname(normalizePath(sub("^--file=", "", script_argument[[1]])))
+source(file.path(script_dir, "figure4_panel_helpers.R"))
+
 parse_args <- function(values) {
   result <- list(temperature = 25, price_basis = "late-2025 input-price assumptions")
   index <- 1
@@ -34,16 +39,8 @@ required_path <- function(value, label, directory = FALSE) {
   path
 }
 
-scenario_order <- c(
-  "allbuilt", "treerisk", "treeopp",
-  "green10", "target10", "green20", "target20", "green30", "target30"
-)
-scenario_labels <- c(
-  allbuilt = "All\nBuilt", treerisk = "Tree\nRisk", treeopp = "Tree\nOpp",
-  green10 = "Green\n10%", target10 = "Target\n10%",
-  green20 = "Green\n20%", target20 = "Target\n20%",
-  green30 = "Green\n30%", target30 = "Target\n30%"
-)
+scenario_order <- figure4_scenarios
+scenario_labels <- figure4_labels
 
 args <- parse_args(commandArgs(trailingOnly = TRUE))
 city_path <- required_path(args$citywide_summary, "citywide_summary")
@@ -162,10 +159,24 @@ panel_units <- c(
   "c  Heat-related deaths averted" = "Annual deaths"
 )
 
-scenario_colours <- c(
-  AllBuilt = "#D95F0E", TreeRisk = "#FEC44F", TreeOpp = "#D9F0A3",
-  Green = "#3B7D4A", Target = "#6B5B95"
-)
+scenario_colours <- figure4_colours
+
+# Match the signed-label convention in func_plot_change_point(), while using
+# panel-specific precision and placing health labels beyond its 95% interval.
+figure_data <- figure_data %>%
+  mutate(
+    value_label = case_when(
+      metric == "a  Avoided energy cost" ~ sprintf("%+.1f", estimate),
+      metric == "b  Heavy-work capacity gain" ~ sprintf("%+.2f", estimate),
+      TRUE ~ sprintf("%+.0f", estimate)
+    ),
+    label_anchor = ifelse(
+      estimate >= 0,
+      ifelse(is.na(upper95), estimate, upper95),
+      ifelse(is.na(lower95), estimate, lower95)
+    ),
+    label_vjust = ifelse(estimate >= 0, -0.45, 1.35)
+  )
 
 main_plot <- ggplot(figure_data, aes(x = scenario, y = estimate, fill = strategy)) +
   geom_hline(yintercept = 0, colour = "#777777", linewidth = 0.3) +
@@ -176,9 +187,13 @@ main_plot <- ggplot(figure_data, aes(x = scenario, y = estimate, fill = strategy
     aes(ymin = lower95, ymax = upper95),
     width = 0.18, linewidth = 0.5
   ) +
+  geom_text(
+    aes(y = label_anchor, label = value_label, vjust = label_vjust),
+    size = 3, fontface = "bold", show.legend = FALSE
+  ) +
   facet_wrap(~metric, scales = "free_y", nrow = 1) +
   scale_fill_manual(values = scenario_colours) +
-  scale_y_continuous(expand = expansion(mult = c(0.08, 0.10))) +
+  scale_y_continuous(expand = expansion(mult = c(0.12, 0.17))) +
   labs(
     x = NULL,
     y = NULL,
@@ -189,15 +204,19 @@ main_plot <- ggplot(figure_data, aes(x = scenario, y = estimate, fill = strategy
       "represent the 95% interval from paired exposure-response draws."
     ), width = 175), collapse = "\n")
   ) +
-  theme_classic(base_size = 10) +
+  theme_classic(base_size = 11) +
   theme(
     legend.position = "top",
     strip.background = element_blank(),
-    strip.text = element_text(face = "bold", hjust = 0),
-    axis.text.x = element_text(size = 8),
+    strip.text = element_text(face = "bold", hjust = 0, size = 10),
+    axis.text.y = element_text(size = 9),
+    axis.text.x = element_text(size = 8.5),
+    legend.title = element_text(size = 9),
+    legend.text = element_text(size = 9),
     plot.caption = element_text(hjust = 0, size = 8, colour = "#4A4A4A"),
     panel.spacing.x = grid::unit(1.2, "lines")
-  )
+  ) +
+  coord_cartesian(clip = "off")
 
 # Add truthful panel-specific units without implying a shared y-axis.
 main_plot <- main_plot + geom_text(
