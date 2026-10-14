@@ -20,6 +20,7 @@ date: "2026-09-11"
 remove(list = ls())
 
 library(here)
+knitr::opts_knit$set(root.dir = here::here())
 library(sf)
 library(tmap)
 library(tidyverse)
@@ -36,14 +37,8 @@ conflict_prefer("filter", "dplyr")
 source(here('code', 'func_colors.R')) # scenario_colors
 
 
-sf::st_drivers()[sf::st_drivers()$name == "ESRI Shapefile", ]
-
-
-## AOI layer
-dir.g <- "G:/Shared drives/Wellcome Trust Project Data"
-dir.aoi <- file.path(dir.g, "1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs")
-f <- file.path(dir.aoi, 'London_Borough_aoi.shp')
-aoi <- st_read(f, quiet = T)
+# Figure 6 uses the versioned LSOA geometry stored under data/derived; it does
+# not require a machine-specific drive path to the borough boundary.
 
 ymd   <- format(Sys.time(), "%Y%m%d"); ymd
 ```
@@ -52,8 +47,10 @@ ymd   <- format(Sys.time(), "%Y%m%d"); ymd
 ### equity data
 
 ```{r}
-## data
-f <- './data/Social_Vulnerability_Index_london.gpkg'
+## Use the official-code vulnerability layer retained by the revised health
+## workflow. This avoids the historical row-order join used by the exploratory
+## notebook and makes every health-vulnerability match auditable by LSOA11CD.
+f <- './data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg'
 
 # --- metrics ---
 metrics <- c(
@@ -81,7 +78,7 @@ metrics_full_short <- c(
 )
 
 
-svi_lsoa <- st_read(f) %>%
+svi_lsoa <- st_read(f, quiet = TRUE) %>%
   rename('SVI' = 'overall_score') %>%
   # ----- pooled quintiles for all EP_* variables -----
   mutate(
@@ -103,10 +100,6 @@ svi_lsoa <- st_read(f) %>%
   )
 
 names(svi_lsoa)
-
-## save a copy for other use 
-f <- './data/Social_Vulnerability_Index_london_q.gpkg'
-st_write(svi_lsoa, f,delete_dsn = TRUE)
 
 
 
@@ -180,94 +173,33 @@ isolate the climate and land-cover scenarios and should not be described as a
 projection of London's 2050 population.
 
 ```{r}
-## Configure one input explicitly. Set URBAN_COOLING_DATA_ROOT on another
-## computer instead of editing several paths in this document.
-dir_ucm_out <- Sys.getenv(
-  "URBAN_COOLING_DATA_ROOT",
-  unset = "G:/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs"
-)
-health_input_name <- "health_london_45_zonal_stats_long_LSOA_2050_2050.csv"
-f <- file.path(dir_ucm_out, "health_output_stats", health_input_name)
-post_fix <- "i0_2050_2050"
+health_file <- './data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv'
+population_file <- './data/derived/lsoa_population_2021_by_lsoa11cd.csv'
 
-if (!file.exists(f)) {
-  stop(
-    "Health input not found: ", f, "\n",
-    "Set URBAN_COOLING_DATA_ROOT to the UCM_official_runs folder."
-  )
+stopifnot(file.exists(health_file), file.exists(population_file))
+
+population_2021 <- read_csv(population_file, show_col_types = FALSE) %>%
+  select(LSOA11CD, population_2021)
+if (anyDuplicated(population_2021$LSOA11CD)) {
+  stop("The 2021 LSOA population table contains duplicate LSOA11CD values.")
 }
 
-health_d <- read_csv(f, show_col_types = F) %>%
-  mutate(
-    indicator = gsub('\\.tif|Excess_', '', raster),
-    lc_scenario = gsub('health_output_', '', lc_scenario),
-    lc_scenario = gsub('_2050', '', lc_scenario),
-    indicator = ifelse(indicator == 'self_harm', "suicide", indicator),
-    indicator = str_to_title(indicator)
-  ) 
+# Figure 6 uses the primary 25 C setting. The 28 C results remain a documented
+# sensitivity analysis and should not be pooled with the primary model.
+health_df <- read_csv(health_file, show_col_types = FALSE) %>%
+  filter(temperature_setting_c == 25) %>%
+  transmute(
+    LSOA11CD,
+    Neighborhood_name,
+    cases_abs = deaths_averted,
+    lc_scenario = factor(lc_scenario, levels = c("Green30", "Target30")),
+    indicator,
+    cases_meaning = "Deaths averted per 100,000 residents"
+  )
 
-health_df <- health_d %>%
-  # mutate(climate = str_extract(raster, "\\d+deg_\\d+uhi")) %>%
-  # mutate(
-  #    climate = case_when(
-  #      indicator < 2030 ~ 'current',
-  #      T ~ 'future'
-  #    )
-  #    ) %>%
-  ## re-code: change scenario-3 (tree risk) as scenario-2
-  mutate(
-    lc_scenario = gsub('s0_', '', lc_scenario),
-    lc_scenario = case_when(
-      lc_scenario == 's1'  ~ 'scenario1',
-      lc_scenario == 's2'  ~ 'scenario3_TO',
-      lc_scenario == 's3'  ~ 'scenario2_TR',
-      lc_scenario == 's41' ~ 'scenario4_10',
-      lc_scenario == 's42' ~ 'scenario4_20',
-      lc_scenario == 's43' ~ 'scenario4_30',
-      lc_scenario == 's510' ~ 'scenario510',
-      lc_scenario == 's520' ~ 'scenario520',
-      lc_scenario == 's530' ~ 'scenario530',
-      TRUE                  ~ NA_character_
-    ) 
-  ) %>%
-  rename('cases' = 'sum') %>%
-  select(any_of(c("id", "Neighborhood_name","cases", "lc_scenario", "indicator")))
-
-
-names(health_df)
-
-
-
-# re-code scenario names again 
-scenario_labels_noBase <- scenario_labels[unname(scenario_labels) != "Baseline"]
-# scenario_colors_noBase <- scenario_colors_new[names(scenario_colors_new) != "Baseline"]
-
-## re-code land scenario labels
-health_df <- health_df %>%
-  mutate(lc_scenario = factor(lc_scenario, 
-                              levels = names(scenario_labels_noBase),
-                              labels = unname(scenario_labels_noBase))) %>%
-  ## Better define the meanings for easier interpretation 
-  dplyr::mutate(
-    cases = case_when(
-      lc_scenario %in% c('AllBuilt', 'TreeRisk') ~ cases,
-      ## convert "Excess deaths" to "Preventable deaths" to indicate "benefits" of nature
-      lc_scenario %in% c('TreeOpp', 
-                         'Green10', 'Green20', 'Green30', 
-                         'Target10','Target20', 'Target30'
-                         ) ~ -cases,
-      T ~ NA
-    ),
-    cases_meaning = case_when(
-      lc_scenario %in% c('AllBuilt', 'TreeRisk') ~ 'Excess deaths',
-      lc_scenario %in% c('TreeOpp', 
-                         'Green10', 'Green20', 'Green30',
-                         'Target10','Target20', 'Target30'
-                         ) ~ 'Deaths averted',
-      T ~ NA
-    )
-  ) %>%
-  as.data.frame()
+if (anyDuplicated(health_df[c("LSOA11CD", "lc_scenario", "indicator")])) {
+  stop("The revised health table contains duplicate LSOA/scenario/cause rows.")
+}
 
 
 unique(health_df$lc_scenario)
@@ -278,9 +210,17 @@ unique(health_df$lc_scenario)
 ### join data
 
 ```{r}
-## add sf 
-health_sf <- health_df %>%
-  left_join(svi_lsoa_subset, ., by = 'id')
+## Join only by the official statistical-area code. Population normalization
+## prevents large LSOAs from appearing to receive larger benefits merely
+## because they contain more residents.
+health_sf <- svi_lsoa_subset %>%
+  left_join(health_df, by = 'LSOA11CD') %>%
+  left_join(population_2021, by = 'LSOA11CD') %>%
+  mutate(cases = 100000 * cases_abs / population_2021)
+
+if (anyNA(health_sf$cases) || any(!is.finite(health_sf$cases))) {
+  stop("The health, vulnerability or population join is incomplete.")
+}
 
 
 label_map <- c(
@@ -291,8 +231,8 @@ label_map <- c(
 )
 
 
-# save data
-saveRDS(object = health_sf, file = "./figures/equity_map_biscale/health_sf.rds")
+# The legacy health_sf.rds is no longer rewritten here. The three documented
+# source files above are the reproducible inputs for Figure 6.
 ```
 
 
@@ -777,9 +717,354 @@ Fig. x | Standardized associations between social vulnerability indicators and p
 
 
   
-### gam
-  
-```{r}
+### Production Figure 6 GAM analysis
+
+The primary analysis below uses deaths averted per 100,000 residents, all valid
+LSOAs and the documented 25 °C Green30 run. The 1st–99th percentile analysis is
+retained only as a sensitivity check because metric-specific trimming otherwise
+changes the sample from panel to panel. Reported intervals are conditional on
+the fitted GAM and do not propagate uncertainty from UCM temperatures,
+population, mortality inputs or exposure–response coefficients.
+
+```{r figure-6-production-models}
+library(mgcv)
+
+figure6_metrics <- c(
+  "pIncomeDeprivation", "p5under", "p75over", "pBAME", "SVI"
+)
+figure6_labels <- c(
+  pIncomeDeprivation = "Income deprivation",
+  p5under = "Age <5",
+  p75over = "Age ≥75",
+  pBAME = "Ethnic-minority population share",
+  SVI = "Social Vulnerability Index"
+)
+figure6_scenario <- "Green30"
+figure6_outcome <- "All_cause"
+figure6_k <- 10L
+figure6_moran_permutations <- 999L
+figure6_seed <- 20260908L
+figure6_output_dir <- here("figures", "figure6_statistical_reporting")
+dir.create(figure6_output_dir, recursive = TRUE, showWarnings = FALSE)
+
+figure6_sf <- health_sf %>%
+  filter(indicator == figure6_outcome, lc_scenario == figure6_scenario) %>%
+  select(LSOA11CD, cases, all_of(figure6_metrics)) %>%
+  filter(
+    is.finite(cases),
+    if_all(all_of(figure6_metrics), ~ is.finite(.x))
+  ) %>%
+  arrange(LSOA11CD) %>%
+  mutate(row_id = row_number())
+
+if (nrow(figure6_sf) < 100 || anyDuplicated(figure6_sf$LSOA11CD)) {
+  stop("Figure 6 requires one valid Green30 all-cause record per LSOA.")
+}
+
+# Standardizing predictors makes curves comparable without changing model fit.
+figure6_sf <- figure6_sf %>%
+  mutate(across(all_of(figure6_metrics), ~ as.numeric(scale(.x))))
+
+# Queen-contiguity neighbours support a dependency-free residual Moran's I
+# check. This is a diagnostic sensitivity test, not a replacement spatial model.
+figure6_neighbours <- sf::st_touches(figure6_sf)
+edge_i <- rep(seq_along(figure6_neighbours), lengths(figure6_neighbours))
+edge_j <- unlist(figure6_neighbours, use.names = FALSE)
+keep_edge <- edge_i < edge_j
+figure6_edges <- tibble(i = edge_i[keep_edge], j = edge_j[keep_edge])
+if (nrow(figure6_edges) == 0) stop("No LSOA neighbour links were identified.")
+
+moran_permutation <- function(values, edges, permutations, seed) {
+  x <- values - mean(values)
+  n <- length(x)
+  expected <- -1 / (n - 1)
+  denominator <- sum(x^2)
+  observed <- (n / (2 * nrow(edges))) *
+    (2 * sum(x[edges$i] * x[edges$j])) / denominator
+
+  set.seed(seed)
+  simulated <- replicate(permutations, {
+    xp <- sample(x, replace = FALSE)
+    (n / (2 * nrow(edges))) *
+      (2 * sum(xp[edges$i] * xp[edges$j])) / denominator
+  })
+  tibble(
+    moran_i = observed,
+    expected_i = expected,
+    permutation_p_two_sided =
+      (1 + sum(abs(simulated - expected) >= abs(observed - expected))) /
+      (permutations + 1),
+    permutations = permutations,
+    neighbour_links = nrow(edges)
+  )
+}
+
+fit_figure6_gam <- function(data, metric, analysis_label, calculate_spatial = FALSE) {
+  model_data <- data %>%
+    st_drop_geometry() %>%
+    transmute(row_id, cases, x = .data[[metric]])
+
+  # A robust scaled-t family reduces sensitivity to genuine extreme mortality
+  # benefits while retaining all observations in the primary model.
+  model <- mgcv::gam(
+    cases ~ s(x, k = figure6_k, bs = "ts"),
+    data = model_data,
+    family = mgcv::scat(), method = "REML", select = TRUE
+  )
+
+  # Compare functional form in a Gaussian-ML sensitivity analysis. The scaled-t
+  # linear ML fit is numerically unstable in mgcv, while REML AIC values from
+  # models with different fixed-effect structures are not comparable.
+  smooth_ml <- mgcv::gam(
+    cases ~ s(x, k = figure6_k, bs = "ts"), data = model_data,
+    family = gaussian(), method = "ML", select = TRUE
+  )
+  linear_ml <- mgcv::gam(
+    cases ~ x, data = model_data,
+    family = gaussian(), method = "ML"
+  )
+
+  model_summary <- summary(model)
+  smooth_table <- model_summary$s.table
+  stat_column <- intersect(c("F", "Chi.sq"), colnames(smooth_table))
+  k_table <- mgcv::k.check(model)
+
+  x_quantiles <- quantile(model_data$x, c(0.10, 0.90), na.rm = TRUE)
+  contrast_data <- data.frame(x = unname(x_quantiles))
+  contrast_matrix <- predict(model, newdata = contrast_data, type = "lpmatrix")
+  contrast_vector <- contrast_matrix[2, ] - contrast_matrix[1, ]
+  contrast_estimate <- drop(contrast_vector %*% coef(model))
+  contrast_se <- sqrt(drop(
+    contrast_vector %*% vcov(model) %*% contrast_vector
+  ))
+
+  prediction_data <- data.frame(
+    x = seq(min(model_data$x), max(model_data$x), length.out = 200)
+  )
+  term_prediction <- predict(
+    model, newdata = prediction_data, type = "terms", se.fit = TRUE
+  )
+
+  stats <- tibble(
+    Analysis = analysis_label,
+    Metric = metric,
+    N = nrow(model_data),
+    EDF = unname(smooth_table[1, "edf"]),
+    Ref_df = if ("Ref.df" %in% colnames(smooth_table)) {
+      unname(smooth_table[1, "Ref.df"])
+    } else NA_real_,
+    Test_Type = if (length(stat_column)) stat_column[[1]] else NA_character_,
+    Test_Statistic = if (length(stat_column)) {
+      unname(smooth_table[1, stat_column[[1]]])
+    } else NA_real_,
+    P_Value = unname(smooth_table[1, "p-value"]),
+    Adj_R_Sq = unname(model_summary$r.sq),
+    Deviance_Explained = unname(model_summary$dev.expl),
+    AIC_GAM_ML = AIC(smooth_ml),
+    AIC_Linear_ML = AIC(linear_ml),
+    Delta_AIC_Linear_minus_GAM = AIC(linear_ml) - AIC(smooth_ml),
+    Basis_k = figure6_k,
+    K_Index = unname(k_table[1, "k-index"]),
+    K_Check_P = unname(k_table[1, "p-value"]),
+    Family = model$family$family,
+    Method = "REML",
+    AIC_Comparison = "Gaussian ML sensitivity: linear minus smooth"
+  )
+
+  contrast <- tibble(
+    Analysis = analysis_label,
+    Metric = metric,
+    Predictor_P10 = x_quantiles[[1]],
+    Predictor_P90 = x_quantiles[[2]],
+    Difference_P90_minus_P10 = contrast_estimate,
+    Difference_SE = contrast_se,
+    Difference_CI_Low = contrast_estimate - 1.96 * contrast_se,
+    Difference_CI_High = contrast_estimate + 1.96 * contrast_se
+  )
+
+  curve <- tibble(
+    Analysis = analysis_label,
+    Metric = metric,
+    x = prediction_data$x,
+    y = drop(term_prediction$fit),
+    se = drop(term_prediction$se.fit)
+  )
+
+  spatial <- if (calculate_spatial) {
+    moran_permutation(
+      residuals(model, type = "deviance"), figure6_edges,
+      figure6_moran_permutations,
+      figure6_seed + match(metric, figure6_metrics)
+    ) %>% mutate(Analysis = analysis_label, Metric = metric, .before = 1)
+  } else {
+    tibble()
+  }
+
+  list(stats = stats, contrast = contrast, curve = curve, spatial = spatial)
+}
+
+primary_results <- purrr::map(figure6_metrics, function(metric) {
+  fit_figure6_gam(figure6_sf, metric, "Primary: all valid LSOAs", TRUE)
+})
+
+# The sensitivity analysis reproduces the earlier trimming choice while making
+# its reduced, metric-specific sample size explicit.
+trimmed_results <- purrr::map(figure6_metrics, function(metric) {
+  limits <- quantile(figure6_sf[[metric]], c(0.01, 0.99), na.rm = TRUE)
+  trimmed <- figure6_sf %>%
+    filter(.data[[metric]] >= limits[[1]], .data[[metric]] <= limits[[2]])
+  fit_figure6_gam(trimmed, metric, "Sensitivity: predictor P1-P99", FALSE)
+})
+
+all_results <- c(primary_results, trimmed_results)
+model_stats_table <- bind_rows(purrr::map(all_results, "stats")) %>%
+  group_by(Analysis) %>%
+  mutate(P_Value_BH = p.adjust(P_Value, method = "BH")) %>%
+  ungroup() %>%
+  mutate(
+    Metric_Label = recode(Metric, !!!figure6_labels),
+    P_Value_Display = format.pval(P_Value, digits = 3, eps = 0.001),
+    P_Value_BH_Display = format.pval(P_Value_BH, digits = 3, eps = 0.001),
+    Signif_Code = case_when(
+      P_Value_BH < 0.001 ~ "***",
+      P_Value_BH < 0.01 ~ "**",
+      P_Value_BH < 0.05 ~ "*",
+      TRUE ~ "ns"
+    )
+  )
+
+figure6_contrasts <- bind_rows(purrr::map(all_results, "contrast")) %>%
+  mutate(Metric_Label = recode(Metric, !!!figure6_labels))
+df_cont_curve <- bind_rows(purrr::map(primary_results, "curve")) %>%
+  mutate(Metric_Label = recode(Metric, !!!figure6_labels))
+figure6_spatial_diagnostics <- bind_rows(purrr::map(primary_results, "spatial")) %>%
+  mutate(Metric_Label = recode(Metric, !!!figure6_labels))
+
+# Large, significant residual Moran's I means the conventional GAM P values
+# should be treated as descriptive until a spatial model is agreed and reported.
+figure6_spatial_flag <- any(
+  figure6_spatial_diagnostics$permutation_p_two_sided < 0.05 &
+    abs(figure6_spatial_diagnostics$moran_i) > 0.10
+)
+df_cont_raw <- figure6_sf %>%
+  st_drop_geometry() %>%
+  select(all_of(figure6_metrics)) %>%
+  pivot_longer(everything(), names_to = "Metric", values_to = "x") %>%
+  mutate(Metric_Label = recode(Metric, !!!figure6_labels))
+
+readr::write_csv(model_stats_table, file.path(
+  figure6_output_dir, "figure6_gam_model_reporting.csv"
+))
+readr::write_csv(figure6_contrasts, file.path(
+  figure6_output_dir, "figure6_gam_p10_p90_contrasts.csv"
+))
+readr::write_csv(df_cont_curve, file.path(
+  figure6_output_dir, "figure6_gam_curve_data.csv"
+))
+readr::write_csv(figure6_spatial_diagnostics, file.path(
+  figure6_output_dir, "figure6_gam_residual_morans_i.csv"
+))
+readr::write_csv(tibble(
+  file = c(health_file, population_file,
+           './data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg'),
+  md5 = unname(tools::md5sum(file))
+), file.path(figure6_output_dir, "figure6_input_checksums.csv"))
+writeLines(capture.output(sessionInfo()), file.path(
+  figure6_output_dir, "figure6_session_info.txt"
+))
+writeLines(
+  if (figure6_spatial_flag) {
+    paste(
+      "Interpretation gate: strong residual spatial autocorrelation remains",
+      "in every unadjusted GAM. Treat curves as descriptive and do not use",
+      "their conventional P values as final inferential evidence until a",
+      "pre-specified spatial model or spatial resampling analysis is completed."
+    )
+  } else {
+    "No strong residual spatial autocorrelation was detected by the specified diagnostic."
+  },
+  file.path(figure6_output_dir, "figure6_interpretation_note.txt")
+)
+```
+
+```{r figure-6-production-plot}
+# The grey densities show observed predictor support. Curves are centred smooth
+# terms, so zero is the model-average effect rather than zero deaths averted.
+curve_range <- diff(range(c(
+  df_cont_curve$y - 1.96 * df_cont_curve$se,
+  df_cont_curve$y + 1.96 * df_cont_curve$se
+), na.rm = TRUE))
+density_height <- 0.12 * curve_range
+density_floor <- min(df_cont_curve$y - 1.96 * df_cont_curve$se, na.rm = TRUE) -
+  0.18 * curve_range
+
+figure6_density <- df_cont_raw %>%
+  group_by(Metric, Metric_Label) %>%
+  group_modify(~ {
+    density_estimate <- density(.x$x, na.rm = TRUE, n = 256)
+    tibble(
+      x = density_estimate$x,
+      ymin = density_floor,
+      ymax = density_floor +
+        density_height * density_estimate$y / max(density_estimate$y)
+    )
+  }) %>%
+  ungroup()
+
+figure6_plot <- ggplot() +
+  geom_ribbon(
+    data = figure6_density,
+    aes(x = x, ymin = ymin, ymax = ymax),
+    fill = "grey65", color = "grey45", linewidth = 0.15, alpha = 0.65
+  ) +
+  geom_ribbon(
+    data = df_cont_curve,
+    aes(x = x, ymin = y - 1.96 * se, ymax = y + 1.96 * se),
+    fill = "#2c7bb6", alpha = 0.20
+  ) +
+  geom_line(
+    data = df_cont_curve, aes(x = x, y = y),
+    color = "#2c7bb6", linewidth = 0.8
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey45", linewidth = 0.3) +
+  geom_vline(xintercept = 0, linetype = "dotted", color = "grey45", linewidth = 0.3) +
+  facet_wrap(~ Metric_Label, scales = "free_x") +
+  labs(
+    x = "Vulnerability metric (standardized z-score)",
+    y = "Centered association with deaths averted per 100,000",
+    caption = stringr::str_wrap(paste(
+      "Descriptive robust GAMs fitted to all valid LSOAs; bands are 95% model-based conditional intervals.",
+      "Grey densities show observed predictor values. Strong residual spatial autocorrelation means conventional",
+      "P values are not final inferential evidence; see the exported spatial diagnostics."
+    ), width = 112)
+  ) +
+  theme_light(base_size = 9) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "grey92", linewidth = 0.2),
+    strip.background = element_rect(fill = "white", color = "grey65"),
+    strip.text = element_text(face = "bold", size = 8, color = "black"),
+    plot.caption = element_text(size = 7, color = "grey35", hjust = 0)
+  )
+
+figure6_plot
+ggsave(
+  file.path(figure6_output_dir, "figure6_health_equity_gam.png"),
+  figure6_plot, width = 7, height = 5, units = "in", dpi = 600
+)
+ggsave(
+  file.path(figure6_output_dir, "figure6_health_equity_gam.pdf"),
+  figure6_plot, width = 7, height = 5, units = "in"
+)
+```
+
+### Legacy exploratory GAM code
+
+The disabled chunks below are retained for audit history. They used
+metric-specific trimming as the default and should not generate manuscript
+Figure 6 or its reported statistics.
+
+```{r eval=FALSE, include=FALSE}
 library(mgcv)
 library(ggplot2)
 
@@ -820,7 +1105,7 @@ plot(gam_model, pages = 1, scheme = 1, all.terms = TRUE, shade = TRUE,
 # ggplot(Predict(rcs_model), anova = anova(rcs_model), pval = TRUE)
 ```
 
-```{r - input data}
+```{r - input data, eval=FALSE, include=FALSE}
 
 
 df_scaled_robust <- data.frame() 
@@ -885,7 +1170,7 @@ print(summary_by_metric)
 ```
 
 
-```{r - gam data}
+```{r - gam data, eval=FALSE, include=FALSE}
 
 # 1. Standardize your data (optional, but helps compare "strength" visually)
 # df_scaled_robust
@@ -1050,14 +1335,15 @@ gam_plot_title <- paste0("Associations between neighborhood vulnerability and ",
 ```
 
 
-Effective Degrees of Freedom (edf): This measures "how curvy" the line is.
-  edf = 1 ->  Linear (Straight line).
-  edf > 1 ->  Non-linear.
-  edf > 2 ->  Highly complex (supports your "J-shape" or "Saturation" claims).
+Effective degrees of freedom (EDF) describe the fitted smooth's complexity:
+EDF close to 1 is approximately linear, whereas larger values indicate greater
+curvature. Shape descriptions should still be based on the plotted curve and
+its uncertainty, not an EDF threshold alone.
  
 `F-statistic` (or Chi-sq): The test statistic for the smooth term.
-`AIC Difference`: Evidence that the non-linear GAM is better than a standard linear regression.
-  If it is positive and large (> 10), you have mathematical proof that the Linear Model was insufficient.
+`AIC difference`: A positive linear-minus-GAM value favours the smooth model
+among the compared models; it is comparative evidence, not proof of a specific
+biological or social response shape.
 
 
 ```{r - gam, eval=FALSE, include=FALSE}
@@ -1125,7 +1411,7 @@ gam.check(mod_tweedie)
 ```
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 # Test robustness to modeling choices
 sensitivity_results <- list()
@@ -1202,7 +1488,7 @@ ggplot() +
 
 
 
-```{r - gam plot + density: fig.6}
+```{r - gam plot + density: fig.6, eval=FALSE, include=FALSE}
 
 # Define a scaling factor to make the density fit nicely at the bottom
 # 0.04 is the height (adjust to make taller/shorter)
@@ -1585,7 +1871,7 @@ f <- paste0('./figures/', 'health_outcome_equity_esIRR_', lc_snr, '.png')
 
 ### Compare models
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 # Calculate Mean and Variance of your outcome
 mean_val <- mean(df_scaled_robust_i$cases, na.rm = TRUE)
@@ -1640,15 +1926,33 @@ plot(compare_performance(model_lm,
 
 model_stats_table_format <- 
   model_stats_table %>%
-  select(Metric, EDF, Delta_AIC, Adj_R_Sq, P_Value, Signif_Code) %>%
-  mutate(Metric = factor(x = Metric, levels = names(label_map), labels = label_map),
-         P_Value = ifelse(P_Value < 0.001, "<0.001", sprintf("%.3f", P_Value)) ) %>%
-  # rename(`∆AIC (GAM vs Linear)` = Delta_AIC) %>%
+  select(
+    Analysis, Metric_Label, N, EDF, Ref_df, Test_Type, Test_Statistic,
+    P_Value, P_Value_BH, Adj_R_Sq, Deviance_Explained,
+    Delta_AIC_Linear_minus_GAM, Basis_k, K_Index, K_Check_P, Signif_Code
+  ) %>%
+  mutate(
+    across(c(EDF, Ref_df, Test_Statistic, Adj_R_Sq, Deviance_Explained,
+             Delta_AIC_Linear_minus_GAM, K_Index), ~ round(.x, 3)),
+    P_Value_Display = ifelse(
+      P_Value < 0.001, "<0.001", sprintf("%.3f", P_Value)
+    ),
+    P_Value_BH_Display = ifelse(
+      P_Value_BH < 0.001, "<0.001", sprintf("%.3f", P_Value_BH)
+    )
+  ) %>%
   as.data.frame()
 
-# 1. Save as Excel
+# Save primary and sensitivity results in one transparent supplementary file.
 library(writexl)
-write_xlsx(model_stats_table_format, "./figures/supplementary_table1_model_compare.xlsx")
+write_xlsx(
+  list(
+    `GAM reporting` = model_stats_table_format,
+    `P10-P90 contrasts` = as.data.frame(figure6_contrasts),
+    `Residual spatial test` = as.data.frame(figure6_spatial_diagnostics)
+  ),
+  file.path(figure6_output_dir, "figure6_supplementary_statistics.xlsx")
+)
 ```
 
 
