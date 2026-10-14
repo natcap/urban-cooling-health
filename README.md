@@ -18,6 +18,8 @@ store.
 
 Current blockers and the recommended order of work are tracked in
 [`TODO.md`](TODO.md).
+The [documentation index](docs/README.md) groups manuscript review notes and
+future model plans.
 
 The effect of replacing the legacy area-weighted mortality surface with the
 revised population-weighted workflow is summarized in
@@ -483,6 +485,10 @@ urban-cooling-health/
 ├── README.md                         # project entry point
 ├── TODO.md                           # prioritized blockers and next actions
 ├── REPRODUCIBILITY.md                 # detailed Figure 7 protocol
+├── docs/
+│   ├── README.md                     # manuscript and future-method index
+│   ├── manuscript/                   # current revision brief
+│   └── methods/                      # future model upgrade instructions
 ├── data/
 │   └── derived/                      # small documented Figure 7 inputs
 ├── figures/

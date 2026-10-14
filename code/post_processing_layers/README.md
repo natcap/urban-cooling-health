@@ -88,6 +88,12 @@ With `--include-valuations`, InVEST produces:
 The built-in work-loss rasters are not the manuscript productivity measure.
 They are retained only because WBGT is generated in the same model branch.
 
+A staged proposal for upgrading the area-weighted indicator to a
+worker-exposure-weighted construction-sector pilot is documented in
+[`docs/methods/FUTURE_WORK_CAPACITY_METHOD.md`](../../docs/methods/FUTURE_WORK_CAPACITY_METHOD.md).
+It is future method-development guidance and is not part of the current
+manuscript workflow.
+
 ### 3. Calculate the project-specific Hothaps productivity measure
 
 ```bash

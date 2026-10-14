@@ -1,6 +1,14 @@
 
 data/*
 docs/*
+# Keep project guidance versioned while leaving local imports and aliases out.
+!docs/README.md
+!docs/methods/
+docs/methods/*
+!docs/methods/FUTURE_WORK_CAPACITY_METHOD.md
+!docs/manuscript/
+docs/manuscript/*
+!docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md
 
 
 # Ignore all figures
