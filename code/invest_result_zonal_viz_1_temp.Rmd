@@ -1131,9 +1131,6 @@ func_ggsave(f, w = 7, h = 6, save_png = T)
 
 ```{r - func_plot_line}
 
-# install.packages("ggbreak")
-library(ggbreak)
-
 func_plot_line <- function(
     data, 
     legend.position.y = 0.21, 

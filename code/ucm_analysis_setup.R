@@ -13,7 +13,7 @@ ucm_analysis_setup <- function(
     export_legacy_names = FALSE,
     envir = parent.frame()) {
   required_packages <- c(
-    "here", "readr", "dplyr", "tidyr", "stringr", "lubridate",
+    "here", "readr", "dplyr", "tidyr", "stringr", "lubridate", "ggbreak",
     "ggplot2", "sf", "purrr"
   )
   missing_packages <- required_packages[

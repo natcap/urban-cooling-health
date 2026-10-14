@@ -2,6 +2,8 @@
 title: "Figure 4a — citywide avoided energy cost"
 output: html_document
 date: "2026-09-11"
+editor_options:
+  chunk_output_type: inline
 ---
 
 ## Production panel (nine manuscript scenarios)
