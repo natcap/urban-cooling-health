@@ -166,6 +166,14 @@ Required inputs:
 Use a GeoPackage rather than a Shapefile when possible. If a Shapefile is used,
 the manifest hashes all sidecar files with the same basename.
 
+For the historical preparation commands in the next two sections, set the
+shared project-data root once and expose the old variable name as an alias:
+
+```bash
+export URBAN_COOLING_DATA_ROOT="/path/to/Wellcome Trust Project Data"
+export HEALTH_DATA_ROOT="$URBAN_COOLING_DATA_ROOT"
+```
+
 ### 4. Reproject population counts without losing totals
 
 Do not use `resampled_10m/gbr_pop_2021_10m_areal.tif`: its upstream bilinear
@@ -268,11 +276,17 @@ v4 record and must not be used for the final scenario comparison.
 Validate every enabled revised scenario with:
 
 ```bash
-export HEALTH_DATA_ROOT=/path/to/Wellcome\ Trust\ Project\ Data
+export URBAN_COOLING_DATA_ROOT="/path/to/Wellcome Trust Project Data"
 python code/health_assessment/run_health_scenario_set.py \
   --config code/health_assessment/health-analysis-revised-equal-area.example.json \
   --validate-only
 ```
+
+The revised health example now shares `URBAN_COOLING_DATA_ROOT` with the UCM
+pipeline and R notebook setup. `HEALTH_DATA_ROOT` remains in the historical
+example and earlier preparation commands below/above; when reproducing those
+steps, set `HEALTH_DATA_ROOT="$URBAN_COOLING_DATA_ROOT"` as a compatibility
+alias. Do not edit machine-specific paths into the versioned JSON.
 
 After all eighteen scenario-temperature combinations validate, rerun without
 `--validate-only`. The batch runner invokes the same strict windowed model for
@@ -358,12 +372,13 @@ seed so exposure-response draws can be compared pairwise.
 
 ## Aggregate the revised outputs to LSOA11
 
-After all four health scenarios finish, create the Figure 7 table and restore
+After the reviewed health scenarios finish, create the Figure 7 table and restore
 official LSOA11 codes with:
 
 ```bash
+HEALTH_OUTPUT_ROOT="$URBAN_COOLING_DATA_ROOT/2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10"
 python code/health_assessment/prepare_health_lsoa_zonal_stats.py \
-  "$HEALTH_DATA_ROOT" \
+  "$HEALTH_OUTPUT_ROOT" \
   --output-csv data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv \
   --crosswalk-csv data/derived/svi_lsoa11_crosswalk_fig7_revised_equal_area.csv \
   --vulnerability-gpkg data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg \
@@ -375,13 +390,13 @@ and the official 2011 London LSOAs. It assigns only valid boundary-edge cells
 outside the generalized LSOA outline to the nearest LSOA, records the maximum
 distance, and requires zero unassigned valid cells before writing outputs.
 
-For the current production analysis, `HEALTH_DATA_ROOT` is the versioned
-`health_v3_revised_equal_area_population_weighted_2021_2026-09-10` workspace.
-Copy the paired 25°C draw tables to the revised-equal-area filenames documented
-under `data/derived/README.md`, then run:
+`HEALTH_OUTPUT_ROOT` above is the versioned health-results workspace, not the
+shared project-data root. Copy the paired 25°C draw tables to the
+revised-equal-area filenames documented under `data/derived/README.md`, then
+run Figure 7 from its tracked derived inputs:
 
 ```bash
-HEALTH_DATA_ROOT="$HEALTH_DATA_ROOT" Rscript code/run-fig7.R
+Rscript code/run-fig7.R
 ```
 
 ## Target-scenario status

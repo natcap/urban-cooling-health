@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "data_root": "${HEALTH_DATA_ROOT}",
+  "data_root": "${URBAN_COOLING_DATA_ROOT}",
   "output_root": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10",
   "design": {
     "population_year": 2021,

@@ -130,3 +130,20 @@ different Python environment and manuscript-facing derived inputs. Run them
 only after reviewing the UCM summary and explicitly selecting the production
 temperature workspace. They are documented under
 `code/health_assessment/README.md`.
+
+## Lightweight checks (no model rerun)
+
+From the repository root, run:
+
+```bash
+python -m unittest code.workflows.tests.test_run_ucm_pipeline -v
+python -m unittest code.health_assessment.tests.test_fig7_derived_inputs -v
+conda run -n urban-cooling-health python -m unittest \
+  code.lc_scenarios.tests.test_validate_green_target_scenarios -v
+```
+
+These check the portable production-config contract, canonical scenario
+labels/colours, tracked-file release guard, final Figure 7 LSOA coverage and
+paired draws, and a synthetic subpixel raster-grid shift. They do not validate
+the restricted source rasters or scientific model outputs; use the workflow's
+`--validate-only` mode and the full scenario QA gate for those.

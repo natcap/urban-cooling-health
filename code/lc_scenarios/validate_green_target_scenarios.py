@@ -29,7 +29,10 @@ def _same_grid(reference: rasterio.DatasetReader, other: rasterio.DatasetReader)
     return (
         reference.shape == other.shape
         and reference.crs == other.crs
-        and np.allclose(tuple(reference.transform), tuple(other.transform))
+        # Relative tolerance would allow metre-scale shifts at BNG eastings.
+        and np.allclose(
+            tuple(reference.transform), tuple(other.transform), rtol=0, atol=1e-9
+        )
     )
 
 

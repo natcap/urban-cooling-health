@@ -67,6 +67,40 @@ class Figure7DerivedInputTests(unittest.TestCase):
         self.assertEqual(len(set(green_draws)), EXPECTED_DRAWS)
         self.assertEqual(green_draws, target_draws)
 
+    def test_final_equal_area_health_rows_are_complete(self) -> None:
+        population_codes = {
+            row["LSOA11CD"]
+            for row in _rows("lsoa_population_2021_by_lsoa11cd.csv")
+        }
+        rows = _rows(
+            "health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv"
+        )
+        cases: dict[tuple[str, str], set[str]] = {}
+        seen: set[tuple[str, str, str]] = set()
+        for row in rows:
+            case = (row["scenario"], row["cause"])
+            key = (*case, row["LSOA11CD"])
+            self.assertNotIn(key, seen)
+            seen.add(key)
+            cases.setdefault(case, set()).add(row["LSOA11CD"])
+
+        expected_scenarios = {
+            "green30_25c", "target30_25c", "green30_28c", "target30_28c"
+        }
+        self.assertEqual({scenario for scenario, _ in cases}, expected_scenarios)
+        self.assertEqual(len(cases), 20)  # Four temperature cases x five causes.
+        for codes in cases.values():
+            self.assertEqual(codes, population_codes)
+
+    def test_final_equal_area_draws_are_pairable(self) -> None:
+        green = _rows("green30_revised_equal_area_25c_city_total_draws_by_cause.csv")
+        target = _rows("target30_revised_equal_area_25c_city_total_draws_by_cause.csv")
+        green_ids = [row["draw"] for row in green]
+        target_ids = [row["draw"] for row in target]
+        self.assertEqual(len(green_ids), EXPECTED_DRAWS)
+        self.assertEqual(len(set(green_ids)), EXPECTED_DRAWS)
+        self.assertEqual(green_ids, target_ids)
+
 
 if __name__ == "__main__":
     unittest.main()
