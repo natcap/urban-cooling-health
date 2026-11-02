@@ -50,15 +50,23 @@ Figure 2's temperature input and Figure 6's spatial analysis remain open.
    transformation, configuration and output. Start from existing Figure 7 and
    UCM manifests; do not copy restricted rasters into Git.
 6. [ ] **Close active path/config gaps and lightweight checks** (code).
-   Extend the current `code/workflows/` configuration pattern only to active
-   remaining stages; add an R environment lock and tests for scenario mapping,
-   raster alignment, LSOA joins, population coverage and paired draws. Leave
-   historical collaborator notebooks intact and explicitly label them.
+   The revised health example now uses the same
+   `URBAN_COOLING_DATA_ROOT` as UCM/R. Lightweight tests now cover canonical
+   scenario mapping, tracked-file exclusions, a synthetic subpixel grid
+   mismatch, final Figure 7 LSOA coverage and paired draws. All 18 revised
+   health scenario configurations passed `--validate-only` against eight
+   common-grid inputs each on 1 November 2026. Next: run the full scenario
+   canopy QA on the exact production LULC snapshots, add an R environment
+   lock, and migrate only active remaining notebooks that still require
+   machine-specific edits. Leave historical collaborator notebooks intact.
 7. [ ] **Resolve public-release permissions** (author/data steward). Obtain
-   UKCEH confirmation for public aggregate tables/rendered figures; record
-   MIDAS archive provenance and licence; finish required ONS/OS/GLA/WorldPop
-   attributions. See `DATA_LICENCE_AND_REDISTRIBUTION.md`. Until resolved,
-   retain large and restricted source/derived rasters outside Git.
+   UKCEH's written determination for public machine-readable derivatives and
+   exact output notices; record its conditions. The GLA archive's 2015 map
+   credits and the MIDAS Open v202407 OGL/citation have been identified, but
+   the MIDAS RDS extracts still need raw-file checksum provenance. Reconcile
+   manuscript attributions and review already-public derived outputs. See
+   `DATA_LICENCE_AND_REDISTRIBUTION.md`. Until resolved, retain large and
+   restricted source/derived rasters outside Git.
 
 ### Deliberately on hold — not blockers for the current rerun
 
@@ -476,7 +484,7 @@ scenario version, units and values.
   random draws.
 - [ ] Add lightweight tests for scenario-label mapping, raster compatibility,
   one-to-one LSOA joins, complete population coverage and paired Monte Carlo
-  draws.
+  draws beyond the current synthetic/config and final Figure 7 checks.
 - [ ] Add a continuous-integration check for Markdown links and parseable R and
   Python production scripts that do not require restricted data.
 
@@ -512,12 +520,20 @@ scenario version, units and values.
 - [x] Record the likely GLA London Wards 2018 publisher, download page,
   transformation and licence for `data/London_Ward_aoi.*`; retain the lack of
   a source checksum as a limitation.
-- [ ] Record the original archive version, URL and licence for the two tracked
-  MIDAS weather RDS extracts.
+- [x] Identify the notebook's MIDAS Open v202407 source path, the citable
+  [CEDA record](https://catalogue.ceda.ac.uk/uuid/c50776e4903942cdb329589da70b83fe/)
+  and OGL v3; record the two tracked RDS checksums in
+  `DATA_LICENCE_AND_REDISTRIBUTION.md`.
+- [ ] Match the notebook's separate local weather-file copy to the exact
+  v202407 raw station files and checksums before claiming reproducible RDS
+  provenance.
 - [x] Add WorldPop, Nomis/ONS and GLA/Bloomberg attribution text to the
   derived-data README.
-- [ ] Add those attributions to the manuscript and replace the bracketed
-  ONS/OS boundary copyright year before public release.
+- [x] Resolve the Figure 7 LSOA source to the archived GLA boundary shapefile
+  by SHA-256 and replace the bracketed ONS/OS year with the source page's
+  required 2015 credits in `data/derived/README.md`.
+- [ ] Add the confirmed source attributions and UKCEH acknowledgement to the
+  manuscript and rendered figures where required before submission/release.
 
 ## Recommended next run order
 

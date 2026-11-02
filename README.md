@@ -541,4 +541,7 @@ problems.
 
 ## Licence
 
-See [`LICENSE`](LICENSE).
+The repository's [`LICENSE`](LICENSE) does not, by itself, grant rights to
+third-party datasets or derived products with separate source terms. See the
+[data licence and redistribution review](DATA_LICENCE_AND_REDISTRIBUTION.md)
+before reusing or publishing data or figures.

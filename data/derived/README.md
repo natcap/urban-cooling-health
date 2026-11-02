@@ -20,13 +20,20 @@ rasters remain on the shared drive.
   2024](https://data.london.gov.uk/dataset/climate-risk-mapping-2oxg6),
   licensed under the Open Government Licence v3. Values here are selected,
   rescored and joined to official LSOA11 codes.
-- **LSOA boundaries:** Source: Office for National Statistics licensed under
-  the Open Government Licence v3.0. Contains OS data © Crown copyright and
-  database right **[insert the year stated with the downloaded boundary]**.
+- **LSOA boundaries:** The Figure 7 LSOA11 shapefile in the health manifest
+  matches the archived GLA `statistical-gis-boundaries-london.zip` shapefile
+  byte-for-byte (SHA-256 `02773dbcb524c8a95e359c6634545a75f92e775168540d09ab2853c5e84642b4`).
+  The [GLA source page](https://data.london.gov.uk/dataset/statistical-gis-boundary-files-for-london-20od9)
+  requires these map credits: `Contains National Statistics data © Crown
+  copyright and database right [2015]` and `Contains Ordnance Survey data ©
+  Crown copyright and database right [2015]`. The page lists OGL v2 for this
+  archive; the ONS [geography licence page](https://www.ons.gov.uk/methodology/geography/licences/)
+  separately gives OGL v3 and an ONS/OS attribution convention for ONS-issued
+  boundaries. Use the GLA archive's stated credits for the exact source here.
 
-The bracketed ONS/OS year must be completed from the original boundary
-download record before public release. UKCEH LCM2023 terms also require a
-project-specific confirmation for the modeled outputs; see
+The bracketed `2015` is the year in the GLA source's required wording, not a
+placeholder to substitute the manuscript year. UKCEH LCM2023 terms still
+require a project-specific determination for machine-readable modeled outputs; see
 [`DATA_LICENCE_AND_REDISTRIBUTION.md`](../../DATA_LICENCE_AND_REDISTRIBUTION.md).
 
 ## Population lookup
