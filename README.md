@@ -19,7 +19,8 @@ store.
 Current blockers and the recommended order of work are tracked in
 [`TODO.md`](TODO.md).
 The [documentation index](docs/README.md) groups manuscript review notes and
-future model plans.
+future model plans. The [data directory guide](data/README.md) explains which
+local inputs are tracked, ignored or awaiting provenance review.
 
 The effect of replacing the legacy area-weighted mortality surface with the
 revised population-weighted workflow is summarized in
@@ -490,6 +491,7 @@ urban-cooling-health/
 │   ├── manuscript/                   # current revision brief
 │   └── methods/                      # future model upgrade instructions
 ├── data/
+│   ├── README.md                     # raw/processed/derived data policy
 │   └── derived/                      # small documented Figure 7 inputs
 ├── figures/
 │   ├── equity_map_biscale_revised_equal_area/ # current Figure 7 outputs

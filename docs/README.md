@@ -11,6 +11,8 @@ project. This index groups supporting decisions and planning notes by purpose.
 - [Figure 7 reproduction guide](../REPRODUCIBILITY.md): exact inputs and
   commands for the current equity analysis.
 - [Code guide](../code/README.md): canonical scripts and workflow entry points.
+- [Data directory guide](../data/README.md): local data roles, preservation,
+  tracking boundaries and the remaining inventory work.
 
 ## Methods and future upgrades
 

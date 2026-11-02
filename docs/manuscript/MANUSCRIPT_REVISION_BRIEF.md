@@ -1,8 +1,9 @@
 # London manuscript revision brief
 
-Review date: 13 October 2026. Discussion window: 13 September–13 October 2026.
+Original review: 13 October 2026. Repository status updated: 1 November 2026.
+Discussion window for the scientific recap: 13 September–13 October 2026.
 
-The strongest manuscript framing remains a comparison of **where an equivalent amount of new canopy is allocated, who receives the health benefits, and which vulnerability groups lose relative benefit**. Figures 4–5 and their common setup have committed revisions. The October Figure 2/6 statistical additions are local changes. Submission still depends on repairing the Figure 2 temperature input, resolving Figure 6 spatial inference, and reconciling the manuscript with the revised outputs.
+The strongest manuscript framing remains a comparison of **where an equivalent amount of new canopy is allocated, who receives the health benefits, and which vulnerability groups lose relative benefit**. Figures 4–5, their common setup and the October Figure 2/6 statistical additions are committed revisions. Submission still depends on repairing the Figure 2 temperature input, resolving Figure 6 spatial inference, and reconciling the manuscript with the revised outputs. Use the current [TODO](../../TODO.md) for priority and ownership; this brief preserves the October scientific recap.
 
 This brief draws on the accessible **Nature Health-cowork**, **MS-edit**, and **London-MS-edit** discussions, current repository history, and saved output tables. The original **Nature Health Revision Tips** reference could not be reopened; its supplied preview provides historical context only. Earlier September 11–12 model and report work is identified below as inherited context, not work newly completed after September 13. September 13 evening UTC discussions occurred on September 14 in Shanghai; dates below group that review phase together.
 
@@ -10,16 +11,21 @@ This brief draws on the accessible **Nature Health-cowork**, **MS-edit**, and **
 
 | Workstream | Completed change | Review status |
 |---|---|---|
-| Shared R setup | Common packages, helpers, paths and fixed 2021 baseline centralized in `code/ucm_analysis_setup.R`; external root configured through `URBAN_COOLING_DATA_ROOT` | Commit `945bddb`, 13 September. Current file also has a separate uncommitted edit. |
+| Shared R setup | Common packages, helpers, paths and fixed 2021 baseline centralized in `code/ucm_analysis_setup.R`; external root configured through `URBAN_COOLING_DATA_ROOT` | Began in commit `945bddb`, 13 September; October refinement committed as `9ccc90a`. |
 | Figure 4 | Signed value labels, outcome-specific precision, health labels clear of intervals, common scenario order and compact publication typography | Commit `063cacf`, 13 September. Review all nine scenarios and the revised units/caption. |
 | Figure 5 | Restored AllBuilt, TreeRisk and TreeOpp alongside Green10/20/30 and Target10/20/30; two scenario blocks and common outcome-specific zero-centred scales | Commit `e3ad67f`, 13 September. Recorded validation covered 33 boroughs × 9 scenarios × 3 outcomes = 891 records. |
 | Manuscript framing and structure | Proposed a health-equity narrative, revised outline, title, abstract, Introduction framing, and cover-letter argument | Drafted in the September discussions; not inserted into the Word manuscript by this assistant. |
 | Health Methods | Drafted fixed-population design, population-weighted allocation, matched-climate comparison, equations and uncertainty description | Review before insertion, including the annual interpretation and applicability of exposure–response coefficients. |
-| Figure 2 statistics | Added n, medians/IQRs, Kruskal–Wallis statistics, effect sizes, BH adjustment, Dunn comparisons, outcome selection, and invalid-input checks | Local October 8 edits. Tree-cover branch ran; temperature branch remains blocked by the invalid cache. |
-| Figure 6 statistics | Official-code joins; deaths averted per 100,000; all valid LSOAs as primary sample; trimmed sensitivity; GAM diagnostics, P10–P90 contrasts and residual Moran’s I | Local October 8 edits and outputs. Descriptive results available; spatial inference remains unfinished. |
+| Figure 2 statistics | Added n, medians/IQRs, Kruskal–Wallis statistics, effect sizes, BH adjustment, Dunn comparisons, outcome selection, and invalid-input checks | Committed as `2c9d7c2`. Tree-cover branch ran; temperature branch remains blocked by the invalid cache. |
+| Figure 6 statistics | Official-code joins; deaths averted per 100,000; all valid LSOAs as primary sample; trimmed sensitivity; GAM diagnostics, P10–P90 contrasts and residual Moran’s I | Committed as `2c9d7c2`. Descriptive results available; spatial inference remains unfinished. |
 | Imported chat context | Presentation framing and co-author credit preserved locally in `docs/conversation-imports/LONDON_MS_EDIT_CONTEXT.md` | Imported October 8. This is a context note, not a new manuscript revision. |
 
-Local `main` and the locally cached `origin/main` both point to `e3ad67f`; no remote refresh was performed for this recap. Earlier discussions recorded successful pushes of the three September commits. The October changes are not committed. Existing unrelated modified R objects, notebooks and `health_sf.rds` remain separate work. Generated Figure 2/6 files are ignored by Git, so their local presence does not establish publication or archival availability.
+At the 1 November repository check, local `main` and the locally cached
+`origin/main` both point to `8eb215d`; the three October topic commits are
+`9ccc90a`, `2c9d7c2` and `8eb215d`. No remote refresh was performed for this
+status note. Seven modified binary RDS files remain separate local work.
+Generated Figure 2/6 files are ignored by Git, so their local presence does
+not establish publication or archival availability.
 
 ## Materials to open first
 
@@ -35,7 +41,13 @@ The external files in items 2, 3 and 7 are under
 6. [Figure 2 tree-cover statistics](../../figures/figure2_statistical_reporting/figure2_TCC_kruskal_wallis.csv) and [revised notebook](../../code/equity-temp-tcc.Rmd). The temperature results still need recovery.
 7. Open `urban_cooling_original_vs_revised_interactive_comparison_report_offline.html`. This inherited September 11 report explains original/revised workflows, canopy area/pixel/tree-equivalent comparisons, and alternative aggregation methods. Its existence was checked during the October 13 review; it was not rebuilt or visually revalidated in that recap.
 
-Use [code/README.md](../../code/README.md) for canonical scripts, [REPRODUCIBILITY.md](../../REPRODUCIBILITY.md) for reproduction, and [health method decisions](../../code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md) for provenance. The older [TODO](../../TODO.md) and [Figures 6–7 review](../../code/health_assessment/FIGURES6_7_REVIEW.md) have stale checkboxes/descriptions: official-code joins and trimming changes have now been implemented, but the spatial adjustment has not.
+Use [code/README.md](../../code/README.md) for canonical scripts,
+[REPRODUCIBILITY.md](../../REPRODUCIBILITY.md) for reproduction,
+[health method decisions](../../code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md)
+for provenance, and the refreshed [TODO](../../TODO.md) and
+[Figures 6–7 review](../../code/health_assessment/FIGURES6_7_REVIEW.md) for
+current action status. Official-code joins and trimming changes have been
+implemented, but the spatial adjustment has not.
 
 ## Findings to carry into the manuscript
 
@@ -100,7 +112,11 @@ Leave the Data Availability wording as accepted for now, per your instruction. D
 2. **Finish Figure 6 spatial sensitivity.** Saved unadjusted residual Moran’s I is 0.891–0.941, with permutation p = 0.001. BH adjustment does not remove spatial dependence. An exploratory centroid-smooth fit was tested during October work, but no validated spatial model was incorporated or delivered. A previous progress message overstated this as being added. Specify the spatial model/resampling approach, examine remaining residual dependence and basis size, and compare effect sizes and curves. Target30 and absolute-benefit sensitivities remain to be completed if retained in the plan.
 3. **Make Figure 6 reporting fully reproducible.** Review low k-check p-values for age indicators; seed the random k-check diagnostic explicitly; document the Gaussian-ML AIC comparison as a sensitivity distinct from the primary scaled-t GAM. Keep conditional smooth bands separate from exposure–response uncertainty. The current outputs are exploratory, despite the notebook section's “production” label.
 4. **Complete figure/text reconciliation.** Build one table mapping each Abstract/Results/legend number to its exact CSV row, unit, point-estimate convention and uncertainty type. Include scenario counts, canopy budgets, Figure 7 denominators and the age-75+ trade-off.
-5. **Prepare the reviewed release.** Refresh stale TODO/review documentation, inspect the local diffs, then group approved scientific and documentation changes into a small number of commits. Archive the exact code/configuration, figure-source data and permitted inputs. No new commits or pushes were made for this recap.
+5. **Prepare the reviewed release.** The TODO and Figures 6–7 review notes were
+   refreshed on 1 November. Inspect the remaining local diffs, then group any
+   approved scientific and documentation changes into a small number of
+   commits. Archive exact code/configuration, figure-source data and permitted
+   inputs. This status update itself made no commit or push.
 
 ## Items deliberately deferred
 

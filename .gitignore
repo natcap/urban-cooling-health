@@ -1,5 +1,7 @@
 
 data/*
+# Keep the data-directory guide visible without tracking raw or restricted data.
+!data/README.md
 docs/*
 # Keep project guidance versioned while leaving local imports and aliases out.
 !docs/README.md

@@ -4,7 +4,7 @@
 
 | Figure | Current entry point | Status | Use in final manuscript now? |
 |---|---|---|---|
-| 6 | `../equity-health.Rmd` | Exploratory analysis with unresolved estimand and spatial-inference choices | No; complete the review gates below first |
+| 6 | `../equity-health.Rmd` | Official-code/per-100,000 analysis and trimming sensitivity implemented; spatial inference unresolved | No; complete the spatial review gate below first |
 | 7 | `../run-fig7.R` → `../equity-health-fig7-production.Rmd` | Reproducible paired Green30–Target30 workflow | Yes, after inserting the latest revised-equal-area outputs and caption |
 
 The older Figure 7 sections in `../equity-health.Rmd` are disabled audit code.
@@ -14,38 +14,38 @@ They must not be used to regenerate the manuscript figure.
 
 ### What the current notebook does
 
-The active Figure 6 section selects all-cause deaths averted under Green30,
-standardizes each vulnerability indicator, removes its lowest and highest 1%
-of observations, fits a separate robust univariable GAM for each indicator and
-plots the fitted relationship with a density trace. It also writes a model
-comparison table.
+The current primary Figure 6 section selects Green30 all-cause deaths averted
+per 100,000 residents, joins health, vulnerability and fixed-2021 population
+one-to-one by `LSOA11CD`, and fits separate marginal GAMs to all valid LSOAs.
+It saves 1st–99th percentile trimmed fits as a labelled sensitivity, curve
+data, P10–P90 contrasts, model diagnostics and residual Moran's I. The saved
+primary residual Moran's I values are 0.891–0.941 (999 permutations,
+two-sided p = 0.001), so conventional smooth p-values are not final inference.
 
 ### Required improvements before reporting
 
-1. **Use the revised official-code inputs.** Replace the historical zonal table
-   and row-order `id` join with
+1. **Keep the revised official-code inputs.** The active section now reads
    `health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv`,
    `fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg` and
    `lsoa_population_2021_by_lsoa11cd.csv`, joined one-to-one by `LSOA11CD`.
-2. **Pre-specify the estimand.** The recommended primary response is all-cause
-   deaths averted per 100,000 residents using fixed 2021 population. Absolute
-   LSOA deaths averted are strongly influenced by population size and should be
-   retained only as a sensitivity analysis. If counts are preferred, model
-   them with an explicit population offset and a count-compatible likelihood.
+   Preserve these checks in any production replacement.
+2. **Keep the pre-specified estimand.** The primary response is all-cause
+   deaths averted per 100,000 residents using fixed 2021 population. Add an
+   absolute-deaths sensitivity only if it answers a distinct manuscript
+   question; raw LSOA totals are strongly influenced by population size.
 3. **Keep the scenario question focused.** Use Green30 for the primary Figure 6
    association because it represents the general greening strategy. Repeat the
    same analysis for Target30 as an Extended Data sensitivity. Do not put all
    six scenarios into the main curve grid; that would obscure the
    vulnerability relationship and duplicate Figures 4–5.
-4. **Address spatial dependence.** The current GAM intervals treat LSOAs as
-   independent. Test residual spatial autocorrelation and, if material, add a
-   spatial smooth of LSOA centroids or use another pre-specified spatial model.
-   Until then, label intervals as model-based conditional intervals and avoid
-   causal language.
-5. **Make trimming a sensitivity, not the default.** The current 1st–99th
-   percentile trimming creates a different sample for every indicator. Fit the
-   primary model to all valid observations, show the observed support, and
-   report the trimmed result as a robustness check with retained `n` recorded.
+4. **Address spatial dependence.** Residual autocorrelation is already shown
+   to be substantial. Pre-specify a spatial smooth, spatial-block resampling
+   or another justified approach; report remaining residual dependence and
+   the change in curves/effect sizes. Until validated, label current bands as
+   model-based conditional intervals and avoid causal language.
+5. **Retain trimming as sensitivity.** The primary fit now uses all valid
+   observations and the 1st–99th percentile fit is labelled separately.
+   Preserve retained `n` and observed predictor support in final exports.
 6. **Separate marginal and adjusted questions.** Univariable curves show
    marginal associations. A multivariable model answers a different question
    and can be unstable because the vulnerability indicators are correlated.
@@ -55,10 +55,11 @@ comparison table.
    in temperature, mortality, population or the exposure-response function.
    State exactly which uncertainty is represented and avoid interpreting
    smooth-term p-values as causal evidence.
-8. **Record reproducible outputs.** The production replacement should export
-   PNG/PDF/SVG, the exact curve data, model coefficients/diagnostics, retained
-   sample counts, input checksums, package versions, scenario, outcome,
-   population year and random seed where relevant.
+8. **Finish reproducible outputs.** Current exports include PNG/PDF, curve
+   data, model diagnostics, input checksums and session information. Add SVG
+   if needed for the journal, seed random `k.check` diagnostics explicitly,
+   review low k-check p-values for age indicators, and record the final
+   spatial-model configuration and sensitivity outputs beside the figure.
 
 ### Unambiguous correction made in the exploratory code
 

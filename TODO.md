@@ -1,16 +1,107 @@
 # Project TODO and reproduction roadmap
 
-Last reviewed: 11 September 2026
+Last reviewed: 1 November 2026 (repository and saved-output check)
 
-This document tracks the remaining work needed to make the analysis portable,
-fully reproducible and ready for publication. Start with the **P0** items: they
-affect the validity or interpretation of the Green30–Target30 comparison.
+This document is the live task list. The long numbered sections below also
+preserve the September model-rebuild audit; checked boxes there are completed
+historical steps, not instructions to rerun models. The current equal-area
+Figure 7 and nine-scenario Figure 4/5 outputs exist. Manuscript reconciliation,
+Figure 2's temperature input and Figure 6's spatial analysis remain open.
+
+## Next actions — current status
+
+### Do next (scientific and manuscript gates)
+
+1. [ ] **Repair Figure 2 temperature inputs** (analysis; no valid temperature
+   panel yet). Locate or regenerate LSOA-level CHELSA/WorldClim/GCM zonal
+   values, then verify 4,835 unique LSOA IDs, scenario/year, finite values and
+   units before knitting `code/equity-temp-tcc.Rmd`. The current
+   `data/temp_svi.RDS` has no finite temperature observations; only tree-cover
+   statistical outputs exist in `figures/figure2_statistical_reporting/`.
+2. [ ] **Resolve Figure 6 spatial inference** (analysis). The primary
+   official-code, per-100,000, all-valid-LSOA fits and trimmed sensitivities
+   exist in `code/equity-health.Rmd`, but residual Moran's I is 0.891–0.941
+   (999 permutations; p = 0.001) in
+   `figures/figure6_statistical_reporting/figure6_gam_residual_morans_i.csv`.
+   Pre-specify and validate a spatial adjustment or spatial resampling; compare
+   curves and effect sizes, check remaining autocorrelation, then label the
+   uncertainty correctly. Do not use the current smooth p-values as final
+   spatially corrected inference. Add Target30 and absolute-benefit
+   sensitivities only if retained in the figure plan.
+3. [ ] **Reconcile manuscript claims to saved evidence** (author + analysis).
+   Create a claim-to-CSV table for every Abstract, Results and figure-legend
+   number: exact source row, unit, scenario/version, deterministic point vs
+   Monte Carlo mean, and uncertainty type. Update the supplied manuscript only
+   after reviewing this table; the manuscript file is outside this repository.
+   Use `docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md` and the current Figure
+   4–7 source tables as the review pack. Explicitly retain fixed 2021
+   population/mortality with mid-century temperatures.
+4. [ ] **Decide final figure order and age-related interpretation** (author).
+   Review the Figure 7 age-75+ trade-off, whether Figure 5 moves to Extended
+   Data, and whether Figure 6 remains a main figure after spatial validation.
+   See `docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md`. Do not renumber figures
+   or revise the Word file before that decision.
+
+### Reproducibility and release gates
+
+5. [ ] **Create a versioned input/figure manifest** (analysis + data steward).
+   For each production figure record source path/DOI, snapshot/checksum,
+   licence/access class, geography vintage, units, CRS/resolution,
+   transformation, configuration and output. Start from existing Figure 7 and
+   UCM manifests; do not copy restricted rasters into Git.
+6. [ ] **Close active path/config gaps and lightweight checks** (code).
+   Extend the current `code/workflows/` configuration pattern only to active
+   remaining stages; add an R environment lock and tests for scenario mapping,
+   raster alignment, LSOA joins, population coverage and paired draws. Leave
+   historical collaborator notebooks intact and explicitly label them.
+7. [ ] **Resolve public-release permissions** (author/data steward). Obtain
+   UKCEH confirmation for public aggregate tables/rendered figures; record
+   MIDAS archive provenance and licence; finish required ONS/OS/GLA/WorldPop
+   attributions. See `DATA_LICENCE_AND_REDISTRIBUTION.md`. Until resolved,
+   retain large and restricted source/derived rasters outside Git.
+
+### Deliberately on hold — not blockers for the current rerun
+
+8. [ ] **Target opportunity-source provenance** (await collaborator records).
+   Exact road extract/date and classes, building and 1 m canopy inputs and
+   buffers, UTCI source/scale, and SVI ranking definition remain unconfirmed.
+   The source notebook was not shared; the reproducible boundary starts at
+   the preserved screened/ranked points. Keep these as provenance requests,
+   not as a request to regenerate the current equal-area results.
+9. [ ] **Future work-capacity model upgrade** (future project, not manuscript
+   gate). Follow `docs/methods/FUTURE_WORK_CAPACITY_METHOD.md` for a feasible
+   worker-exposure pilot; do not substitute it for the present modelled
+   heavy-work-capacity result.
+
+### Repository housekeeping from this review
+
+10. [ ] **Audit local-only material before any public commit or laptop-copy
+    deletion.** Keep API keys and deployment credentials out of Git; rotate
+    any previously exposed credentials. Retain the laptop source until the
+    copied files' destinations and readability have been checked by the owner.
+    Do not interpret a Git-clean tree as a complete archive: `data/`, most
+    `docs/`, and generated figures are intentionally ignored.
+11. [ ] **Review the seven modified RDS files before staging.** Current Git
+    status still shows six `code/func_*.rds` files and
+    `figures/equity_map_biscale/health_sf.rds`. A prior semantic comparison
+    found no content change, but they remain local modifications; preserve
+    them and do not include them in a documentation commit by accident.
+
+The next useful working session is to recover the Figure 2 LSOA climate
+table and agree on the Figure 6 spatial method. There is no need to rerun UCM
+or health simply to address these two gaps.
 
 ## Priority guide
 
-- **P0 — blocking:** complete before reporting final Figure 7 results.
-- **P1 — important:** complete before manuscript submission or public release.
-- **P2 — improvement:** improves maintenance, portability or onboarding.
+- **P0 — historical critical path:** model-build gates; most are now complete.
+- **P1 — submission/release:** scientific reporting and access decisions.
+- **P2 — maintenance:** portability, automation and onboarding.
+
+## Historical model-rebuild ledger and remaining technical tasks
+
+The numbered sections below were assembled during the September 2026 rebuild.
+Their completed run checkboxes document provenance; the **Next actions** above
+are the current priority order. Open items below are retained for traceability.
 
 ## P0 — complete before final Figure 7 reporting
 
@@ -293,10 +384,11 @@ scenario rasters and must not be combined with the revised health results.
 - [x] Document the recommended Figure 4 estimands, pros/cons, currency basis
   and copy-ready Figure 4, Figure 5, Extended Data and Methods text in
   `code/post_processing_layers/FIGURE4_METHODS.md`.
-- [ ] Replace the Figure 4 image and legend in the manuscript document and
-  update the associated Results text after the manuscript source file is made
-  available. Insert the revised Figure 5 and Extended Data figure/captions in
-  the manuscript or supplement at the same time.
+- [ ] Replace the Figure 4 image and legend in the supplied manuscript document
+  and update the associated Results text after the claim-to-CSV reconciliation
+  and figure-order decision. Insert or relocate Figure 5 and the Extended Data
+  figure/captions consistently with that decision. Do not assume the revised
+  source figures have already been inserted into the Word file.
 
 **Done when:** the baseline and all nine manuscript scenarios have matching
 energy, WBGT and Hothaps
@@ -344,12 +436,15 @@ for method reproduction and historical-result reproduction.
 
 ### 8. Synchronize manuscript claims and generated evidence
 
-- [ ] Replace the exploratory Figure 6 data join with the revised
+- [x] Replace the exploratory Figure 6 data join with the revised
   `LSOA11CD`-keyed inputs and use deaths averted per 100,000 residents as the
-  primary response; retain absolute deaths as a sensitivity.
-- [ ] Test Figure 6 residual spatial autocorrelation, add a pre-specified
-  spatial adjustment if needed, and move 1st–99th percentile trimming to a
-  labelled sensitivity analysis.
+  primary response. This is implemented in the active section of
+  `code/equity-health.Rmd`; absolute deaths remain an optional sensitivity.
+- [x] Test Figure 6 residual spatial autocorrelation and move 1st–99th
+  percentile trimming to a labelled sensitivity. Saved Moran's I is large
+  (`figures/figure6_statistical_reporting/figure6_gam_residual_morans_i.csv`).
+- [ ] Add and validate a pre-specified Figure 6 spatial adjustment or spatial
+  resampling, then reassess residual dependence and effect sizes.
 - [ ] Produce a clean Figure 6 production script with exact curve data,
   diagnostics, input/output checksums, session information and PNG/PDF/SVG
   exports. See `code/health_assessment/FIGURES6_7_REVIEW.md`.
