@@ -1,9 +1,12 @@
 # London manuscript revision brief
 
-Original review: 13 October 2026. Repository status updated: 1 November 2026.
+Original review: 13 October 2026. Repository status updated: 3 November 2026.
 Discussion window for the scientific recap: 13 September–13 October 2026.
 
-The strongest manuscript framing remains a comparison of **where an equivalent amount of new canopy is allocated, who receives the health benefits, and which vulnerability groups lose relative benefit**. Figures 4–5, their common setup and the October Figure 2/6 statistical additions are committed revisions. Submission still depends on repairing the Figure 2 temperature input, resolving Figure 6 spatial inference, and reconciling the manuscript with the revised outputs. Use the current [TODO](../../TODO.md) for priority and ownership; this brief preserves the October scientific recap.
+November follow-up: see the [SVI comparison and Figure 6 spatial analysis](SVI_SPATIAL_RESULTS.md)
+for the current status; spatial-model tasks listed in the October recap below are historical.
+
+The strongest manuscript framing remains a comparison of **where an equivalent amount of new canopy is allocated, who receives the health benefits, and which vulnerability groups lose relative benefit**. Figures 4–5, their common setup and the October Figure 2/6 statistical additions are committed revisions. The Figure 2 temperature input was recovered locally on 3 November; submission still depends on reviewing that panel, resolving Figure 6 spatial inference, and reconciling the manuscript with the revised outputs. Use the current [TODO](../../TODO.md) for priority and ownership; this brief preserves the October scientific recap.
 
 This brief draws on the accessible **Nature Health-cowork**, **MS-edit**, and **London-MS-edit** discussions, current repository history, and saved output tables. The original **Nature Health Revision Tips** reference could not be reopened; its supplied preview provides historical context only. Earlier September 11–12 model and report work is identified below as inherited context, not work newly completed after September 13. September 13 evening UTC discussions occurred on September 14 in Shanghai; dates below group that review phase together.
 
@@ -16,7 +19,7 @@ This brief draws on the accessible **Nature Health-cowork**, **MS-edit**, and **
 | Figure 5 | Restored AllBuilt, TreeRisk and TreeOpp alongside Green10/20/30 and Target10/20/30; two scenario blocks and common outcome-specific zero-centred scales | Commit `e3ad67f`, 13 September. Recorded validation covered 33 boroughs × 9 scenarios × 3 outcomes = 891 records. |
 | Manuscript framing and structure | Proposed a health-equity narrative, revised outline, title, abstract, Introduction framing, and cover-letter argument | Drafted in the September discussions; not inserted into the Word manuscript by this assistant. |
 | Health Methods | Drafted fixed-population design, population-weighted allocation, matched-climate comparison, equations and uncertainty description | Review before insertion, including the annual interpretation and applicability of exposure–response coefficients. |
-| Figure 2 statistics | Added n, medians/IQRs, Kruskal–Wallis statistics, effect sizes, BH adjustment, Dunn comparisons, outcome selection, and invalid-input checks | Committed as `2c9d7c2`. Tree-cover branch ran; temperature branch remains blocked by the invalid cache. |
+| Figure 2 statistics | Added n, medians/IQRs, Kruskal–Wallis statistics, effect sizes, BH adjustment, Dunn comparisons, outcome selection, and invalid-input checks | Committed as `2c9d7c2`. On 3 November the original LSOA climate CSVs were recovered, the temperature cache rebuilt (4,831/4,835 finite areas), and the temperature notebook completed; review the panel and spatial-inference caveat. |
 | Figure 6 statistics | Official-code joins; deaths averted per 100,000; all valid LSOAs as primary sample; trimmed sensitivity; GAM diagnostics, P10–P90 contrasts and residual Moran’s I | Committed as `2c9d7c2`. Descriptive results available; spatial inference remains unfinished. |
 | Imported chat context | Presentation framing and co-author credit preserved locally in `docs/conversation-imports/LONDON_MS_EDIT_CONTEXT.md` | Imported October 8. This is a context note, not a new manuscript revision. |
 
@@ -108,8 +111,8 @@ Leave the Data Availability wording as accepted for now, per your instruction. D
 
 ## Remaining technical work
 
-1. **Repair Figure 2 temperature data.** The October check found all 4,835 cached temperature rows missing in `data/temp_svi.RDS`. The upstream script is configured for borough summaries before an LSOA join, a likely source of the failure. Locate the LSOA CHELSA and WorldClim/GCM zonal CSVs, or regenerate them from the correct inputs; validate geographic joins, selected climate/year, one row per area and finite values before recreating the panel. Tree-cover statistics are available, but their conventional rank-test p-values also assume independence and should not be presented as spatially corrected evidence.
-2. **Finish Figure 6 spatial sensitivity.** Saved unadjusted residual Moran’s I is 0.891–0.941, with permutation p = 0.001. BH adjustment does not remove spatial dependence. An exploratory centroid-smooth fit was tested during October work, but no validated spatial model was incorporated or delivered. A previous progress message overstated this as being added. Specify the spatial model/resampling approach, examine remaining residual dependence and basis size, and compare effect sizes and curves. Target30 and absolute-benefit sensitivities remain to be completed if retained in the plan.
+1. **Review the recovered Figure 2 panel.** The October all-NA cache came from running the borough default before an LSOA join. The original LSOA CHELSA and WorldClim/GCM zonal CSVs were found under `data/02_preprocess/` on 3 November; their `borough` field actually holds numeric LSOA IDs. The original baseline–future calculation was retained, the cache rebuilt with 4,831/4,835 finite LSOAs, and the temperature notebook completed. See the [code guide](../../code/README.md#figure-2-temperature-input) for exact paths and rerun instructions. Four source-data gaps remain. Conventional rank-test p-values for both temperature and tree cover assume independence and should not be presented as spatially corrected evidence.
+2. **Figure 6 spatial sensitivity.** Completed; use the [illustrated report](SVI_SPATIAL_RESULTS.md) for the analysis and its interpretation.
 3. **Make Figure 6 reporting fully reproducible.** Review low k-check p-values for age indicators; seed the random k-check diagnostic explicitly; document the Gaussian-ML AIC comparison as a sensitivity distinct from the primary scaled-t GAM. Keep conditional smooth bands separate from exposure–response uncertainty. The current outputs are exploratory, despite the notebook section's “production” label.
 4. **Complete figure/text reconciliation.** Build one table mapping each Abstract/Results/legend number to its exact CSV row, unit, point-estimate convention and uncertainty type. Include scenario counts, canopy budgets, Figure 7 denominators and the age-75+ trade-off.
 5. **Prepare the reviewed release.** The TODO and Figures 6–7 review notes were
@@ -130,8 +133,8 @@ Public-release provenance and permissions, including UKCEH-derived products and 
 
 1. Review Figure 7's age-related trade-off and adopt or revise the proposed central claim and figure order.
 2. Open Figure 4 beside the manuscript and reconcile the abstract's scenario count, health estimate/interval, energy period and capacity units. Remove any surviving placeholder.
-3. Locate the missing Figure 2 LSOA climate tables, or identify where the source climate rasters are stored so they can be regenerated.
-4. Review Figure 6 as descriptive evidence while the spatial sensitivity is completed. Do not promote its conventional p-values to final inference.
+3. Review the recovered Figure 2 temperature panel, its four source-data gaps, and the rank-test inference caveat.
+4. Revise the Figure 6 legend using the [spatial sensitivity report](SVI_SPATIAL_RESULTS.md).
 5. Insert the agreed Methods and terminology changes, then finalize the Introduction and cover-letter framing after the scientific results are settled.
 
 The inactivity reminder is active in this thread. It checks daily at 10:00 Asia/Shanghai, reminds after more than 48 hours without observable human project activity, and sends at most one reminder per inactive period. Automated checks do not reset the clock. Offline work may not be visible.

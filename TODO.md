@@ -1,33 +1,30 @@
 # Project TODO and reproduction roadmap
 
-Last reviewed: 1 November 2026 (repository and saved-output check)
+Last reviewed: 3 November 2026 (Figure 2 temperature-input repair)
 
 This document is the live task list. The long numbered sections below also
 preserve the September model-rebuild audit; checked boxes there are completed
 historical steps, not instructions to rerun models. The current equal-area
 Figure 7 and nine-scenario Figure 4/5 outputs exist. Manuscript reconciliation,
-Figure 2's temperature input and Figure 6's spatial analysis remain open.
+Figure 2's temperature input is repaired; Figure 6's spatial sensitivity ran and supports descriptive reporting only.
 
 ## Next actions — current status
 
 ### Do next (scientific and manuscript gates)
 
-1. [ ] **Repair Figure 2 temperature inputs** (analysis; no valid temperature
-   panel yet). Locate or regenerate LSOA-level CHELSA/WorldClim/GCM zonal
-   values, then verify 4,835 unique LSOA IDs, scenario/year, finite values and
-   units before knitting `code/equity-temp-tcc.Rmd`. The current
-   `data/temp_svi.RDS` has no finite temperature observations; only tree-cover
-   statistical outputs exist in `figures/figure2_statistical_reporting/`.
-2. [ ] **Resolve Figure 6 spatial inference** (analysis). The primary
-   official-code, per-100,000, all-valid-LSOA fits and trimmed sensitivities
-   exist in `code/equity-health.Rmd`, but residual Moran's I is 0.891–0.941
-   (999 permutations; p = 0.001) in
-   `figures/figure6_statistical_reporting/figure6_gam_residual_morans_i.csv`.
-   Pre-specify and validate a spatial adjustment or spatial resampling; compare
-   curves and effect sizes, check remaining autocorrelation, then label the
-   uncertainty correctly. Do not use the current smooth p-values as final
-   spatially corrected inference. Add Target30 and absolute-benefit
-   sensitivities only if retained in the figure plan.
+1. [x] **Repair Figure 2 temperature inputs.** Recovered the original LSOA
+   zonal CSVs under `data/02_preprocess/`, rebuilt the cache using the original
+   `borough`-column calculation and verified 4,831/4,835 finite LSOAs and a
+   completed temperature-panel knit. Four source-data gaps remain; review the
+   resulting figure and spatial-inference caveat before manuscript use. See
+   [`code/README.md`](code/README.md#figure-2-temperature-input) for paths,
+   procedure and provenance.
+   **SVI harmonized:** Figure 2 now uses the author’s stored four-theme score,
+   as Figures 6 and 7 already did. See the [comparison](docs/manuscript/SVI_SPATIAL_RESULTS.md).
+   Scenario/year selection, strict source/model/coverage checks and a dedicated
+   Figure 6 diagnostic seed have now been added.
+2. [ ] **Revise the Figure 6 legend and Results** using the completed
+   [spatial sensitivity report](docs/manuscript/SVI_SPATIAL_RESULTS.md).
 3. [ ] **Reconcile manuscript claims to saved evidence** (author + analysis).
    Create a claim-to-CSV table for every Abstract, Results and figure-legend
    number: exact source row, unit, scenario/version, deterministic point vs
@@ -95,9 +92,9 @@ Figure 2's temperature input and Figure 6's spatial analysis remain open.
     found no content change, but they remain local modifications; preserve
     them and do not include them in a documentation commit by accident.
 
-The next useful working session is to recover the Figure 2 LSOA climate
-table and agree on the Figure 6 spatial method. There is no need to rerun UCM
-or health simply to address these two gaps.
+The next useful working session is to review the recovered Figure 2 panel and
+agree on the Figure 6 spatial method. There is no need to rerun UCM or health
+simply to address these two items.
 
 ## Priority guide
 
@@ -451,7 +448,7 @@ for method reproduction and historical-result reproduction.
 - [x] Test Figure 6 residual spatial autocorrelation and move 1st–99th
   percentile trimming to a labelled sensitivity. Saved Moran's I is large
   (`figures/figure6_statistical_reporting/figure6_gam_residual_morans_i.csv`).
-- [ ] Add and validate a pre-specified Figure 6 spatial adjustment or spatial
+- [x] Add and validate a pre-specified Figure 6 spatial adjustment or spatial
   resampling, then reassess residual dependence and effect sizes.
 - [ ] Produce a clean Figure 6 production script with exact curve data,
   diagnostics, input/output checksums, session information and PNG/PDF/SVG

@@ -12,6 +12,7 @@ docs/methods/*
 !docs/manuscript/
 docs/manuscript/*
 !docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md
+!docs/manuscript/SVI_SPATIAL_RESULTS.md
 
 
 # Ignore all figures
