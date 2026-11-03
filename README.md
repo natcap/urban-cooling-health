@@ -1,547 +1,97 @@
 # Urban cooling, health and equity in London
 
-This repository contains the research workflow used to compare how alternative
-urban land-cover and tree-planting strategies affect heat exposure, health
-outcomes and the distribution of benefits across London neighbourhoods.
-
-The workflow connects four main components:
-
-1. construct baseline and alternative land-cover scenarios;
-2. simulate urban cooling with the InVEST Urban Cooling Model;
-3. estimate heat-attributable mortality and other co-benefits; and
-4. evaluate how benefits are distributed across social-vulnerability groups.
-
-The repository is research code under active manuscript revision. It contains
-enough derived data to reproduce the current Figure 7 analysis, but a complete
-rebuild from raw data requires access to the project's external geospatial data
-store.
-
-Current blockers and the recommended order of work are tracked in
-[`TODO.md`](TODO.md).
-The [documentation index](docs/README.md) groups manuscript review notes and
-future model plans. The [data directory guide](data/README.md) explains which
-local inputs are tracked, ignored or awaiting provenance review.
-
-The effect of replacing the legacy area-weighted mortality surface with the
-revised population-weighted workflow is summarized in
-[`code/health_assessment/HEALTH_VERSION_COMPARISON.md`](code/health_assessment/HEALTH_VERSION_COMPARISON.md).
-Results from the final equal-area Green/Target rerun are summarized in
-[`code/health_assessment/REVISED_EQUAL_AREA_HEALTH_RESULTS.md`](code/health_assessment/REVISED_EQUAL_AREA_HEALTH_RESULTS.md).
-
-## Current analysis convention
-
-All health analyses use **2021 population and 2021 baseline mortality**, even
-when the temperature field represents a 2050 climate scenario. Holding
-demography constant isolates the effect of climate and land-cover change.
-
-Results must therefore be described as:
-
-> 2050 temperature scenarios evaluated under 2021 population and mortality.
-
-They are not projections of London's population or mortality patterns in 2050.
-
-Use the **25°C setting as the primary manuscript analysis** and the 28°C
-setting as a sensitivity analysis. Hold all other health-model inputs and Monte
-Carlo settings constant between them.
-
-## Choose the workflow you need
-
-| Goal | Start here | External data required? |
-|---|---|---:|
-| View the current results | [Figure 7 outputs](#4-inspect-the-outputs) | No |
-| See outstanding work and required data | [Project TODO](TODO.md) | No |
-| Reproduce Figure 7 | [Quick reproduction of Figure 7](#quick-reproduction-of-figure-7) | No; the population-normalized derived inputs are tracked |
-| Rerun the health model | [Health assessment](#6-run-the-health-assessment) | Yes |
-| Rebuild every scenario and result | [Full end-to-end workflow](#full-end-to-end-workflow) | Yes |
-| Check Green30 and Target30 planting equivalence | [Validate intervention budgets](#4-validate-intervention-budgets) | Yes |
-
-## Scenarios
-
-Scenario names used in the analysis are defined centrally in
-[`code/func_colors.R`](code/func_colors.R).
-
-| Analysis label | Internal label | Description |
-|---|---|---|
-| Baseline | `baseline` | Current/reference land cover |
-| Green10/20/30 | `green10/green20/green30` | Revised nested proximity-based general-greening scenarios |
-| Target10/20/30 | `target10/target20/target30` | Revised ranked vulnerability-targeted planting scenarios |
-
-The Green–Target comparison uses the same definition of existing canopy,
-allowed LCM source classes and realized additional canopy, while preserving
-Green's area-based design and Target's screened street-candidate design. Transition-level review
-found that the earlier audit counted every transition to code 100, including
-relabeling woodland codes 1 and 2 and converting ineligible classes. Those
-earlier UCM, health and Figure 7 outputs are retained as historical evidence;
-the current revised-equal-area outputs are the production comparison. Archived
-aliases such as `scenario4_10` and `scenario510` are documented in
-`code/func_colors.R` but must not be written by new runs. See the complete
-historical lineage and approved regeneration method in
-[`code/lc_scenarios/README.md`](code/lc_scenarios/README.md).
-
-## Quick reproduction of Figure 7
-
-This is the shortest fully scripted workflow in the repository.
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/natcap/urban-cooling-health.git
-cd urban-cooling-health
-```
-
-### 2. Install the required R packages
-
-The last validated package versions are recorded in
-[`fig7_session_info.txt`](figures/equity_map_biscale_revised_equal_area/fig7_session_info.txt).
-Install R and the packages below if they are not already available:
-
-```r
-install.packages(c(
-  "biscale", "cowplot", "digest", "dplyr", "ggplot2", "knitr", "purrr",
-  "ragg", "readr", "rmarkdown", "scales", "sf", "tidyr"
-))
-```
-
-The `sf` and `ragg` packages may require system geospatial and graphics
-libraries. A conda-based R environment or the official R installers can be used
-when these dependencies are not already present.
-
-### 3. Run the production workflow
-
-From the repository root:
-
-```bash
-Rscript code/run-fig7.R
-```
-
-The wrapper does not require Pandoc. It validates scenario pairing, duplicate
-IDs, missing benefit values and population coverage before producing outputs.
-
-### 4. Inspect the outputs
-
-The workflow writes the following files to
-`figures/equity_map_biscale_revised_equal_area/`:
-
-- `fig7_ab_upgraded.png`: comparable bivariate maps using common thresholds;
-- `fig7_cd_upgraded.png`: paired scenario comparison and transition summary;
-- `fig7_quantitative_headline_results.csv`: headline equity statistics;
-- `fig7_paired_transition_matrix.csv`: exact Green30-to-Target30 transitions;
-- `fig7_age75_*.csv`: diagnostic evidence for the age-75+ result;
-- `fig7_citywide_tradeoff.csv`: citywide deaths-averted comparison;
-- `fig7_run_metadata.csv`: run settings and fixed thresholds; and
-- `fig7_session_info.txt`: the R environment used for the run.
-- `fig7_ab_upgraded.{pdf,svg}` and `fig7_cd_upgraded.{pdf,svg}`: editable
-  vector exports; and
-- `fig7_file_manifest.csv`: SHA-256 checksums for the production inputs and
-  outputs.
-
-![Figure 7 maps comparing Green30 and Target30](figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png)
-
-![Figure 7 paired equity comparison](figures/equity_map_biscale_revised_equal_area/fig7_cd_upgraded.png)
-
-### 5. Use the validated 2021 LSOA population lookup
-
-The tracked
-[`lsoa_population_2021_by_lsoa11cd.csv`](data/derived/lsoa_population_2021_by_lsoa11cd.csv)
-contains positive population estimates for all 4,835 LSOA11 polygons used by
-Figure 7. It is keyed by official `LSOA11CD` and was generated from the
-count-preserved WorldPop surface with:
-
-```bash
-Rscript code/health_assessment/prepare_lsoa_population_2021.R \
-  data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg \
-  /path/to/gbr_pop_2021_10m_count_preserved_bng.tif \
-  data/derived/lsoa_population_2021_by_lsoa11cd.csv \
-  data/derived/lsoa_population_2021_by_lsoa11cd.manifest.json
-```
-
-The modeled LSOA total is 8,832,324.67, 0.370% above the official Census 2021
-TS001 London total of 8,799,776. The companion manifest records checksums,
-software versions, the pixel-centre allocation rule and topology repair for
-eight source polygons. The official-code values are exactly identical to the
-previous numeric-ID lookup, but sorting or rebuilding upstream tables can no
-longer change the join. TS001 uses 4,994 LSOA21 areas and is an external
-validation benchmark, not a direct join. `Rscript code/run-fig7.R` reports
-deaths averted per 100,000 2021 residents.
-
-For the full Figure 7 protocol, including Monte Carlo files and the final review
-checklist, see [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md).
-
-## Full end-to-end workflow
-
-The following sequence reproduces the method from raw spatial inputs. Exact
-historical results additionally require the same versioned input rasters and
-vectors used in the original runs.
-
-### 1. Prepare the software environments
-
-The workflow currently uses Windows batch files for health-model runs, Python
-for raster/vector processing and InVEST, R/R Markdown for statistics and
-figures, and Jupyter notebooks for several preprocessing and zonal-statistics
-steps.
-
-A practical Python environment includes:
-
-```bash
-conda create -n geo_env -c conda-forge \
-  python=3.11 geopandas jupyterlab matplotlib numpy pandas pyogrio \
-  rasterio shapely
-conda activate geo_env
-```
-
-Production Urban Cooling runs use InVEST 3.20.2. The older 3.14.1 version
-recorded in the historical model-run scripts is retained only for optional
-version-comparison checks; do not use it to generate new production results.
-
-The complete R analysis uses additional packages beyond the Figure 7 subset,
-including `exactextractr`, `here`, `mgcv`, `performance`, `terra`, `tmap`,
-`tidyverse` and `writexl`. Install packages as requested by the relevant R
-Markdown file and record the final `sessionInfo()`.
-
-### 2. Assemble and version the input data
-
-Most large project inputs are intentionally not committed. The scripts expect
-the following broad input groups:
-
-| Input group | Examples | Main use |
-|---|---|---|
-| Study boundaries | London borough and LSOA geometries | clipping, zonal statistics and mapping |
-| Land cover and tree canopy | baseline LULC, tree-canopy cover and planting opportunities | scenario construction and cooling model |
-| Climate | reference evapotranspiration and temperature/UHI settings | InVEST cooling simulations |
-| Population | 2021 population raster | health-impact calculation and per-capita equity metrics |
-| Mortality | 2021 cause-specific mortality rasters | baseline health burden |
-| Buildings | building footprints and energy attributes | energy valuation |
-| Vulnerability | income, age, ethnicity, housing and related LSOA indicators | SVI and equity analysis |
-
-Store large data outside Git and preserve an immutable input manifest containing
-source, licence, download date, geography vintage, units, CRS, resolution,
-checksum and any preprocessing performed. The original scripts commonly expect
-the shared-drive structure below:
-
-```text
-Wellcome Trust Project Data/
-├── 1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/
-│   ├── AOIs/
-│   ├── LULC/
-│   ├── evapotranspiration/
-│   ├── pop_raster/
-│   ├── health_rasters_10m_bng/
-│   └── energy_buildings/
-└── 2_postprocess_intermediate/UCM_official_runs/
-```
-
-See [`DATA_LICENCE_AND_REDISTRIBUTION.md`](DATA_LICENCE_AND_REDISTRIBUTION.md)
-before publishing data or results. WorldPop, ONS/Nomis, ONS boundaries and the
-GLA vulnerability layer have documented open terms with attribution. UKCEH
-LCM2023 requires confirmation against the licence accepted for this project;
-raw/clipped LCM, scenario and UCM rasters must remain outside Git meanwhile.
-
-### 3. Prepare baseline layers and construct scenarios
-
-Run only the components needed for the scenarios under study:
-
-1. Align and clip core layers with
-   [`preprocess_and_align_london_layers.py`](code/preprocessing_layers/preprocess_and_align_london_layers.py).
-2. Prepare the population surface with
-   [`pop_01_prep_clip_reproj.ipynb`](code/preprocessing_layers/pop_01_prep_clip_reproj.ipynb)
-   and [`pop_02_resample_for_health_model.py`](code/preprocessing_layers/pop_02_resample_for_health_model.py).
-3. Build pavement and tree-opportunity scenarios with
-   [`scenario_1_pavement_and_2_opportunity_trees.ipynb`](code/lc_scenarios/scenario_1_pavement_and_2_opportunity_trees.ipynb).
-4. Build the tree-risk scenario using the `tree-at-climate-risk-*` scripts in
-   [`code/lc_scenarios/`](code/lc_scenarios/).
-5. Review the recovered historical Green logs and generate the revised nested
-   Green scenarios with
-   [`generate_green_scenarios_invest.py`](code/lc_scenarios/generate_green_scenarios_invest.py).
-6. Generate Target10/20/30 directly from the final screened ranked points with
-   [`generate_target_scenarios.py`](code/lc_scenarios/generate_target_scenarios.py).
-
-**Configuration gate:** checksum verification records the historical selections
-as `710v2 -> 510` (Target10), `730v2 -> 520` (Target20), and `730v3 -> 530`
-(legacy Target30). The Target20 mapping is intentionally non-sequential. The
-legacy polygon generator uses different `710v3/720v3/730v3` defaults, so do
-not infer or substitute inputs from their filenames. Use
-[`SCENARIO_NAMING_AUDIT.md`](code/health_assessment/SCENARIO_NAMING_AUDIT.md)
-as the authoritative crosswalk.
-
-Several older scenario scripts contain machine-specific paths. Review every
-input and output path before running them; do not assume the defaults point to
-the intended data snapshot.
-
-### 4. Validate intervention areas
-
-Before comparing the revised Green and Target scenarios, run:
-
-```bash
-python code/lc_scenarios/validate_green_target_scenarios.py \
-  --baseline /path/to/baseline_lulc.tif \
-  --green /path/to/Green10.tif /path/to/Green20.tif /path/to/Green30.tif \
-  --target /path/to/Target10.tif /path/to/Target20.tif /path/to/Target30.tif \
-  --output-json /path/to/green_target_pair_qa.json \
-  --output-csv /path/to/green_target_pair_qa.csv
-```
-
-The validator treats `{1,2,100}` as existing canopy, permits new planting only
-on `{4,20,21}`, checks complete transitions and matches each Target to its
-Green count: 307,768, 595,084 and 894,249 cells. Exact regeneration results are
-in the scenario README.
-
-### 5. Run the InVEST Urban Cooling Model
-
-For a new production run, use the unified configuration-driven workflow. It
-runs each requested UCM temperature once, applies valuations only at the
-selected temperatures, calculates Hothaps workability and produces summaries:
-
-```bash
-export URBAN_COOLING_DATA_ROOT="/path/to/Wellcome Trust Project Data"
-
-# Copy the example to a dated config, replace YYYY-MM-DD inside that copy,
-# and commit it before the production run (2026-09-11 is illustrative here).
-conda run -n urban-cooling-invest-3.20.2 python \
-  code/workflows/run_ucm_pipeline.py \
-  --config code/workflows/configs/ucm_pipeline_2026-09-11.json \
-  --validate-only
-
-# After validation, rerun without --validate-only.
-```
-
-R users can configure the same path once by copying [`.Renviron.example`](.Renviron.example)
-to their user-level `~/.Renviron`, replacing the placeholder path and
-restarting R. The `invest_result_zonal_viz_*` notebooks then load packages,
-shared functions, standard directories and the 2021 baseline through
-[`code/ucm_analysis_setup.R`](code/ucm_analysis_setup.R), avoiding local paths
-inside tracked notebooks.
-
-The example runs 25°C once with energy and WBGT and 28°C once as a
-temperature-only sensitivity, eliminating the former duplicate 25°C run. Use
-`--resume` after an interruption; completed UCM and Hothaps outputs are skipped
-only after their manifests, parameters and checksums match. See the
-[`workflow README`](code/workflows/README.md).
-
-Use the UCM component directly only for a model-only run:
-
-```bash
-conda run -n urban-cooling-invest-3.20.2 python \
-  code/Urban_Cooling_Modeling_Runs/run_ucm_scenarios.py \
-  /path/to/Wellcome\ Trust\ Project\ Data --validate-only
-
-# After all configurations validate, rerun without --validate-only.
-```
-
-The dedicated Target30 v4 runner preserves the legacy `scenario530` outputs
-and runs the 25°C primary and 28°C sensitivity settings in a separate
-health-only workspace:
-
-```bash
-python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_target30_equal_budget.py \
-  /path/to/Wellcome\ Trust\ Project\ Data
-```
-
-This runner reproduces the historical code-100-matched v4 analysis only. Keep
-it for provenance; use the revised seven-scenario runner above for the final
-comparison.
-
-The component defaults to temperature only. Prefer
-`--valuation-temperatures 25` when energy and WBGT are needed at the primary
-temperature but not at sensitivity temperatures. `--include-valuations`
-remains available when every requested temperature needs valuation. The
-manuscript does not use InVEST's built-in threshold-based work-loss values;
-the unified pipeline runs the documented project-specific Hothaps calculation in
-[`code/post_processing_layers/README.md`](code/post_processing_layers/README.md).
-
-Run the matching baseline and Green30 health inputs with the production runner:
-
-```bash
-python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_health_scenarios.py \
-  /path/to/Wellcome\ Trust\ Project\ Data --validate-only
-```
-
-After validation, remove `--validate-only`. The runner enforces InVEST 3.20.2,
-refuses to overwrite completed outputs, and writes input checksums, model
-arguments, grid metadata and software versions beside every result.
-
-Create the production environment from conda-forge, which resolves InVEST and
-its compiled geospatial dependencies together:
-
-```bash
-conda env create \
-  -f code/Urban_Cooling_Modeling_Runs/environment-invest-3.20.2.yml
-conda run -n urban-cooling-invest-3.20.2 \
-  python code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_target30_equal_budget.py \
-  /path/to/Wellcome\ Trust\ Project\ Data --validate-only
-```
-
-The verified Apple Silicon installation resolves to InVEST 3.20.2, Python
-3.12, GDAL 3.12.4 and pygeoprocessing 2.4.11. Preserve the conda environment
-export with final run metadata. The environment also installs `proj-data` so
-British National Grid overlap checks work offline rather than depending on an
-optional remote transformation grid. InVEST 3.20.2 writes `T_air` in the
-workspace root; the health configuration already uses this location. Run the
-command without `--validate-only` only after both temperature settings pass
-validation.
-
-For an exact comparison with historical model behavior only, see
-`environment-invest-3.14.1.yml` and clearly label those outputs as historical.
-The observed version check and the rule against mixing versions within a health
-comparison are documented in
-[`INVEST_VERSION_COMPARISON.md`](code/Urban_Cooling_Modeling_Runs/INVEST_VERSION_COMPARISON.md).
-
-Run the baseline and every required scenario with identical model settings.
-Target10/20/30 scripts are in
-[`Scenario_510_to_530_runs/`](code/Urban_Cooling_Modeling_Runs/Scenario_510_to_530_runs/).
-Check each script's `variables` array, land-cover path, model parameters and
-output suffix before execution.
-
-### 6. Run the health assessment
-
-Detailed health-model notes are in
-[`code/health_assessment/README.md`](code/health_assessment/README.md).
-Data-selection and allocation decisions are documented in
-[`code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md`](code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md).
-
-1. Generate `mortality_2021_long.csv` from the project's original 2021 Nomis
-   TSV export as documented in the
-   [health-assessment guide](code/health_assessment/README.md), then allocate
-   them by 2021 pixel population with
-   [`prepare_mortality_population_weighted.py`](code/health_assessment/prepare_mortality_population_weighted.py).
-   The earlier area-weighted
-   [`health-model-01-prep-input-ONS-mortality-data.Rmd`](code/health_assessment/health-model-01-prep-input-ONS-mortality-data.Rmd)
-   remains available only for comparison until the revised results are approved.
-2. Create the count-preserved EPSG:27700 population raster directly from the
-   raw WorldPop count raster with
-   [`prepare_population_2021_count_preserved.py`](code/health_assessment/prepare_population_2021_count_preserved.py).
-   Do not use the older `gbr_pop_2021_10m_areal.tif`: its upstream bilinear
-   reprojection reduced the London total from about 8.8 million to 4.74
-   million. Confirm that temperature, corrected population and revised
-   mortality rasters share the intended grid, extent and units.
-3. After the six revised Green/Target LULC rasters pass the scenario gates,
-   validate and run their 25°C and 28°C pairs with
-   [`run_health_scenario_set.py`](code/health_assessment/run_health_scenario_set.py)
-   and `health-analysis-revised-equal-area.example.json`.
-4. Use 2,000 paired cause-stable draws and seed `20260908`, as recorded in
-   `health-analysis-v2.example.json`. Legacy Windows batch launchers are kept
-   only for historical comparison.
-
-The health model produces aligned temperature differences, attributable
-fractions, cause-specific excess-death rasters, deterministic city totals and
-Monte Carlo draw files.
-
-### 7. Calculate zonal statistics
-
-For the revised health workflow, run
-[`prepare_health_lsoa_zonal_stats.py`](code/health_assessment/prepare_health_lsoa_zonal_stats.py).
-It aggregates all four production cases, restores official `LSOA11CD`, verifies
-one-to-one geography matching, requires complete valid-cell assignment and
-writes a provenance manifest. The earlier
-[`health-modeling-zonal-stats.ipynb`](code/health_assessment/health-modeling-zonal-stats.ipynb)
-is retained for legacy outputs only.
-
-Other service outputs use:
-
-- [`invest_result_zonal_stats_temp.ipynb`](code/invest_result_zonal_stats_temp.ipynb)
-- [`invest_result_zonal_stats_energy.ipynb`](code/invest_result_zonal_stats_energy.ipynb)
-- [`invest_result_zonal_stats_productivity.ipynb`](code/invest_result_zonal_stats_productivity.ipynb)
-
-### 8. Build vulnerability indicators
-
-Run [`socio-economic-data.Rmd`](code/socio-economic-data.Rmd) to clean LSOA
-vulnerability metrics and construct the composite SVI. Preserve the official
-LSOA code in future rebuilds; the current derived object also contains a numeric
-row-order ID retained for compatibility.
-
-### 9. Produce analysis and manuscript figures
-
-| Output | Main script |
-|---|---|
-| Climate context / Figure 1 | [`gcm-data-clip-stats-viz.Rmd`](code/gcm-data-clip-stats-viz.Rmd) |
-| Temperature and canopy equity / Figure 2 | [`equity-temp-tcc.Rmd`](code/equity-temp-tcc.Rmd) |
-| Temperature results / Figure 3 | [`invest_result_zonal_viz_1_temp.Rmd`](code/invest_result_zonal_viz_1_temp.Rmd) |
-| Energy, productivity and health / Figure 4 | [`invest_result_zonal_viz_2_energy.Rmd`](code/invest_result_zonal_viz_2_energy.Rmd), [`invest_result_zonal_viz_3_pd_NEW.Rmd`](code/invest_result_zonal_viz_3_pd_NEW.Rmd), and [`health-modeling-output-plot-city.Rmd`](code/health_assessment/health-modeling-output-plot-city.Rmd); combined by [`plot_figure4_citywide.R`](code/post_processing_layers/plot_figure4_citywide.R) |
-| Borough co-benefit maps / Figure 5 | [`viz-es-change-due-to-lc.Rmd`](code/viz-es-change-due-to-lc.Rmd), using [`plot_figure5_borough_cobenefits.R`](code/post_processing_layers/plot_figure5_borough_cobenefits.R) |
-| Health-equity models / Figure 6 and supplementary table | [`equity-health.Rmd`](code/equity-health.Rmd), currently exploratory; complete the gates in [`FIGURES6_7_REVIEW.md`](code/health_assessment/FIGURES6_7_REVIEW.md) before final reporting |
-| Paired Green30–Target30 equity comparison / Figure 7 | [`equity-health-fig7-production.Rmd`](code/equity-health-fig7-production.Rmd), preferably through [`run-fig7.R`](code/run-fig7.R) |
-
-Treat [`equity-health-fig7-upgrade.Rmd`](code/equity-health-fig7-upgrade.Rmd)
-as an archived August 2026 workflow. It is retained for audit history, not as
-the current production script.
-
-### 10. Apply review gates before reporting results
-
-Do not treat a successful script run as sufficient validation. Confirm:
-
-1. input provenance, years, units, CRS and raster alignment are recorded;
-2. scenario names map to the intended LULC and temperature rasters;
-3. Green30 and Target30 pass the realized-canopy budget check;
-4. health estimates explicitly state the fixed-2021-demography convention;
-5. LSOA joins are one-to-one and contain all 4,835 expected areas;
-6. population-normalized results use a complete 2021 population lookup;
-7. uncertainty statements distinguish paired-LSOA sensitivity intervals from
-   exposure-response Monte Carlo uncertainty; and
-8. final figures and tables are visually inspected and agree with their saved
-   source CSVs.
+This repository contains the research code for comparing how alternative
+land-cover and tree-planting strategies affect urban cooling, co-benefits and
+the distribution of heat-related health benefits across London. It is under
+active manuscript revision; the [project TODO](TODO.md) distinguishes completed
+analyses from remaining scientific and release decisions.
+
+The analysis holds **2021 population and registered mortality fixed** while
+evaluating mid-century temperature scenarios. The primary manuscript setting
+is 25°C; 28°C is a sensitivity. These are not projections of London's 2050
+population or mortality. Scenario names and display labels are defined in
+[`code/func_colors.R`](code/func_colors.R); the current comparison includes
+baseline, AllBuilt, TreeRisk, TreeOpp, Green10/20/30 and Target10/20/30.
 
 ## Repository map
 
 ```text
 urban-cooling-health/
-├── README.md                         # project entry point
-├── TODO.md                           # prioritized blockers and next actions
-├── REPRODUCIBILITY.md                 # detailed Figure 7 protocol
+├── README.md                 Project overview and navigation
+├── REPRODUCIBILITY.md        Current Figure 7 procedure
+├── TODO.md                   Open scientific and release gates
 ├── docs/
-│   ├── README.md                     # manuscript and future-method index
-│   ├── manuscript/                   # current revision brief
-│   └── methods/                      # future model upgrade instructions
-├── data/
-│   ├── README.md                     # raw/processed/derived data policy
-│   └── derived/                      # small documented Figure 7 inputs
-├── figures/
-│   ├── equity_map_biscale_revised_equal_area/ # current Figure 7 outputs
-│   └── equity_map_biscale/           # historical Figure 7 evidence
+│   ├── README.md             Documentation index
+│   └── WORKFLOW.md           Ordered source-to-figure workflow
 ├── code/
-│   ├── README.md                    # production-script and naming guide
-│   ├── workflows/                   # one-command production orchestration
-│   ├── preprocessing_layers/        # align and prepare spatial inputs
-│   ├── lc_scenarios/                # construct and validate LULC scenarios
-│   ├── Urban_Cooling_Modeling_Runs/ # execute InVEST UCM scenarios
-│   ├── health_assessment/           # mortality model and zonal statistics
-│   ├── post_processing_layers/      # aggregate model outputs
-│   ├── equity-health.Rmd            # broader health-equity analysis
-│   └── run-fig7.R                  # portable Figure 7 entry point
-└── LICENSE
+│   └── README.md             Production scripts and historical analyses
+├── data/
+│   ├── README.md             Local data roles and handling
+│   └── derived/              Selected tracked Figure 7 inputs
+└── figures/                  Current Figure 7 outputs and historical evidence
 ```
 
-## Reproducibility status and limitations
+Start with the links below rather than inferring which script to run from a
+filename. Large source/model data are kept outside this repository.
 
-- **Current Figure 7:** directly runnable from the tracked revised-equal-area
-  vulnerability, LSOA health, 2021 population and paired-draw inputs under
-  `data/derived/`.
-- **Historical UCM and health rerun:** validated on InVEST 3.20.2 for baseline,
-  Green30 and code-100-matched Target30 v4 at 25°C and 28°C.
-- **Final equal-area and Figure 4 comparison:** complete. All six revised
-  Green/Target rasters pass equal-budget, eligibility, nesting, grid and NoData
-  checks. The three retained counterfactual rasters (AllBuilt, TreeRisk and
-  TreeOpp) were also rerun rather than mixed with legacy InVEST 3.14.1 output.
-  All twenty 25°C/28°C InVEST 3.20.2 temperature runs and eighteen revised
-  population-weighted health runs are complete. Use
-  `figures/equity_map_biscale_revised_equal_area/` for the current Figure 7
-  outputs.
-- **Full model chain:** requires external raw and intermediate geospatial data
-  that are not stored in this repository.
-- **Historical result recreation:** requires the original versioned input
-  snapshots, not merely datasets with the same names.
-- **Portability:** several legacy scripts still contain Windows/shared-drive
-  paths and should be reviewed before use on another computer.
+## Where to start
 
-## Contributing and reporting issues
+| You want to… | Open this guide | External project data? |
+|---|---|---:|
+| Reproduce the current Figure 7 from tracked derived inputs | [Figure 7 reproduction](REPRODUCIBILITY.md) | No |
+| Rebuild scenarios, model results and figures in order | [Full workflow map](docs/WORKFLOW.md) | Yes |
+| Find the current production scripts | [Code/figure index](code/README.md) | Depends on stage |
+| Understand local raw, processed and derived data | [Data directory guide](data/README.md) | No |
+| Review scientific decisions, open tasks and manuscript status | [Documentation index](docs/README.md) and [TODO](TODO.md) | No |
+| Check whether data or figures can be shared | [Licence and redistribution review](DATA_LICENCE_AND_REDISTRIBUTION.md) | No |
 
-When proposing a change, state which scenario, data snapshot and output it
-affects. Keep generated headline tables synchronized with their figures, retain
-run metadata, and avoid committing private or licence-restricted source data.
-Use the repository's GitHub issue tracker for questions or reproducibility
-problems.
+The repository tracks the small derived inputs required for the current
+Figure 7 run. A full rebuild requires authorized access to the separately
+stored, versioned geospatial inputs; raw UKCEH land cover, scenario and UCM
+rasters are not included here. The [full workflow map](docs/WORKFLOW.md)
+identifies each stage's authoritative instructions and validation gate.
 
-## Licence
+## Quick check: Figure 7
 
-The repository's [`LICENSE`](LICENSE) does not, by itself, grant rights to
-third-party datasets or derived products with separate source terms. See the
-[data licence and redistribution review](DATA_LICENCE_AND_REDISTRIBUTION.md)
-before reusing or publishing data or figures.
+After installing the R packages listed in the [Figure 7 guide](REPRODUCIBILITY.md),
+make a first run in a separate, ignored output folder from the repository root:
+
+```bash
+URBAN_COOLING_FIG7_OUTPUT_DIR=./figures/fig7_local_check Rscript code/run-fig7.R
+```
+
+The reviewed production panels and supporting tables are under
+[`figures/equity_map_biscale_revised_equal_area/`](figures/equity_map_biscale_revised_equal_area/);
+the command above leaves them untouched.
+See the [Figure 7 guide](REPRODUCIBILITY.md) for installation, exact inputs,
+output files, a non-destructive test run and the final review checklist.
+
+## Current boundaries
+
+- The revised Green/Target comparison uses matched **realized added-canopy
+  area**, not equal financial cost or equal numbers of physical trees. The
+  [scenario guide](code/lc_scenarios/README.md) defines eligible classes,
+  provenance and the equal-budget validation.
+- Figure 4 combines citywide energy, area-weighted modelled heavy-work
+  capacity and population-allocated mortality estimates. The
+  [Figure 4 methods](code/post_processing_layers/FIGURE4_METHODS.md) define
+  these estimands and the borough sensitivity.
+- Figure 6 is exploratory until its spatial-inference review is complete.
+  Figure 7 is the current paired equity workflow. See the
+  [Figures 6–7 review](code/health_assessment/FIGURES6_7_REVIEW.md) and
+  [manuscript brief](docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md).
+- Some historical notebooks and Windows launchers retain machine-specific
+  paths. Start new production runs from the [workflow guide](code/workflows/README.md)
+  and its versioned configuration, not from an archived launcher.
+
+## Reuse and contributions
+
+Keep run configurations, input checksums, source versions and figure-source
+tables with any revised analysis. Do not commit credentials or restricted
+source rasters. Report the scenario, data snapshot and output affected when
+opening a GitHub issue or proposing a change.
+
+The repository [`LICENSE`](LICENSE) does not, by itself, grant reuse rights to
+third-party datasets or derived products with separate source terms. Review
+the [data licence and redistribution record](DATA_LICENCE_AND_REDISTRIBUTION.md)
+before releasing or reusing data and figures.

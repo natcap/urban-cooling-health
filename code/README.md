@@ -7,14 +7,17 @@ other folders contain reusable pipeline components and historical analyses.
 
 | Task | Use this file |
 |---|---|
-| Complete UCM, energy and productivity workflow | `workflows/run_ucm_pipeline.py` |
-| UCM scenarios only | `Urban_Cooling_Modeling_Runs/run_ucm_scenarios.py` |
-| Health scenario batch | `health_assessment/run_health_scenario_set.py` |
-| Figure 4 citywide co-benefits | `invest_result_zonal_viz_2_energy.Rmd`, `invest_result_zonal_viz_3_pd_NEW.Rmd`, `health_assessment/health-modeling-output-plot-city.Rmd`; final assembly: `post_processing_layers/plot_figure4_citywide.R` |
-| Figure 5 borough co-benefit maps | `viz-es-change-due-to-lc.Rmd`; batch builder: `post_processing_layers/plot_figure5_borough_cobenefits.R` |
-| Figures 6–7 review gates | `health_assessment/FIGURES6_7_REVIEW.md` |
-| Figure 6 exploratory analysis | `equity-health.Rmd` — not final until review gates are complete |
-| Figure 7 | `run-fig7.R` |
+| Complete UCM, energy and productivity workflow | [`workflows/run_ucm_pipeline.py`](workflows/run_ucm_pipeline.py) |
+| UCM scenarios only | [`Urban_Cooling_Modeling_Runs/run_ucm_scenarios.py`](Urban_Cooling_Modeling_Runs/run_ucm_scenarios.py) |
+| Health scenario batch | [`health_assessment/run_health_scenario_set.py`](health_assessment/run_health_scenario_set.py) |
+| Figure 1 climate context | [`gcm-data-clip-stats-viz.Rmd`](gcm-data-clip-stats-viz.Rmd) |
+| Figure 2 temperature/canopy equity | [`equity-temp-tcc.Rmd`](equity-temp-tcc.Rmd); temperature input still requires repair per the [TODO](../TODO.md) |
+| Figure 3 temperature results | [`invest_result_zonal_viz_1_temp.Rmd`](invest_result_zonal_viz_1_temp.Rmd) |
+| Figure 4 citywide co-benefits | [`invest_result_zonal_viz_2_energy.Rmd`](invest_result_zonal_viz_2_energy.Rmd), [`invest_result_zonal_viz_3_pd_NEW.Rmd`](invest_result_zonal_viz_3_pd_NEW.Rmd), [`health-modeling-output-plot-city.Rmd`](health_assessment/health-modeling-output-plot-city.Rmd); final assembly: [`plot_figure4_citywide.R`](post_processing_layers/plot_figure4_citywide.R) |
+| Figure 5 borough co-benefit maps | [`viz-es-change-due-to-lc.Rmd`](viz-es-change-due-to-lc.Rmd); batch builder: [`plot_figure5_borough_cobenefits.R`](post_processing_layers/plot_figure5_borough_cobenefits.R) |
+| Figure 6 exploratory analysis | [`equity-health.Rmd`](equity-health.Rmd) — not final until the [review gates](health_assessment/FIGURES6_7_REVIEW.md) are complete |
+| Figure 7 paired equity comparison | [`run-fig7.R`](run-fig7.R); follow the [Figure 7 guide](../REPRODUCIBILITY.md) |
+| Vulnerability indicator preparation | [`socio-economic-data.Rmd`](socio-economic-data.Rmd) |
 
 ## Shared R notebook setup
 

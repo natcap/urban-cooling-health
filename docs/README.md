@@ -1,15 +1,20 @@
 # Project documentation index
 
-Start with the repository [README](../README.md) to understand and run the
-project. This index groups supporting decisions and planning notes by purpose.
+Start with the repository [README](../README.md) for orientation. This index
+points to one primary document for each workflow or decision; detailed
+procedures are not repeated here.
 
 ## Current work
 
-- [Project TODO](../TODO.md): prioritized actions and missing inputs.
+- [Project TODO](../TODO.md): live priorities at the top; the completed
+  model-rebuild ledger below is retained as historical evidence, not as a
+  second method guide.
+- [Full workflow map](WORKFLOW.md): ordered source-to-figure stages and links
+  to the authoritative procedures.
 - [Manuscript revision brief](manuscript/MANUSCRIPT_REVISION_BRIEF.md): recent
   changes, review materials, deferred questions and submission steps.
-- [Figure 7 reproduction guide](../REPRODUCIBILITY.md): exact inputs and
-  commands for the current equity analysis.
+- [Figure 7 reproduction guide](../REPRODUCIBILITY.md): standalone procedure
+  using tracked derived inputs.
 - [Code guide](../code/README.md): canonical scripts and workflow entry points.
 - [Data directory guide](../data/README.md): local data roles, preservation,
   tracking boundaries and the remaining inventory work.
