@@ -14,6 +14,7 @@ library(here)
 here()
 knitr::opts_knit$set(root.dir = here::here())
 source(here('code', 'func_packages.R'))
+source(here('code', 'figure2_input_checks.R'))
 
 library(sf)
 
@@ -86,6 +87,10 @@ d_temp <- temp_change_group %>%
     'temp_future' = 'mean', 
     'temp_change' = 'mean_diff_avg'
   )
+# Select before percentile ranks/SVI so other scenarios cannot duplicate areas.
+d_temp <- select_figure2_temperature(d_temp, scenario = "ssp370", year = yr)
+validate_figure2_zonal(d_temp, aoi_lsoa$GSS_CODE, "geoid", "temp_change")
+validate_figure2_zonal(d_temp, aoi_lsoa$GSS_CODE, "geoid", "temp_future")
 ```
 
 
@@ -94,17 +99,14 @@ d_temp <- temp_change_group %>%
 
 
 ```{r}
+# Canonical four-theme score, from the same author-prepared layer as Figures 6/7.
+canonical <- st_read(here("data", "derived", "fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg"),
+                     quiet = TRUE) %>% st_drop_geometry()
+idx <- match(d_temp$geoid, as.character(canonical$id))
+stopifnot(!anyNA(idx), !anyDuplicated(canonical$id),
+          all(d_temp$Neighborhood_name == canonical$Neighborhood_name[idx]))
 df_temp <- d_temp %>%
-  mutate(across(
-    all_of(metrics),
-    ~ percent_rank(.x),
-    .names = "{.col}_pct"
-  )) %>%
-  rowwise() %>%
-  mutate(
-    SVI = mean(c_across(ends_with("_pct")), na.rm = TRUE)
-  ) %>%
-  ungroup() %>%
+  mutate(SVI = canonical$overall_score[idx]) %>%
   
   # select(-ends_with("_q")) %>%
   select(-any_of(c("mean_Social","mean_Household","mean_Racial","mean_Housing"))) %>%  
@@ -218,8 +220,9 @@ if (!exists("df_svi") || !yi %in% names(df_svi) ||
     sum(is.finite(df_svi[[yi]])) == 0) {
   stop(
     "Figure 2 input has no finite values for ", yi, ". ",
-    "For temperature, regenerate data/temp_svi.RDS at LSOA resolution with ",
-    "code/gcm-data-clip-stats-viz.Rmd; the current cached file contains only NA values."
+    "For temperature, check data/temp_svi.RDS and rebuild it from the LSOA ",
+    "July 2021 CHELSA and 2041-2060 WorldClim/GCM zonal CSVs if needed. ",
+    "See code/README.md."
   )
 }
 ```

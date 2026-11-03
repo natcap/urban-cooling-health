@@ -1,0 +1,21 @@
+# Run from repository root: Rscript code/tests/test_figure2_input_checks.R
+source("code/figure2_input_checks.R")
+rejects <- function(expr) stopifnot(inherits(tryCatch({force(expr); NULL}, error = identity), "error"))
+ids <- c("1", "2", "1674")
+d <- data.frame(borough = ids, mean = c(22, 23, NA_real_))
+validate_figure2_zonal(d, ids)
+rejects(validate_figure2_zonal(d[-1, ], ids))
+rejects(validate_figure2_zonal(rbind(d, d[1, ]), ids))
+bad <- d; bad$mean[1] <- NA_real_
+rejects(validate_figure2_zonal(bad, ids))
+rejects(validate_figure2_zonal(d["mean"], ids))
+meta <- data.frame(model = c("ACCESS-CM2", "IPSL-CM6A-LR", "MRI-ESM2-0"),
+                   scenario = "ssp370", period = "2041-2060")
+validate_figure2_models(meta)
+rejects(validate_figure2_models(meta[-1, ]))
+rejects(validate_figure2_models(rbind(meta, meta[1, ])))
+cache <- data.frame(geoid = rep(ids, 2), scenario = rep(c("ssp370", "ssp585"), each = 3), year = 2050)
+stopifnot(nrow(select_figure2_temperature(cache)) == 3)
+rejects(select_figure2_temperature(cache, year = 2070))
+rejects(select_figure2_temperature(rbind(cache, cache[1, ])))
+cat("Figure 2 input regression checks passed\n")
