@@ -13,6 +13,11 @@ docs/methods/*
 docs/manuscript/*
 !docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md
 !docs/manuscript/SVI_SPATIAL_RESULTS.md
+# Rendered report illustrations only; no raster inputs or numerical exports.
+!docs/manuscript/svi_quintile_transitions.png
+!docs/manuscript/figure6_spatial_contrasts.png
+!docs/manuscript/figure6_diagnostic-0[1-9].png
+!docs/manuscript/figure6_diagnostic-10.png
 
 
 # Ignore all figures

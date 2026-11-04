@@ -1,6 +1,6 @@
 # Data licence and redistribution review
 
-Reviewed: 1 November 2026 (source terms and local provenance rechecked)
+Reviewed: 4 November 2026 (rendered-report scope clarified; other provenance review dated 1 November)
 
 This review distinguishes public source data, derived project outputs and
 large external inputs that are intentionally excluded from Git. It is a
@@ -17,7 +17,7 @@ reproducibility record, not legal advice.
   acknowledgement. It prohibits putting the source Data on an internet site.
   Access to non-substitute Derived Products and Services must be restricted to
   non-commercial use. Keep raw/clipped LCM, scenario and UCM rasters out of
-  Git. Do **not** infer that the current public CSV/GPKG/figure release is
+  Git. Do **not** infer that the current public CSV/GPKG release is
   cleared by the repository's code licence alone; obtain the specific
   written determination below before adding more machine-readable outputs or
   declaring the public-release gate closed.
@@ -34,6 +34,32 @@ reproducibility record, not legal advice.
 No licensing contact or public-release approval was made during this review.
 Existing Git history may already contain derived outputs; this review does
 not retrospectively clear those files or erase them.
+
+## Rendered report figures: review 4 November 2026
+
+The prior blanket hold on the SVI report's illustrations was too broad.
+The [applicable licence](https://eidc.ac.uk/licences/lcm-raster/plain), linked
+by the GB 10 m dataset record, explicitly permits non-commercial/personal-use
+publications and reports on third-party internet sites (clause 3.3).
+Clauses 4.1 and 4.3 prohibit distribution of the Data itself; clause 4.4
+expressly preserves the exceptions in 3.3–3.5. Clauses 5.2 and 6 require
+acknowledgement and citation.
+
+Our assessment is that `docs/manuscript/SVI_SPATIAL_RESULTS.md` and its
+12 PNG illustrations constitute such a research report: a vulnerability
+quintile-count chart, a model-contrast chart, five fitted-curve plots and five
+LSOA model-residual maps. They do not reproduce the source land-cover raster
+or allow recovery of its pixel classifications. The SVI-only count chart
+does not use UKCEH land-cover values at all. Release these rendered report
+illustrations with the attribution and reuse notice in the report; do not
+apply the repository's GPL code licence to third-party rights. This is a
+documented reading of the standard terms, not written UKCEH approval or legal
+advice. No separate written approval prerequisite is stated for clause 3.3.
+
+This narrow release does not clear CSV/GPKG derivatives, source/clipped LCM,
+scenario or UCM rasters, commercial services, or a general open-data licence.
+Keep the machine-readable derivative question below open. Standalone reuse
+must retain the report's source credits and respect the applicable terms.
 
 ## Figure 7 and health workflow
 
@@ -78,7 +104,7 @@ question remains because the repository's public code licence and open GitHub
 distribution may permit uses beyond the UKCEH derived-product conditions:
 
 > May the project's small machine-readable LSOA/borough/city aggregate tables,
-> geospatial derivative files and rendered publication figures be distributed
+> geospatial derivative files be distributed
 > through a public GitHub code repository under a separate non-commercial
 > UKCEH-derived-output notice, while all source/clipped LCM, scenario and UCM
 > rasters are withheld? Which specific output types require a separate licence
@@ -87,7 +113,7 @@ distribution may permit uses beyond the UKCEH derived-product conditions:
 The author or data steward can send this question, the LCM2023 GB 10 m DOI,
 the repository URL and representative output schemas to the UKCEH Data
 Licensing team at `spatialdata@ceh.ac.uk` (listed in the licence). Record the
-reply and any conditions here before changing the release classification.
+reply and any conditions here before changing the machine-readable release classification.
 
 The repository currently does **not** track the source/clipped LCM2023 raster,
 the Target/Green scenario rasters or the UCM temperature rasters. Keep that
@@ -127,6 +153,7 @@ redistribution audit cannot close until their sources and terms are recorded:
 2. Include modification wording for transformed WorldPop, GLA and ONS data.
 3. Use the GLA source page's 2015 National Statistics and OS map credits for
    the exact LSOA11 archive matched to the Figure 7 manifest.
-4. Record the UKCEH determination and exact acknowledgement text.
+4. For rendered report figures, apply the review above and the required
+   acknowledgement; for machine-readable derivatives, record UKCEH's determination.
 5. Recheck the Git-tracked data inventory before a public release; do not infer
    that an output is unrestricted merely because it is highly processed.

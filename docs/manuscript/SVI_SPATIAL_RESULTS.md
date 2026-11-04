@@ -1,11 +1,38 @@
 # Four-dimension SVI and Figure 6 spatial sensitivity
 
-The inline graphics are local workflow outputs, not distributed in Git.
+The 12 inline graphics are versioned illustrations of this research report.
 Rebuild the diagnostic panels with `Rscript code/run_figure6_spatial.R`, then
 the two overview charts with `python code/plot_svi_spatial_report.py`. See the
 [release review](../../DATA_LICENCE_AND_REDISTRIBUTION.md). Figure 6 rates
 are reported per million residents (ten times the original per-100,000
 reporting scale); Figure 4 totals and Figure 7 classifications are unchanged.
+
+## Figure attribution and reuse
+
+These rendered statistical summaries and residual maps are shared as part of
+a non-commercial research report, not as source land-cover data or downloadable
+geospatial datasets. See the [release decision](../../DATA_LICENCE_AND_REDISTRIBUTION.md#rendered-report-figures-review-4-november-2026).
+The repository's GPL code licence does not grant rights to third-party data
+or unrestricted reuse of these illustrations. Retain this attribution when
+sharing the report or its figures; no commercial-use rights are granted here.
+
+Land-cover input to the Figure 6 modelling: Morton, R.D.; Marston, C.G.;
+O'Neil, A.W.; Rowland, C.S. (2024). *Land Cover Map 2023 (10m classified
+pixels, GB).* NERC EDS Environmental Information Data Centre.
+[doi:10.5285/7727ce7d-531e-4d77-b756-5cc59ff016bd](https://doi.org/10.5285/7727ce7d-531e-4d77-b756-5cc59ff016bd).
+Data owned by UK Centre for Ecology & Hydrology.
+© Database Right/Copyright UKCEH.
+
+Vulnerability data: Greater London Authority and Bloomberg Associates,
+Climate Risk Mapping 2024 (OGL v3), rescored for this analysis. Mortality:
+Source: Office for National Statistics (OGL), modelled through the health
+workflow. Population: Bondarenko et al. (2025), UK 2021 population counts,
+R2025A v1, [doi:10.5258/SOTON/WP00839](https://doi.org/10.5258/SOTON/WP00839)
+(CC BY 4.0), reprojected and aggregated. Residual-map boundaries: Contains
+National Statistics data © Crown copyright and database right [2015].
+Contains Ordnance Survey data © Crown copyright and database right [2015].
+Source links and transformation provenance are in the
+[derived-data guide](../../data/derived/README.md).
 
 ## Which score changed?
 

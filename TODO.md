@@ -510,8 +510,10 @@ scenario version, units and values.
   remaining questions in `DATA_LICENCE_AND_REDISTRIBUTION.md`.
 - [x] Identify the UKCEH LCM2023 GB 10 m dataset, DOI and Land Cover Map Raster
   licence from the supplied catalogue record.
-- [ ] Obtain UKCEH confirmation that small aggregate tables and rendered
-  figures may be distributed in a public repository under a separate
+- [x] Review and release the SVI report's rendered illustrations under the
+  publication/report provision; see `DATA_LICENCE_AND_REDISTRIBUTION.md`.
+- [ ] Obtain UKCEH confirmation that small aggregate tables and geospatial
+  derivatives may be distributed in a public repository under a separate
   non-commercial derived-output notice; continue withholding every LCM-derived
   raster.
 - [x] Record the likely GLA London Wards 2018 publisher, download page,
