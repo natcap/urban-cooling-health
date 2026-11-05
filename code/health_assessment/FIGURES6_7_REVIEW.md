@@ -4,18 +4,26 @@
 
 | Figure | Current entry point | Status | Use in final manuscript now? |
 |---|---|---|---|
-| 6 | `../equity-health.Rmd` | Official-code/per-100,000 analysis and trimming sensitivity implemented; spatial inference unresolved | No; complete the spatial review gate below first |
+| 6 | `../equity-health.Rmd` + `../run_figure6_spatial.R` | Per-million reporting and spatial sensitivity completed; residual dependence remains | Descriptive reporting after author review, not causal or fully spatially corrected inference |
 | 7 | `../run-fig7.R` → `../equity-health-fig7-production.Rmd` | Reproducible paired Green30–Target30 workflow | Yes, after inserting the latest revised-equal-area outputs and caption |
 
 The older Figure 7 sections in `../equity-health.Rmd` are disabled audit code.
 They must not be used to regenerate the manuscript figure.
+
+Updated 5 November 2026. Two intercept-inclusive Figure 6 allocation candidates
+and their proposed legends/Results are in the
+[review pack](../../docs/manuscript/FIGURE6_REVIEW_DRAFTS.md). The current author decisions and remaining actions
+are maintained once in the [manuscript checklist](../../TODO.md#manuscript-review-checklist--figures-2-6-and-7).
+Numerical spatial results and interpretation are in the
+[illustrated report](../../docs/manuscript/SVI_SPATIAL_RESULTS.md).
 
 ## Figure 6 review
 
 ### What the current notebook does
 
 The current primary Figure 6 section selects Green30 all-cause deaths averted
-per 100,000 residents, joins health, vulnerability and fixed-2021 population
+per million residents for reporting (fits retain the original per-100,000
+scale), joins health, vulnerability and fixed-2021 population
 one-to-one by `LSOA11CD`, and fits separate marginal GAMs to all valid LSOAs.
 It saves 1st–99th percentile trimmed fits as a labelled sensitivity, curve
 data, P10–P90 contrasts, model diagnostics and residual Moran's I. The saved
@@ -30,7 +38,7 @@ two-sided p = 0.001), so conventional smooth p-values are not final inference.
    `lsoa_population_2021_by_lsoa11cd.csv`, joined one-to-one by `LSOA11CD`.
    Preserve these checks in any production replacement.
 2. **Keep the pre-specified estimand.** The primary response is all-cause
-   deaths averted per 100,000 residents using fixed 2021 population. Add an
+   deaths averted per million residents using fixed 2021 population. Add an
    absolute-deaths sensitivity only if it answers a distinct manuscript
    question; raw LSOA totals are strongly influenced by population size.
 3. **Keep the scenario question focused.** Use Green30 for the primary Figure 6
@@ -38,11 +46,11 @@ two-sided p = 0.001), so conventional smooth p-values are not final inference.
    same analysis for Target30 as an Extended Data sensitivity. Do not put all
    six scenarios into the main curve grid; that would obscure the
    vulnerability relationship and duplicate Figures 4–5.
-4. **Address spatial dependence.** Residual autocorrelation is already shown
-   to be substantial. Pre-specify a spatial smooth, spatial-block resampling
-   or another justified approach; report remaining residual dependence and
-   the change in curves/effect sizes. Until validated, label current bands as
-   model-based conditional intervals and avoid causal language.
+4. **Review the completed spatial sensitivity.** Spatial GAMs at k = 50,
+   100 and 200 are now fitted and documented in the linked report. Residual
+   dependence remains substantial; preserve the distinction between citywide
+   patterns and adjusted associations. Label bands as conditional model
+   intervals and avoid causal or fully corrected significance claims.
 5. **Retain trimming as sensitivity.** The primary fit now uses all valid
    observations and the 1st–99th percentile fit is labelled separately.
    Preserve retained `n` and observed predictor support in final exports.
@@ -55,20 +63,21 @@ two-sided p = 0.001), so conventional smooth p-values are not final inference.
    in temperature, mortality, population or the exposure-response function.
    State exactly which uncertainty is represented and avoid interpreting
    smooth-term p-values as causal evidence.
-8. **Finish reproducible outputs.** Current exports include PNG/PDF, curve
-   data, model diagnostics, input checksums and session information. Add SVG
-   if needed for the journal, seed random `k.check` diagnostics explicitly,
-   review low k-check p-values for age indicators, and record the final
-   spatial-model configuration and sensitivity outputs beside the figure.
+8. **Finish reproducible outputs.** Current candidate exports are PNG-only,
+   with curve data, model diagnostics, input checksums and session information.
+   Random `k.check` diagnostics now have an
+   explicit seed and spatial sensitivity outputs/configuration are saved.
+   Review low k-check p-values for age indicators before manuscript use.
 
 ### Unambiguous correction made in the exploratory code
 
-The notebook comment said that Figure 6 plotted a centered GAM term, but the
-code predicted the response scale. The code now explicitly requests
-`type = "terms"`, matching the zero-centred y-axis and caption. Extraction of
-the GAM test statistic was also corrected to select the scalar F or chi-square
-entry rather than the entire summary matrix. These repairs do not resolve the
-estimand or spatial-inference review gates above.
+The earlier caption described a centered effect while predictions included the
+intercept. An intermediate revision used centered terms. Following author
+review, the production chunks now use full response predictions with matching
+labels and intercept-inclusive uncertainty. The scalar F/chi-square extraction
+repair remains. Spatial-sensitivity plots still use centered contributions;
+these displays answer distinct presentation questions, as explained in the
+linked review pack. Neither display resolves residual spatial dependence.
 
 ## Figure 7 review
 

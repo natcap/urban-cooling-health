@@ -13,15 +13,30 @@ docs/methods/*
 docs/manuscript/*
 !docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md
 !docs/manuscript/SVI_SPATIAL_RESULTS.md
-# Rendered report illustrations only; no raster inputs or numerical exports.
-!docs/manuscript/svi_quintile_transitions.png
-!docs/manuscript/figure6_spatial_contrasts.png
-!docs/manuscript/figure6_diagnostic-0[1-9].png
-!docs/manuscript/figure6_diagnostic-10.png
+!docs/manuscript/FIGURE6_REVIEW_DRAFTS.md
+!docs/manuscript/V0_V1_HEALTH_AND_FIGURE6_CHANGES.md
 
 
 # Ignore all figures
 figures/*
+# Released SVI report illustrations only; numerical exports remain local.
+!figures/svi_spatial_report/
+figures/svi_spatial_report/*
+!figures/svi_spatial_report/svi_quintile_transitions.png
+!figures/figure6/
+figures/figure6/*
+!figures/figure6/spatial_sensitivity/
+figures/figure6/spatial_sensitivity/*
+!figures/figure6/spatial_sensitivity/figure6_spatial_contrasts.png
+!figures/figure6/spatial_sensitivity/figure6_diagnostic-0[1-9].png
+!figures/figure6/spatial_sensitivity/figure6_diagnostic-10.png
+!figures/figure6/manuscript/
+figures/figure6/manuscript/*
+!figures/figure6/manuscript/equity_health_All_cause_gam_Green30_20261105_10_per_million_population_full_prediction.png
+!figures/figure6/manuscript/equity_health_All_cause_gam_Green30_20261105_10_per_million_area_full_prediction.png
+!figures/figure6/allocation_normalization_comparison/
+figures/figure6/allocation_normalization_comparison/*
+!figures/figure6/allocation_normalization_comparison/*.png
 
 # Allow access to this folder
 !figures/equity_map_biscale/

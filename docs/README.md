@@ -13,6 +13,19 @@ procedures are not repeated here.
   to the authoritative procedures.
 - [Manuscript revision brief](manuscript/MANUSCRIPT_REVISION_BRIEF.md): recent
   changes, review materials, deferred questions and submission steps.
+- [V0–V1 health and Figure 6 changes](manuscript/V0_V1_HEALTH_AND_FIGURE6_CHANGES.md):
+  health-input revisions, population normalization and prediction-display
+  decisions, distinguishing implemented changes from the agreed next update.
+- [Figure 6 candidate figures and draft text](manuscript/FIGURE6_REVIEW_DRAFTS.md):
+  both mortality-allocation versions, proposed legends and Results, suggested
+  supplementary selection and the Figure 7 consistency review.
+- [SVI and spatial sensitivity report](manuscript/SVI_SPATIAL_RESULTS.md):
+  authoritative interpretation and figure attribution. Its 12 rendered images
+  live in [`figures/figure6/spatial_sensitivity/`](../figures/figure6/spatial_sensitivity/)
+  and [`figures/svi_spatial_report/`](../figures/svi_spatial_report/),
+  separate from narrative documents and numerical analysis outputs. The local
+  offline HTML is a generated, Git-ignored report export; edit the Markdown,
+  not the HTML, and regenerate it after changes.
 - [Figure 7 reproduction guide](../REPRODUCIBILITY.md): standalone procedure
   using tracked derived inputs.
 - [Code guide](../code/README.md): canonical scripts and workflow entry points.

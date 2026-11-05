@@ -15,7 +15,7 @@ other folders contain reusable pipeline components and historical analyses.
 | Figure 3 temperature results | [`invest_result_zonal_viz_1_temp.Rmd`](invest_result_zonal_viz_1_temp.Rmd) |
 | Figure 4 citywide co-benefits | [`invest_result_zonal_viz_2_energy.Rmd`](invest_result_zonal_viz_2_energy.Rmd), [`invest_result_zonal_viz_3_pd_NEW.Rmd`](invest_result_zonal_viz_3_pd_NEW.Rmd), [`health-modeling-output-plot-city.Rmd`](health_assessment/health-modeling-output-plot-city.Rmd); final assembly: [`plot_figure4_citywide.R`](post_processing_layers/plot_figure4_citywide.R) |
 | Figure 5 borough co-benefit maps | [`viz-es-change-due-to-lc.Rmd`](viz-es-change-due-to-lc.Rmd); batch builder: [`plot_figure5_borough_cobenefits.R`](post_processing_layers/plot_figure5_borough_cobenefits.R) |
-| Figure 6 exploratory analysis | [`equity-health.Rmd`](equity-health.Rmd) — not final until the [review gates](health_assessment/FIGURES6_7_REVIEW.md) are complete |
+| Figure 6 candidate figures | [`run_figure6_candidates.R`](run_figure6_candidates.R) runs the canonical sections of [`equity-health.Rmd`](equity-health.Rmd); author selection remains in the [review gates](health_assessment/FIGURES6_7_REVIEW.md) |
 | Figure 7 paired equity comparison | [`run-fig7.R`](run-fig7.R); follow the [Figure 7 guide](../REPRODUCIBILITY.md) |
 | Vulnerability indicator preparation | [`socio-economic-data.Rmd`](socio-economic-data.Rmd) |
 
@@ -29,11 +29,61 @@ overrides. It defaults to borough summaries for Figure 1; select LSOA mode to
 rebuild the Figure 2 cache using the original baseline–future calculation:
 
 ```r
-Sys.setenv(FIGURE2_CLIMATE_SPATIAL_UNIT = "lsoa")
-rmarkdown::render("code/gcm-data-clip-stats-viz.Rmd")
-Sys.setenv(FIGURE2_OUTCOME = "temp_change")
+Sys.setenv(FIGURE2_OUTCOME = "temp_baseline") # Manuscript: July 2021, no SSP
 rmarkdown::render("code/equity-temp-tcc.Rmd")
+# Only rebuild the future cache if needed for the comparisons below:
+# Sys.setenv(FIGURE2_CLIMATE_SPATIAL_UNIT = "lsoa")
+# rmarkdown::render("code/gcm-data-clip-stats-viz.Rmd")
+Sys.setenv(FIGURE2_OUTCOME = "temp_future") # Comparison: SSP370, 2041–2060
+rmarkdown::render("code/equity-temp-tcc.Rmd")
+Sys.setenv(FIGURE2_OUTCOME = "temp_change") # Separate baseline-to-future contrast
+rmarkdown::render("code/equity-temp-tcc.Rmd")
+Sys.unsetenv("FIGURE2_OUTCOME") # Restore manuscript default
 ```
+
+The default is now `temp_baseline`, selected by the author on 4 November 2026.
+To assemble the manuscript's two-panel Figure 2, set `URBAN_COOLING_DATA_ROOT`
+and run `Rscript code/assemble_figure2.R` from the repository root. It rebuilds
+the baseline-temperature and tree-cover SVI panels through the same notebook,
+checks identical SVI memberships, and writes a 600-dpi PNG to
+`figures/figure2/manuscript/`. These generated outputs remain local-only.
+It reads the July 2021 CHELSA LSOA CSV directly and does not require the future
+temperature cache. All three temperature outcomes use the same canonical
+four-theme SVI and validated LSOA IDs. Baseline filenames use
+`equity_temp_baseline_baseline_2021_*`; future comparisons retain their existing
+names and are not overwritten. The inherited `scenario43` token in comparison
+filenames is not their climate scenario: these temperatures are from
+WorldClim/GCMs, not UCM scenario43. Future comparison selection is explicitly
+SSP370/2041–2060 (labelled 2050). The variables represent July maximum-temperature
+products, not annual mean temperatures or a single heatwave day's temperature.
+
+### Historical scenario/year selection audit
+
+The absence of an R-side filter does **not** establish historical pooling.
+In `gcm-data-clip-stats.ipynb`, the LSOA zonal-statistics cell (zero-based cell
+72 in the inspected notebook) sets `ssp_i = 'ssp370'` and
+`year_i = '2041-2060'` before processing. Its saved stdout lists only the
+ACCESS-CM2, IPSL-CM6A-LR and MRI-ESM2-0 files for that combination. The
+transferred directory contains exactly those three `lsoa_stats_*` future CSVs.
+The 18 `borough_stats_*` files cover two SSPs and three periods, but the
+historical LSOA reader used the `lsoa_stats_*` prefix and excluded them.
+
+The December 2025 upstream R code averaged models within area/scenario/period,
+then saved that future-only summary to `temp_svi.RDS`; the equity script did
+not subsequently filter scenario/year. Thus it would have pooled combinations
+if extra LSOA CSVs had been supplied, but the preserved execution evidence
+supports a single SSP370 mid-century LSOA case, **not** mixed SSPs/periods.
+The first equity commit `c3938ef` ended its outcome assignments with
+`temp_future`; `4e8f126` later selected `temp_change`. Both were future-based,
+not absolute 2021 temperature. No rationale for choosing SSP370 was recorded
+in those cells. The original successful manuscript cache/image has not been
+matched, so this audit does not certify every historical interactive run.
+The preserved pre-repair cache has only missing temperatures/metadata and
+cannot establish which valid run produced the manuscript image.
+
+The present explicit selection/duplicate checks prevent future pooling.
+Baseline, future and change figures answer different questions; do not use
+future/change statistics as evidence for the baseline manuscript panel.
 
 Inputs: `data/02_preprocess/chelsa02/clipped_london_stats/lsoa_stats_CHELSA_tasmax_07_2021_V.2.1_London.csv`
 and the three `lsoa_stats_wc2.1_30s_tmax_{ACCESS-CM2,IPSL-CM6A-LR,MRI-ESM2-0}_ssp370_2041-2060_London.csv`
@@ -132,3 +182,14 @@ archive.
 
 Do not copy a historical script to create another scenario-specific runner.
 Add the scenario to a configuration file or extend the shared component.
+
+## Figure 6 candidate review entry point
+
+Run `Rscript code/run_figure6_candidates.R YYYYMMDD` from the repository root
+to execute only the canonical Figure 6 model/plot chunks in `equity-health.Rmd`
+for population and controlled uniform-area allocation. The area input is
+prepared by `health_assessment/compare_figure6_allocation.py`; see the
+[review pack](../docs/manuscript/FIGURE6_REVIEW_DRAFTS.md) for output organization,
+draft text and the remaining author decision. Existing completed candidates
+are protected against replacement. No full notebook knit or health/UCM rerun
+is needed for these figure exports.

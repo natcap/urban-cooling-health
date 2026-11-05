@@ -1,10 +1,16 @@
 # London manuscript revision brief
 
-Original review: 13 October 2026. Repository status updated: 3 November 2026.
+Original review: 13 October 2026. Status pointers updated: 4 November 2026.
 Discussion window for the scientific recap: 13 September–13 October 2026.
 
 November follow-up: see the [SVI comparison and Figure 6 spatial analysis](SVI_SPATIAL_RESULTS.md)
-for the current status; spatial-model tasks listed in the October recap below are historical.
+for the current results; use the [Figure 2/6/7 review checklist](../../TODO.md#manuscript-review-checklist--figures-2-6-and-7)
+for remaining decisions. Spatial fitting and publication of the report's 12
+illustrations are complete; manuscript insertion is not.
+Figure 2 now uses July 2021 baseline temperature by author decision; future
+temperature and change remain comparison outputs. Historical selection
+evidence and the current reproduction instructions are maintained in the
+[Figure 2 guide](../../code/README.md#figure-2-temperature-input).
 
 The strongest manuscript framing remains a comparison of **where an equivalent amount of new canopy is allocated, who receives the health benefits, and which vulnerability groups lose relative benefit**. Figures 4–5, their common setup and the October Figure 2/6 statistical additions are committed revisions. The Figure 2 temperature input was recovered locally on 3 November; submission still depends on reviewing that panel, resolving Figure 6 spatial inference, and reconciling the manuscript with the revised outputs. Use the current [TODO](../../TODO.md) for priority and ownership; this brief preserves the October scientific recap.
 
@@ -20,15 +26,15 @@ This brief draws on the accessible **Nature Health-cowork**, **MS-edit**, and **
 | Manuscript framing and structure | Proposed a health-equity narrative, revised outline, title, abstract, Introduction framing, and cover-letter argument | Drafted in the September discussions; not inserted into the Word manuscript by this assistant. |
 | Health Methods | Drafted fixed-population design, population-weighted allocation, matched-climate comparison, equations and uncertainty description | Review before insertion, including the annual interpretation and applicability of exposure–response coefficients. |
 | Figure 2 statistics | Added n, medians/IQRs, Kruskal–Wallis statistics, effect sizes, BH adjustment, Dunn comparisons, outcome selection, and invalid-input checks | Committed as `2c9d7c2`. On 3 November the original LSOA climate CSVs were recovered, the temperature cache rebuilt (4,831/4,835 finite areas), and the temperature notebook completed; review the panel and spatial-inference caveat. |
-| Figure 6 statistics | Official-code joins; deaths averted per 100,000; all valid LSOAs as primary sample; trimmed sensitivity; GAM diagnostics, P10–P90 contrasts and residual Moran’s I | Committed as `2c9d7c2`. Descriptive results available; spatial inference remains unfinished. |
+| Figure 6 statistics | Official-code joins; all valid LSOAs; trimmed sensitivity; GAM diagnostics and percentile contrasts; now reported per million | Spatial sensitivity completed in November; see the linked report. Residual dependence remains, so retain descriptive interpretation. |
 | Imported chat context | Presentation framing and co-author credit preserved locally in `docs/conversation-imports/LONDON_MS_EDIT_CONTEXT.md` | Imported October 8. This is a context note, not a new manuscript revision. |
 
-At the 1 November repository check, local `main` and the locally cached
+Historical snapshot (not current Git status): at the 1 November repository check, local `main` and the locally cached
 `origin/main` both point to `8eb215d`; the three October topic commits are
 `9ccc90a`, `2c9d7c2` and `8eb215d`. No remote refresh was performed for this
-status note. Seven modified binary RDS files remain separate local work.
-Generated Figure 2/6 files are ignored by Git, so their local presence does
-not establish publication or archival availability.
+status note. The seven binary modifications noted then are no longer present
+at the 4 November check. Most generated outputs remain local-only; the 12
+illustrated spatial-report PNGs are now explicitly versioned with attribution.
 
 ## Materials to open first
 
@@ -39,9 +45,9 @@ The external files in items 2, 3 and 7 are under
 1. The last supplied manuscript is `London urban cooling-ms-0806.docx` in the author's OneDrive submission folder. Its file modification date is September 16; this recap does not re-audit its current text. Treat the September language findings as a checklist to verify, since you may already have corrected them.
 2. Open `summary/figure4/figure4_citywide_cobenefits.png`, its source table `summary/figure4/figure4_citywide_cobenefits_data.csv`, and [aggregation and caption guidance](../../code/post_processing_layers/FIGURE4_METHODS.md).
 3. Open `summary/figure5/figure5_borough_cobenefits.png` and `summary/figure4/extended_data_citywide_vs_borough.png`.
-4. [Figure 6 descriptive curves](../../figures/figure6_statistical_reporting/figure6_health_equity_gam.png), [model reporting](../../figures/figure6_statistical_reporting/figure6_gam_model_reporting.csv), [P10–P90 contrasts](../../figures/figure6_statistical_reporting/figure6_gam_p10_p90_contrasts.csv), and [spatial diagnostics](../../figures/figure6_statistical_reporting/figure6_gam_residual_morans_i.csv).
+4. [Figure 6 candidate review pack](FIGURE6_REVIEW_DRAFTS.md): current PNGs, legends, Results and links to allocation-specific reporting. Use this pack rather than older centred-curve exports for the main figure decision.
 5. [Figure 7 maps](../../figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png), [paired comparison panels](../../figures/equity_map_biscale_revised_equal_area/fig7_cd_upgraded.png), and [headline results](../../figures/equity_map_biscale_revised_equal_area/fig7_quantitative_headline_results.csv). These provide the central distributional result.
-6. [Figure 2 tree-cover statistics](../../figures/figure2_statistical_reporting/figure2_TCC_kruskal_wallis.csv) and [revised notebook](../../code/equity-temp-tcc.Rmd). The temperature results still need recovery.
+6. [Figure 2 tree-cover statistics](../../figures/figure2_statistical_reporting/figure2_TCC_kruskal_wallis.csv) and [revised notebook](../../code/equity-temp-tcc.Rmd). Temperature results have been recovered; review the regenerated panels.
 7. Open `urban_cooling_original_vs_revised_interactive_comparison_report_offline.html`. This inherited September 11 report explains original/revised workflows, canopy area/pixel/tree-equivalent comparisons, and alternative aggregation methods. Its existence was checked during the October 13 review; it was not rebuilt or visually revalidated in that recap.
 
 Use [code/README.md](../../code/README.md) for canonical scripts,
@@ -50,7 +56,8 @@ Use [code/README.md](../../code/README.md) for canonical scripts,
 for provenance, and the refreshed [TODO](../../TODO.md) and
 [Figures 6–7 review](../../code/health_assessment/FIGURES6_7_REVIEW.md) for
 current action status. Official-code joins and trimming changes have been
-implemented, but the spatial adjustment has not.
+implemented, as has the spatial sensitivity analysis. Author interpretation
+and manuscript reconciliation remain outstanding.
 
 ## Findings to carry into the manuscript
 
@@ -113,13 +120,12 @@ Leave the Data Availability wording as accepted for now, per your instruction. D
 
 1. **Review the recovered Figure 2 panel.** The October all-NA cache came from running the borough default before an LSOA join. The original LSOA CHELSA and WorldClim/GCM zonal CSVs were found under `data/02_preprocess/` on 3 November; their `borough` field actually holds numeric LSOA IDs. The original baseline–future calculation was retained, the cache rebuilt with 4,831/4,835 finite LSOAs, and the temperature notebook completed. See the [code guide](../../code/README.md#figure-2-temperature-input) for exact paths and rerun instructions. Four source-data gaps remain. Conventional rank-test p-values for both temperature and tree cover assume independence and should not be presented as spatially corrected evidence.
 2. **Figure 6 spatial sensitivity.** Completed; use the [illustrated report](SVI_SPATIAL_RESULTS.md) for the analysis and its interpretation.
-3. **Make Figure 6 reporting fully reproducible.** Review low k-check p-values for age indicators; seed the random k-check diagnostic explicitly; document the Gaussian-ML AIC comparison as a sensitivity distinct from the primary scaled-t GAM. Keep conditional smooth bands separate from exposure–response uncertainty. The current outputs are exploratory, despite the notebook section's “production” label.
+3. **Review Figure 6 diagnostics and interpretation.** The diagnostic seed and standalone spatial runner are implemented. Review age-indicator k diagnostics and keep the Gaussian-ML AIC comparison distinct from the primary scaled-t GAM. Follow the current TODO checklist for decisions; conditional smooth bands are not exposure–response uncertainty.
 4. **Complete figure/text reconciliation.** Build one table mapping each Abstract/Results/legend number to its exact CSV row, unit, point-estimate convention and uncertainty type. Include scenario counts, canopy budgets, Figure 7 denominators and the age-75+ trade-off.
-5. **Prepare the reviewed release.** The TODO and Figures 6–7 review notes were
-   refreshed on 1 November. Inspect the remaining local diffs, then group any
-   approved scientific and documentation changes into a small number of
-   commits. Archive exact code/configuration, figure-source data and permitted
-   inputs. This status update itself made no commit or push.
+5. **Prepare the submission archive.** The illustrated report is published
+   (commit `a39a1f6`); archive the final approved figure versions, configuration
+   and permitted supporting data after the manuscript review. Machine-readable
+   derivative permissions remain a separate task in the release review.
 
 ## Items deliberately deferred
 
@@ -127,7 +133,11 @@ Keep the detailed Target provenance requests on hold: road extract/date and reta
 
 Retain the future work-capacity improvement separately from this revision: pilot worker-exposure weighting for construction, using workplace employment, occupational intensity/outdoor shares, hourly WBGT, and worker-hours. Test work-rest/adaptation assumptions and validate against observed disruption before expanding or monetizing. The implementation instructions are preserved in [the future work-capacity method](../methods/FUTURE_WORK_CAPACITY_METHOD.md).
 
-Public-release provenance and permissions, including UKCEH-derived products and weather extracts, remain in [DATA_LICENCE_AND_REDISTRIBUTION.md](../../DATA_LICENCE_AND_REDISTRIBUTION.md). They need resolution before the affected materials are distributed.
+Public-release provenance and permissions are maintained in
+[DATA_LICENCE_AND_REDISTRIBUTION.md](../../DATA_LICENCE_AND_REDISTRIBUTION.md).
+The rendered report figures have been released under the report provision;
+machine-readable derivatives and weather-extract provenance remain separate
+open tasks.
 
 ## Your next working session
 

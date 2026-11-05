@@ -1,11 +1,19 @@
 # Four-dimension SVI and Figure 6 spatial sensitivity
 
 The 12 inline graphics are versioned illustrations of this research report.
+Figure 6 diagnostics live in `figures/figure6/spatial_sensitivity/`; the SVI
+quintile chart lives in `figures/svi_spatial_report/`. Each is stored once,
+with links here rather than copies beside the text.
 Rebuild the diagnostic panels with `Rscript code/run_figure6_spatial.R`, then
 the two overview charts with `python code/plot_svi_spatial_report.py`. See the
 [release review](../../DATA_LICENCE_AND_REDISTRIBUTION.md). Figure 6 rates
 are reported per million residents (ten times the original per-100,000
 reporting scale); Figure 4 totals and Figure 7 classifications are unchanged.
+
+The [current Figure 6 candidates](FIGURE6_REVIEW_DRAFTS.md) include the intercept
+and show predicted benefits. This spatial-sensitivity report retains centered
+vulnerability contributions; its adjusted results apply to population-weighted
+mortality allocation, not the separate uniform-area candidate.
 
 ## Figure attribution and reuse
 
@@ -60,7 +68,7 @@ farther. The highest quintile retained 828 of 967 members. The earlier 2,200
 figure compared against a hypothetical four-*indicator* score, not the
 approved four-*theme* score.
 
-![LSOA counts by former and four-theme SVI quintile](svi_quintile_transitions.png)
+![LSOA counts by former and four-theme SVI quintile](../../figures/svi_spatial_report/svi_quintile_transitions.png)
 
 Read across a row to see where each former quintile went. The diagonal counts
 areas that stayed in the same quintile; dashes mean zero. For example, 828
@@ -70,6 +78,13 @@ former Q5 areas stayed in Q5 and 139 moved to Q4.
 |---|---:|---:|
 | July temperature change (°C) | 3.92 → 3.99 | 3.86 → 4.00 |
 | Tree cover (%) | 17.99 → 13.63 | 17.94 → 14.28 |
+
+The temperature row above audits the **future-minus-2021 comparison**, not
+the manuscript's baseline-temperature panel. On 4 November the author
+selected July 2021 absolute temperature for Figure 2; see the
+[Figure 2 source/selection guide](../../code/README.md#figure-2-temperature-input)
+and baseline summary in the current TODO checklist. Future temperature and
+temperature change remain separate comparison outputs.
 
 The high-versus-low direction is unchanged; neither comparison establishes a
 strict dose-response relation or an individual-level effect. The four other
@@ -147,7 +162,7 @@ Contrast = predicted deaths averted per million residents at vulnerability P90 m
 P10. Negative means less benefit at high vulnerability. Intervals at k=100
 are nominal, model-conditional intervals, **not** spatially validated tests.
 
-![Citywide and spatially adjusted Green30 contrasts for five vulnerability indicators](figure6_spatial_contrasts.png)
+![Citywide and spatially adjusted Green30 contrasts for five vulnerability indicators](../../figures/figure6/spatial_sensitivity/figure6_spatial_contrasts.png)
 
 Each line connects two estimates for the **same** indicator and neighbourhoods,
 not a change in benefit over time. Left of zero means less modelled benefit
@@ -208,7 +223,7 @@ The unadjusted curve bends sharply. The adjusted curves are flatter; the P90-min
 
 | Vulnerability curves | Residual maps |
 |---|---|
-| [![Income deprivation: citywide and adjusted curves](figure6_diagnostic-01.png)](figure6_diagnostic-01.png) | [![Income deprivation: residual maps across four settings](figure6_diagnostic-02.png)](figure6_diagnostic-02.png) |
+| [![Income deprivation: citywide and adjusted curves](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-01.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-01.png) | [![Income deprivation: residual maps across four settings](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-02.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-02.png) |
 
 ### Share aged under five
 
@@ -216,7 +231,7 @@ The unadjusted contrast is −14.85. After adjustment it is close to zero at all
 
 | Vulnerability curves | Residual maps |
 |---|---|
-| [![Share aged under five: citywide and adjusted curves](figure6_diagnostic-03.png)](figure6_diagnostic-03.png) | [![Share aged under five: residual maps across four settings](figure6_diagnostic-04.png)](figure6_diagnostic-04.png) |
+| [![Share aged under five: citywide and adjusted curves](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-03.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-03.png) | [![Share aged under five: residual maps across four settings](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-04.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-04.png) |
 
 ### Share aged 75 or older
 
@@ -224,7 +239,7 @@ The contrast remains positive: +5.73 without adjustment and +1.82 at `k = 200`. 
 
 | Vulnerability curves | Residual maps |
 |---|---|
-| [![Share aged 75 or older: citywide and adjusted curves](figure6_diagnostic-05.png)](figure6_diagnostic-05.png) | [![Share aged 75 or older: residual maps across four settings](figure6_diagnostic-06.png)](figure6_diagnostic-06.png) |
+| [![Share aged 75 or older: citywide and adjusted curves](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-05.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-05.png) | [![Share aged 75 or older: residual maps across four settings](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-06.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-06.png) |
 
 ### Ethnic-minority population share
 
@@ -232,7 +247,7 @@ The negative contrast shrinks from −16.45 to −1.62 at `k = 200`. Of these in
 
 | Vulnerability curves | Residual maps |
 |---|---|
-| [![Ethnic-minority population share: citywide and adjusted curves](figure6_diagnostic-07.png)](figure6_diagnostic-07.png) | [![Ethnic-minority population share: residual maps across four settings](figure6_diagnostic-08.png)](figure6_diagnostic-08.png) |
+| [![Ethnic-minority population share: citywide and adjusted curves](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-07.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-07.png) | [![Ethnic-minority population share: residual maps across four settings](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-08.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-08.png) |
 
 ### Four-theme SVI
 
@@ -240,6 +255,6 @@ The unadjusted curve shows a pronounced difference across London. All three adju
 
 | Vulnerability curves | Residual maps |
 |---|---|
-| [![Four-theme SVI: citywide and adjusted curves](figure6_diagnostic-09.png)](figure6_diagnostic-09.png) | [![Four-theme SVI: residual maps across four settings](figure6_diagnostic-10.png)](figure6_diagnostic-10.png) |
+| [![Four-theme SVI: citywide and adjusted curves](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-09.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-09.png) | [![Four-theme SVI: residual maps across four settings](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-10.png)](../../figures/figure6/spatial_sensitivity/figure6_diagnostic-10.png) |
 
-Local output: [full contrasts and diagnostics](../../figures/figure6_statistical_reporting/figure6_spatial_stats.csv).
+Local output: [full contrasts and diagnostics](../../figures/figure6/statistical_reporting/figure6_spatial_stats.csv).

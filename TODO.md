@@ -1,12 +1,15 @@
 # Project TODO and reproduction roadmap
 
-Last reviewed: 3 November 2026 (Figure 2 temperature-input repair)
+Last reviewed: 5 November 2026 (dual-allocation Figure 6 candidates and Figure 7 consistency)
 
 This document is the live task list. The long numbered sections below also
 preserve the September model-rebuild audit; checked boxes there are completed
 historical steps, not instructions to rerun models. The current equal-area
-Figure 7 and nine-scenario Figure 4/5 outputs exist. Manuscript reconciliation,
-Figure 2's temperature input is repaired; Figure 6's spatial sensitivity ran and supports descriptive reporting only.
+Figure 7 and nine-scenario Figure 4/5 outputs exist. Figure 2's temperature
+input is repaired; Figure 6's spatial sensitivity is complete but substantial
+residual dependence remains. Manuscript reconciliation is still outstanding.
+The illustrated SVI/spatial report is published on GitHub with all 12 figures
+and source attribution (commit `a39a1f6`).
 
 ## Next actions — current status
 
@@ -23,8 +26,11 @@ Figure 2's temperature input is repaired; Figure 6's spatial sensitivity ran and
    as Figures 6 and 7 already did. See the [comparison](docs/manuscript/SVI_SPATIAL_RESULTS.md).
    Scenario/year selection, strict source/model/coverage checks and a dedicated
    Figure 6 diagnostic seed have now been added.
-2. [ ] **Revise the Figure 6 legend and Results** using the completed
-   [spatial sensitivity report](docs/manuscript/SVI_SPATIAL_RESULTS.md).
+2. [ ] **Approve the Figure 6 allocation choice and draft text.** Both
+   intercept-inclusive, per-million candidate PNGs and separate legends/Results
+   are ready in the [review pack](docs/manuscript/FIGURE6_REVIEW_DRAFTS.md).
+   Population-allocation spatial sensitivity is complete; do not transfer its
+   findings to the area-allocation candidate. Follow the checklist below.
 3. [ ] **Reconcile manuscript claims to saved evidence** (author + analysis).
    Create a claim-to-CSV table for every Abstract, Results and figure-legend
    number: exact source row, unit, scenario/version, deterministic point vs
@@ -86,15 +92,102 @@ Figure 2's temperature input is repaired; Figure 6's spatial sensitivity ran and
     copied files' destinations and readability have been checked by the owner.
     Do not interpret a Git-clean tree as a complete archive: `data/`, most
     `docs/`, and generated figures are intentionally ignored.
-11. [ ] **Review the seven modified RDS files before staging.** Current Git
-    status still shows six `code/func_*.rds` files and
-    `figures/equity_map_biscale/health_sf.rds`. A prior semantic comparison
-    found no content change, but they remain local modifications; preserve
-    them and do not include them in a documentation commit by accident.
+11. [x] **Recheck the historical seven-RDS staging warning.** The working tree
+    was clean before this documentation update on 4 November; none of these
+    files is currently modified. This closes the stale staging warning, not
+    a provenance or scientific validation of every archived RDS.
 
-The next useful working session is to review the recovered Figure 2 panel and
-agree on the Figure 6 spatial method. There is no need to rerun UCM or health
-simply to address these two items.
+### Manuscript review checklist — Figures 2, 6 and 7
+
+This is the authoritative action list; numerical comparisons and explanations
+stay in the linked reports rather than being repeated here. No Word manuscript
+edits or model reruns are implied by checking these items.
+
+**Figure 2 — approve the repaired panel and revised grouping (author).**
+
+- [ ] Open the temperature and tree-cover panels from
+  [`equity-temp-tcc.Rmd`](code/equity-temp-tcc.Rmd) beside the manuscript.
+  Review the [SVI comparison](docs/manuscript/SVI_SPATIAL_RESULTS.md#which-score-changed)
+  and the local [July 2021 group summary](figures/figure2_statistical_reporting/figure2_temp_baseline_group_summary.csv)
+  and [tree-cover group summary](figures/figure2_statistical_reporting/figure2_TCC_group_summary.csv).
+  The manuscript now uses `temp_baseline` (July 2021, the notebook default).
+  `temp_future` and `temp_change` are retained as comparison figures.
+  See the [selection audit](code/README.md#historical-scenarioyear-selection-audit)
+  for why missing historical R filters do not prove SSP/year pooling.
+- [ ] Replace any old composite-SVI quintile numbers with the four-theme
+  results. Describe the manuscript temperature as July 2021 CHELSA; the
+  three-model SSP370 mid-century ensemble belongs only to the comparisons.
+  Explain the four source gaps
+  and the temperature sample size (4,831 of 4,835 LSOAs); use each panel's
+  actual sample size rather than assuming they are identical.
+- [ ] In the legend/Results, emphasize medians, spread and effect sizes.
+  Ordinary rank-test p-values are not spatially corrected evidence. Do not
+  claim a strictly monotonic vulnerability gradient when only the broad
+  high-versus-low contrast is supported.
+
+**Figure 6 — agree on interpretation, then insert the drafted text (author).**
+
+- [x] Generate both allocation candidates through the original notebook,
+  including the intercept and recalculated bands; preserve earlier figures.
+  Save allocation-specific diagnostics and proposed legends/Results in the
+  [review pack](docs/manuscript/FIGURE6_REVIEW_DRAFTS.md).
+- [ ] Choose the main/SM allocation versions and approve their draft text.
+- [ ] **On hold (author request):** spatially adjusted area-allocation models.
+  Focus now on the two unadjusted candidates; revisit if area allocation is
+  selected for the main analysis, alongside consistency across Figures 4 and 7.
+- [ ] Review all five curve pairs/settings in the
+  [illustrated spatial report](docs/manuscript/SVI_SPATIAL_RESULTS.md).
+  Check P10 circles/P90 triangles and report rates per **million residents**.
+  These are centred smooth contributions, not absolute deaths averted at
+  either percentile; a negative contribution does not mean negative total benefit.
+- [ ] Recommended presentation: main Figure 6 describes the citywide
+  vulnerability–benefit pattern; Extended Data shows spatial sensitivity at
+  k = 50, 100 and 200. State the attenuation and the unstable/near-zero
+  under-five association after adjustment. Do not select k by significance
+  or treat k = 100 as uniquely correct.
+- [ ] Approve the drafted legends and Results paragraphs, which distinguish
+  full main-figure predictions from centered spatial-sensitivity contributions.
+  Explain that substantial residual spatial dependence remains: adjusted
+  associations are sensitivity results, not causal effects or fully corrected
+  inferential tests. Conditional GAM intervals are not propagated health-model
+  uncertainty. Review age-indicator k diagnostics before finalizing bands.
+- [ ] Decide whether Figure 6 stays in the main text. A Target30 curve
+  sensitivity is optional additional analysis, not a completed result or an
+  automatic requirement for the current Green30-focused figure.
+
+**Figure 7 — approve the targeting conclusion with its trade-off (author).**
+
+- [x] Verify shared SVI/population/health inputs and all saved class counts.
+  The read-only consistency test confirms per-million rescaling changes no
+  classes; figures themselves remain unchanged pending the display update.
+- [ ] Review the latest [map panels](figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png),
+  [comparison panels](figures/equity_map_biscale_revised_equal_area/fig7_cd_upgraded.png)
+  and [headline table](figures/equity_map_biscale_revised_equal_area/fig7_quantitative_headline_results.csv).
+  Use the [canonical production workflow](code/health_assessment/FIGURES6_7_REVIEW.md#figure-7-review),
+  not disabled legacy chunks in `equity-health.Rmd`.
+- [ ] State that the same LSOAs are paired and Green30 benefit thresholds are
+  held fixed for Target30. Blue means relatively low population-normalized
+  mortality benefit in a high-vulnerability neighbourhood, not low canopy.
+  Distinguish percentages of LSOAs from population-weighted percentages.
+- [ ] Explicitly report the age-75+ neighbourhood trade-off alongside the
+  improvements for income deprivation, ethnic-minority composition and SVI.
+  Do not describe this as age-specific mortality or improvement for every
+  vulnerable group. Review the realized added-canopy audit before claiming
+  matched budgets; matching area does not establish equal cost or tree counts.
+- [ ] Keep paired-LSOA bootstrap intervals labelled as composition sensitivity,
+  not spatially independent inference or full model uncertainty. If stronger
+  inferential claims are needed, commission spatial-block sensitivity first.
+- [ ] Resolve the display-unit mismatch: Figure 6 now uses per million;
+  Figure 7's saved benefit thresholds remain per 100,000. Recommended next
+  edit is to rescale Figure 7 numeric thresholds/labels consistently by ten
+  (and verify identical classes/counts), not reclassify or rerun health models.
+  Percentages and absolute deaths averted must not be multiplied by ten.
+
+**After approval (analysis + author):** build the claim-to-source table in
+item 3, reconcile Abstract/Results/Methods/legends and insert approved figures
+into the manuscript. Retain fixed 2021 population/mortality and distinguish
+point estimates from Monte Carlo means. No UCM or health rerun is needed for
+these documentation and display decisions.
 
 ## Priority guide
 
@@ -442,17 +535,21 @@ for method reproduction and historical-result reproduction.
 ### 8. Synchronize manuscript claims and generated evidence
 
 - [x] Replace the exploratory Figure 6 data join with the revised
-  `LSOA11CD`-keyed inputs and use deaths averted per 100,000 residents as the
-  primary response. This is implemented in the active section of
+  `LSOA11CD`-keyed inputs and use population-normalized deaths averted as the
+  primary response (now displayed per million; fitting retains the original
+  per-100,000 scale). This is implemented in the active section of
   `code/equity-health.Rmd`; absolute deaths remain an optional sensitivity.
 - [x] Test Figure 6 residual spatial autocorrelation and move 1st–99th
   percentile trimming to a labelled sensitivity. Saved Moran's I is large
-  (`figures/figure6_statistical_reporting/figure6_gam_residual_morans_i.csv`).
+  (`figures/figure6/statistical_reporting/population_allocation/figure6_gam_residual_morans_i.csv`).
 - [x] Add and validate a pre-specified Figure 6 spatial adjustment or spatial
   resampling, then reassess residual dependence and effect sizes.
-- [ ] Produce a clean Figure 6 production script with exact curve data,
-  diagnostics, input/output checksums, session information and PNG/PDF/SVG
-  exports. See `code/health_assessment/FIGURES6_7_REVIEW.md`.
+- [x] Add the standalone Figure 6 spatial runner, curve/diagnostic tables,
+  input checksums, session information and illustrated report. See
+  `code/run_figure6_spatial.R` and the linked spatial report.
+- [ ] Complete the Figure 6 author review above; add final journal-specific
+  export formats only if required. Do not regenerate the removed duplicate
+  diagnostic PDF merely for completeness.
 - [ ] Update Figure 7 caption, Results, Methods and abstract using only the
   regenerated population-normalized outputs.
 - [ ] State “2050 temperature scenarios evaluated under 2021 population and
