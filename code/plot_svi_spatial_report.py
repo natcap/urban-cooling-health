@@ -1,4 +1,4 @@
-"""Rebuild the two aggregate illustrations in docs/manuscript (no model refits)."""
+"""Rebuild aggregate illustrations in figures/svi_spatial_report (no refits)."""
 from pathlib import Path
 from io import StringIO
 import subprocess
@@ -9,7 +9,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 root = Path(__file__).resolve().parents[1]
-out = root / "docs/manuscript"
+out = root / "figures/svi_spatial_report"
+out.mkdir(parents=True, exist_ok=True)
 # Reuse the exact R ranking and tie handling of the scoring audit.
 cmd = 'invisible(capture.output(source("code/compare_figure2_svi.R"))); write.table(unclass(table(ntile(old,5),ntile(canonical,5))),row.names=FALSE,col.names=FALSE)'
 matrix = np.loadtxt(StringIO(subprocess.check_output(["Rscript", "-e", cmd], cwd=root, text=True)))
@@ -26,7 +27,7 @@ ax.set(xticks=range(5), xticklabels=labels, yticks=range(5), yticklabels=labels,
 fig.savefig(out / "svi_quintile_transitions.png", dpi=170)
 plt.close(fig)
 
-stats = pd.read_csv(root / "figures/figure6_statistical_reporting/figure6_spatial_stats.csv")
+stats = pd.read_csv(root / "figures/figure6/statistical_reporting/figure6_spatial_stats.csv")
 metrics = ["pIncomeDeprivation", "p5under", "p75over", "pBAME", "overall_score"]
 assert (stats["rate_denominator"] == 1_000_000).all()
 contrasts = stats.pivot(index="metric", columns="k", values="contrast").loc[metrics,[0,100]]
@@ -44,4 +45,6 @@ ax.set(yticks=ys, yticklabels=["Income deprivation","Age <5 share","Age ≥75 sh
 ax.invert_yaxis()
 ax.spines[["top","right","left"]].set_visible(False)
 ax.legend(loc="upper center", bbox_to_anchor=(.5,-.18), ncol=2, frameon=False)
-fig.savefig(out / "figure6_spatial_contrasts.png", dpi=170)
+spatial_out = root / "figures/figure6/spatial_sensitivity"
+spatial_out.mkdir(parents=True, exist_ok=True)
+fig.savefig(spatial_out / "figure6_spatial_contrasts.png", dpi=170)

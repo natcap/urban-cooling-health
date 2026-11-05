@@ -745,10 +745,28 @@ figure6_outcome <- "All_cause"
 figure6_k <- 10L
 figure6_moran_permutations <- 999L
 figure6_seed <- 20260908L
-figure6_output_dir <- here("figures", "figure6_statistical_reporting")
+# Keep allocation candidates separate; population allocation remains the default.
+figure6_allocation <- getOption("urban_cooling.figure6_allocation", "population")
+stopifnot(figure6_allocation %in% c("population", "area"))
+figure6_output_dir <- here("figures", "figure6", "statistical_reporting",
+                           paste0(figure6_allocation, "_allocation"))
 dir.create(figure6_output_dir, recursive = TRUE, showWarnings = FALSE)
 
-figure6_sf <- health_sf %>%
+figure6_health <- health_sf
+figure6_allocation_file <- here("figures", "figure6", "allocation_normalization_comparison", "allocation_lsoa.csv")
+if (figure6_allocation == "area") {
+  # Controlled V0-style allocation on the revised grid, not the archived V0 pipeline.
+  allocation_data <- read_csv(figure6_allocation_file, show_col_types = FALSE)
+  stopifnot(!anyDuplicated(allocation_data$LSOA11CD))
+  check <- figure6_health %>% filter(indicator == figure6_outcome, lc_scenario == figure6_scenario) %>%
+    st_drop_geometry() %>% left_join(allocation_data, by = "LSOA11CD")
+  stopifnot(nrow(check) == 4835, all(is.finite(check$area)),
+            max(abs(check$cases_abs - check$population)) < 1e-6)
+  figure6_health <- figure6_health %>% left_join(select(allocation_data, LSOA11CD, area), by = "LSOA11CD") %>%
+    mutate(cases = if_else(indicator == figure6_outcome & lc_scenario == figure6_scenario,
+                          1e5 * area / population_2021, cases))
+}
+figure6_sf <- figure6_health %>%
   filter(indicator == figure6_outcome, lc_scenario == figure6_scenario) %>%
   select(LSOA11CD, cases, all_of(figure6_metrics)) %>%
   filter(
@@ -842,10 +860,12 @@ fit_figure6_gam <- function(data, metric, analysis_label, calculate_spatial = FA
   ))
 
   prediction_data <- data.frame(
-    x = seq(min(model_data$x), max(model_data$x), length.out = 200)
+    x = sort(unique(c(seq(min(model_data$x), max(model_data$x), length.out = 200),
+                      unname(quantile(model_data$x, c(.01, .10, .90, .99))))))
   )
-  term_prediction <- predict(
-    model, newdata = prediction_data, type = "terms", se.fit = TRUE
+  full_prediction <- predict(
+    # Full predictions include the intercept and its covariance in the bands.
+    model, newdata = prediction_data, type = "response", se.fit = TRUE
   )
 
   stats <- tibble(
@@ -889,8 +909,8 @@ fit_figure6_gam <- function(data, metric, analysis_label, calculate_spatial = FA
     Analysis = analysis_label,
     Metric = metric,
     x = prediction_data$x,
-    y = drop(term_prediction$fit),
-    se = drop(term_prediction$se.fit)
+    y = as.numeric(full_prediction$fit),
+    se = as.numeric(full_prediction$se.fit)
   )
 
   spatial <- if (calculate_spatial) {
@@ -971,7 +991,8 @@ readr::write_csv(figure6_spatial_diagnostics, file.path(
 ))
 readr::write_csv(tibble(
   file = c(health_file, population_file,
-           './data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg'),
+           './data/derived/fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg',
+           if (figure6_allocation == "area") figure6_allocation_file),
   md5 = unname(tools::md5sum(file))
 ), file.path(figure6_output_dir, "figure6_input_checksums.csv"))
 writeLines(capture.output(sessionInfo()), file.path(
@@ -993,15 +1014,20 @@ writeLines(
 ```
 
 ```{r figure-6-production-plot}
-# The grey densities show observed predictor support. Curves are centred smooth
-# terms, so zero is the model-average effect rather than zero deaths averted.
+# Display P1–P99 only; models still use every valid LSOA. Intercept is included.
+figure6_display_limits <- df_cont_raw %>% group_by(Metric) %>%
+  summarise(xmin = quantile(x, .01), xmax = quantile(x, .99), .groups = "drop")
+df_cont_curve <- df_cont_curve %>% left_join(figure6_display_limits, by = "Metric") %>%
+  filter(x >= xmin, x <= xmax)
+# Keep P90–P10 contrasts in the reporting tables; omit markers in main candidates.
 curve_range <- diff(range(c(
   df_cont_curve$y - 1.96 * df_cont_curve$se,
   df_cont_curve$y + 1.96 * df_cont_curve$se
 ), na.rm = TRUE))
 density_height <- 0.12 * curve_range
-density_floor <- min(df_cont_curve$y - 1.96 * df_cont_curve$se, na.rm = TRUE) -
-  0.18 * curve_range
+# Historical layout: density below zero; directional arrows at zero above it.
+# Density is a decorative predictor distribution, not mortality on this axis.
+density_floor <- -1.1 * density_height
 
 figure6_density <- df_cont_raw %>%
   group_by(Metric, Metric_Label) %>%
@@ -1014,9 +1040,30 @@ figure6_density <- df_cont_raw %>%
         density_height * density_estimate$y / max(density_estimate$y)
     )
   }) %>%
-  ungroup()
+  ungroup() %>% left_join(figure6_display_limits, by = "Metric") %>%
+  filter(x >= xmin, x <= xmax)
+
+# Match the original z=0 anchor, endpoints +/-2 and text positions +/-1.5.
+# Do not anchor at the panel midpoint: asymmetric predictor ranges shift it.
+figure6_guides <- figure6_display_limits %>%
+  mutate(Metric_Label = recode(Metric, !!!figure6_labels),
+         arrow_y = 0, text_y = .10 * curve_range)
 
 figure6_plot <- ggplot() +
+  geom_segment(data = figure6_guides,
+    aes(x = -.05, xend = -2,
+        y = arrow_y, yend = arrow_y), colour = "grey40", alpha = .6, linewidth = .3,
+    arrow = grid::arrow(length = grid::unit(.1, "cm"), type = "open")) +
+  geom_segment(data = figure6_guides,
+    aes(x = .05, xend = 2,
+        y = arrow_y, yend = arrow_y), colour = "grey40", alpha = .6, linewidth = .3,
+    arrow = grid::arrow(length = grid::unit(.1, "cm"), type = "open")) +
+  geom_text(data = figure6_guides,
+    aes(x = -1.5, y = text_y), label = "Less Vulnerable",
+    size = 2.2, colour = "grey40", fontface = "italic") +
+  geom_text(data = figure6_guides,
+    aes(x = 1.5, y = text_y), label = "More Vulnerable",
+    size = 2.2, colour = "grey40", fontface = "italic") +
   geom_ribbon(
     data = figure6_density,
     aes(x = x, ymin = ymin, ymax = ymax),
@@ -1031,17 +1078,21 @@ figure6_plot <- ggplot() +
     data = df_cont_curve, aes(x = x, y = y),
     color = "#2c7bb6", linewidth = 0.8
   ) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "grey45", linewidth = 0.3) +
   geom_vline(xintercept = 0, linetype = "dotted", color = "grey45", linewidth = 0.3) +
   facet_wrap(~ Metric_Label, scales = "free_x") +
+  scale_x_continuous(breaks = scales::breaks_width(1),
+                     expand = expansion(mult = c(.1, .05))) +
+  scale_y_continuous(expand = expansion(mult = c(.1, .05))) +
   labs(
     x = "Vulnerability metric (standardized z-score)",
-    y = "Centered association with deaths averted per million residents",
-    caption = stringr::str_wrap(paste(
-      "Descriptive robust GAMs fitted to all valid LSOAs; bands are 95% model-based conditional intervals.",
-      "Grey densities show observed predictor values. Strong residual spatial autocorrelation means conventional",
-      "P values are not final inferential evidence; see the exported spatial diagnostics."
-    ), width = 112)
+    y = "Predicted deaths averted per million residents",
+    # Historical heading format: association, outcome and scenario.
+    subtitle = "Associations between neighborhood vulnerability and all-cause deaths averted (Green30)"
+    # , caption = stringr::str_wrap(paste(
+    #   "Descriptive robust GAMs fitted to all valid LSOAs; bands are 95% model-based conditional intervals.",
+    #   "Full predictions include the intercept; display is P1–P99. Grey densities show predictor support. Residual spatial autocorrelation means conventional",
+    #   "P values are not final inferential evidence; see the exported spatial diagnostics."
+    # ), width = 112)
   ) +
   theme_light(base_size = 9) +
   theme(
@@ -1049,18 +1100,23 @@ figure6_plot <- ggplot() +
     panel.grid.major = element_line(color = "grey92", linewidth = 0.2),
     strip.background = element_rect(fill = "white", color = "grey65"),
     strip.text = element_text(face = "bold", size = 8, color = "black"),
-    plot.caption = element_text(size = 7, color = "grey35", hjust = 0)
+    plot.subtitle = element_text(size = 9),
+    plot.caption = element_text(size = 7, color = "grey35", hjust = 0),
+    legend.position = "bottom", plot.margin = margin(8,12,8,12)
   )
 
 figure6_plot
+# Match the historical outcome/model/scenario/date/k naming, but identify units.
+# k here is the vulnerability smooth (not the spatial sensitivity basis size).
+figure6_plot_dir <- here("figures", "figure6", "manuscript")
+dir.create(figure6_plot_dir, recursive = TRUE, showWarnings = FALSE)
+figure6_plot_name <- paste0(paste("equity_health", figure6_outcome, "gam",
+  figure6_scenario, ymd, figure6_k, "per_million", figure6_allocation, "full_prediction", sep = "_"), ".png")
 ggsave(
-  file.path(figure6_output_dir, "figure6_health_equity_gam.png"),
-  figure6_plot, width = 7, height = 5, units = "in", dpi = 600
+  file.path(figure6_plot_dir, figure6_plot_name),
+  figure6_plot, width = 7.5, height = 5.5, units = "in", dpi = 600, device = ragg::agg_png
 )
-ggsave(
-  file.path(figure6_output_dir, "figure6_health_equity_gam.pdf"),
-  figure6_plot, width = 7, height = 5, units = "in"
-)
+# PNG only for the current manuscript review.
 ```
 
 ### Legacy exploratory GAM code

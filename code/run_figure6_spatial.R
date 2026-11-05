@@ -2,7 +2,7 @@
 # Matched Green30, 25 C all-cause sample; k=0 reproduces the original GAM.
 suppressPackageStartupMessages({library(sf); library(dplyr); library(mgcv)})
 out <- commandArgs(TRUE)[1]
-if (is.na(out)) out <- "figures/figure6_statistical_reporting"
+if (is.na(out)) out <- "figures/figure6/statistical_reporting"
 dir.create(out, recursive=TRUE, showWarnings=FALSE)
 root <- "data/derived"
 v <- st_read(file.path(root,"fig7_vulnerability_lsoa11_fig7_revised_equal_area.gpkg"),quiet=TRUE)
@@ -60,6 +60,9 @@ for (key in c("stats","curves","residuals"))
 
 # Diagnostic companion: centred vulnerability curves and residual patterns.
 render_diagnostics <- function(out, curves_only=FALSE) {
+  # Report illustrations are separate from narrative docs and numerical exports.
+  report_figures <- "figures/figure6/spatial_sensitivity"
+  dir.create(report_figures, recursive=TRUE, showWarnings=FALSE)
   curves <- read.csv(file.path(out,"figure6_spatial_curves.csv"))
   resid <- read.csv(file.path(out,"figure6_spatial_residuals.csv"))
   refs <- read.csv(file.path(out,"figure6_gam_p10_p90_contrasts.csv"))
@@ -72,7 +75,7 @@ render_diagnostics <- function(out, curves_only=FALSE) {
   page <- 0L
   save_panel <- function(plot) {
     page <<- page + 1L
-    ggplot2::ggsave(sprintf("docs/manuscript/figure6_diagnostic-%02d.png",page),
+    ggplot2::ggsave(file.path(report_figures, sprintf("figure6_diagnostic-%02d.png",page)),
                     plot, width=9,height=6,dpi=108,bg="white")
   }
   for (m in unique(curves$metric)) {
@@ -92,7 +95,7 @@ render_diagnostics <- function(out, curves_only=FALSE) {
       ggplot2::geom_point(data=dots,ggplot2::aes(shape=percentile),size=3) +
       ggplot2::scale_shape_manual(values=c(P10=16,P90=17),name="Vulnerability") +
       ggplot2::scale_colour_discrete(labels=labels) +
-      ggplot2::labs(title=m,x="Vulnerability (SD)",y="Centred deaths averted per million residents",
+      ggplot2::labs(title=m,x="Vulnerability (SD)",y="Relative deaths averted per million residents",
                     colour="Model") + ggplot2::theme_bw())
     if (curves_only) { page <- page + 1L; next }
     save_panel(ggplot2::ggplot(subset(resid,metric==m),
