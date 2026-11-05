@@ -21,8 +21,11 @@ library(sf)
 ```
 
 
-Set `FIGURE2_OUTCOME` to `temp_change`, `temp_future`, `TCC`, or
-`Productivity` before knitting; the default is `temp_change`. The notebook
+Set `FIGURE2_OUTCOME` to `temp_baseline`, `temp_change`, `temp_future`, `TCC`, or
+`Productivity` before knitting; the manuscript default is `temp_baseline`
+(July 2021 CHELSA temperature, with no SSP).
+`temp_future` is absolute mid-century temperature; `temp_change` subtracts
+the July 2021 baseline and is a separate comparison, not a substitute. The notebook
 stops if the selected cached input contains no finite observations, preventing
 an apparently successful figure from being generated from an invalid cache.
 
@@ -59,8 +62,12 @@ yr <- 2050
 # Select the Figure 2 outcome once so a full knit does not silently overwrite
 # the temperature analysis with a later tree-cover or productivity chunk.
 # Re-knit with "TCC" when producing the tree-cover panel.
-figure2_outcome <- Sys.getenv("FIGURE2_OUTCOME", unset = "temp_change")
-stopifnot(figure2_outcome %in% c("temp_change", "temp_future", "TCC", "Productivity"))
+figure2_outcome <- Sys.getenv("FIGURE2_OUTCOME", unset = "temp_baseline")
+stopifnot(figure2_outcome %in% c("temp_baseline", "temp_change", "temp_future", "TCC", "Productivity"))
+if (figure2_outcome == "temp_baseline") {
+  yr <- 2021
+  lc_snr <- "baseline" # Filename label only: CHELSA, not a UCM land-cover run.
+}
 ```
 
 
@@ -75,6 +82,17 @@ aoi_lsoa <- st_read(f, quiet = T) %>%
 
 
 ```{r temp data}
+if (figure2_outcome == "temp_baseline") {
+  # Read the original baseline directly; do not infer it from future-minus-change.
+  baseline_path <- here("data", "02_preprocess", "chelsa02", "clipped_london_stats",
+                        "lsoa_stats_CHELSA_tasmax_07_2021_V.2.1_London.csv")
+  baseline <- readr::read_csv(baseline_path, show_col_types = FALSE) %>%
+    transmute(geoid = as.character(borough), temp_baseline = mean)
+  validate_figure2_zonal(baseline, aoi_lsoa$GSS_CODE, "geoid", "temp_baseline")
+  d_temp <- aoi_lsoa %>% rename(geoid = GSS_CODE) %>%
+    left_join(baseline, by = "geoid") %>%
+    mutate(scenario = "baseline", year = 2021L, month = 7L)
+} else {
 ##' load data
 ##' generated from `gcm-data-clip-stats-viz.Rmd`
 f <- here('data/temp_svi.RDS')
@@ -91,6 +109,7 @@ d_temp <- temp_change_group %>%
 d_temp <- select_figure2_temperature(d_temp, scenario = "ssp370", year = yr)
 validate_figure2_zonal(d_temp, aoi_lsoa$GSS_CODE, "geoid", "temp_change")
 validate_figure2_zonal(d_temp, aoi_lsoa$GSS_CODE, "geoid", "temp_future")
+}
 ```
 
 
@@ -139,9 +158,12 @@ svi <- df_temp %>%
 
 ```{r select the y - temp}
 
-if (figure2_outcome %in% c("temp_change", "temp_future")) {
+if (figure2_outcome %in% c("temp_baseline", "temp_change", "temp_future")) {
   yi <- figure2_outcome
-  ylab <- "Temperature (°C)"
+  ylab <- switch(yi,
+    temp_baseline = "July 2021 temperature (°C)",
+    temp_future = "Mid-century temperature (°C)",
+    temp_change = "Temperature change from 2021 (°C)")
   df_svi <- df_temp
 }
 ```
@@ -430,7 +452,7 @@ cld_data <- df_cat2 %>%
 
 # 3. Calculate Y-positions (Just above the highest outlier per group)
 # This ensures the letter sits nicely on top of the boxplot
-if (yi == 'temp_future') {
+if (yi %in% c('temp_future', 'temp_baseline')) {
   y_pos_scale = 1.005
 } else {
   y_pos_scale = 1.05
@@ -526,11 +548,17 @@ df_cat2_svi <-
 cld_labels_svi <- cld_labels %>%
   filter(Metric == 'SVI')
 
-func_plot_cld(data = df_cat2_svi, data_letter = cld_labels_svi) +
+svi_panel <- func_plot_cld(data = df_cat2_svi, data_letter = cld_labels_svi) +
   theme(strip.text = element_blank()) +
   labs(x = 'SVI quintile', y = ylab)
+print(svi_panel)
 f <- paste0('./figures/', paste('equity', yi, lc_snr, yr, 'q_cld_SVI', ymd, sep = '_'), '.png'); f
-ggsave(plot = last_plot(), filename = f, width = 3.5, height = 3, units = 'in', dpi = 300)
+ggsave(plot = svi_panel, filename = f, width = 3.5, height = 3, units = 'in', dpi = 300)
+# Optional assembly hand-off: preserve vector geometry, source rows and letters.
+panel_export <- Sys.getenv("FIGURE2_PANEL_EXPORT", unset = "")
+if (nzchar(panel_export)) saveRDS(
+  list(plot = svi_panel, data = df_cat2_svi, letters = cld_labels_svi,
+       outcome = yi, svi = svi), panel_export)
 
 ```
 
