@@ -58,4 +58,4 @@ Health rasters and run manifests are stored externally under:
 
 Small LSOA inputs, paired draws, Figure 7 panels and quantitative tables are
 versioned in `data/derived/` and
-`figures/equity_map_biscale_revised_equal_area/`.
+`figures/figure7/`.

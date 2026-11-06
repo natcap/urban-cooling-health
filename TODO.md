@@ -127,6 +127,12 @@ edits or model reruns are implied by checking these items.
 
 **Figure 6 — agree on interpretation, then insert the drafted text (author).**
 
+- [x] Compare all six Green/Target scenarios with matched Figure 6 GAMs;
+  save two supplementary PNGs and update the Results/legends in the
+  [review pack](docs/manuscript/FIGURE6_REVIEW_DRAFTS.md#six-scenario-comparison-and-supplementary-figures).
+- [ ] Review the Green-versus-Target contrast reversal and assign final
+  supplementary figure numbers. Do not generalize Green30 to all strategies.
+
 - [x] Generate both allocation candidates through the original notebook,
   including the intercept and recalculated bands; preserve earlier figures.
   Save allocation-specific diagnostics and proposed legends/Results in the
@@ -157,31 +163,44 @@ edits or model reruns are implied by checking these items.
 
 **Figure 7 — approve the targeting conclusion with its trade-off (author).**
 
+- [x] Create a separate map-led candidate after the three-reviewer design
+  review, with SVI maps, complete benefit bars and the four-indicator comparison;
+  preserve earlier figure versions. See the updated Figure 7 review for its legend.
+- [x] Include overall SVI in the main panels and export an all-five-indicator
+  supplementary PNG including age <5; update both legends in the linked review.
+- [x] Complete the read-only [Figure 7 audit](docs/manuscript/FIGURE7_REVIEW.md):
+  headline results, all transitions, weighted shares and citywide summaries
+  reproduced; requested presentation revisions are now implemented. See the
+  [three-reviewer organization recommendations](docs/manuscript/MANUSCRIPT_ORGANIZATION_REVIEW.md)
+  for its proposed place in the Results.
 - [x] Verify shared SVI/population/health inputs and all saved class counts.
   The read-only consistency test confirms per-million rescaling changes no
-  classes; figures themselves remain unchanged pending the display update.
-- [ ] Review the latest [map panels](figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png),
-  [comparison panels](figures/equity_map_biscale_revised_equal_area/fig7_cd_upgraded.png)
-  and [headline table](figures/equity_map_biscale_revised_equal_area/fig7_quantitative_headline_results.csv).
+  classes; revised PNGs use per-million rates and explicit entry/exit counts.
+- [ ] Review the preferred [Figure 7 v4 PNG](figures/figure7/png/fig7_main_mapled_SVI_20261105_v4.png)
+  and [headline table](figures/figure7/csv/fig7_quantitative_headline_results.csv).
   Use the [canonical production workflow](code/health_assessment/FIGURES6_7_REVIEW.md#figure-7-review),
   not disabled legacy chunks in `equity-health.Rmd`.
-- [ ] State that the same LSOAs are paired and Green30 benefit thresholds are
+- [x] Update the proposed Figure 7 legend and separate Green/Target Results;
+  see the linked review documents rather than duplicating the drafts here.
+- [ ] Approve and insert the proposed text into the manuscript. State that the same LSOAs are paired and Green30 benefit thresholds are
   held fixed for Target30. Blue means relatively low population-normalized
   mortality benefit in a high-vulnerability neighbourhood, not low canopy.
   Distinguish percentages of LSOAs from population-weighted percentages.
+- [x] In the expanded alternatives, replace panel d's initial-low-benefit-only presentation with remained,
+  left and newly low counts across all high-vulnerability LSOAs. Export and
+  visually check PNGs; retain neither-low counts in the supporting table.
 - [ ] Explicitly report the age-75+ neighbourhood trade-off alongside the
   improvements for income deprivation, ethnic-minority composition and SVI.
   Do not describe this as age-specific mortality or improvement for every
   vulnerable group. Review the realized added-canopy audit before claiming
   matched budgets; matching area does not establish equal cost or tree counts.
-- [ ] Keep paired-LSOA bootstrap intervals labelled as composition sensitivity,
+- [x] Keep paired-LSOA bootstrap intervals labelled as composition sensitivity,
   not spatially independent inference or full model uncertainty. If stronger
   inferential claims are needed, commission spatial-block sensitivity first.
-- [ ] Resolve the display-unit mismatch: Figure 6 now uses per million;
-  Figure 7's saved benefit thresholds remain per 100,000. Recommended next
-  edit is to rescale Figure 7 numeric thresholds/labels consistently by ten
-  (and verify identical classes/counts), not reclassify or rerun health models.
-  Percentages and absolute deaths averted must not be multiplied by ten.
+- [x] Resolve the display-unit mismatch: Figure 7 now uses per million in
+  numeric thresholds, labels and reporting tables. Tests confirm unchanged
+  classes/counts. Percentages and absolute deaths are unchanged; no health
+  models rerun. Author review of the proposed legend remains pending.
 
 **After approval (analysis + author):** build the claim-to-source table in
 item 3, reconcile Abstract/Results/Methods/legends and insert approved figures

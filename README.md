@@ -61,7 +61,7 @@ URBAN_COOLING_FIG7_OUTPUT_DIR=./figures/fig7_local_check Rscript code/run-fig7.R
 ```
 
 The reviewed production panels and supporting tables are under
-[`figures/equity_map_biscale_revised_equal_area/`](figures/equity_map_biscale_revised_equal_area/);
+[`figures/figure7/`](figures/figure7/);
 the command above leaves them untouched.
 See the [Figure 7 guide](REPRODUCIBILITY.md) for installation, exact inputs,
 output files, a non-destructive test run and the final review checklist.

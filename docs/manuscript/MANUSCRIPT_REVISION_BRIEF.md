@@ -3,6 +3,11 @@
 Original review: 13 October 2026. Status pointers updated: 4 November 2026.
 Discussion window for the scientific recap: 13 September–13 October 2026.
 
+For the current whole-manuscript organization recommendation, use the
+[5 November three-reviewer review](MANUSCRIPT_ORGANIZATION_REVIEW.md).
+It supersedes the provisional section/figure-placement recommendations below;
+this brief retains its historical scientific recap.
+
 November follow-up: see the [SVI comparison and Figure 6 spatial analysis](SVI_SPATIAL_RESULTS.md)
 for the current results; use the [Figure 2/6/7 review checklist](../../TODO.md#manuscript-review-checklist--figures-2-6-and-7)
 for remaining decisions. Spatial fitting and publication of the report's 12
@@ -46,7 +51,7 @@ The external files in items 2, 3 and 7 are under
 2. Open `summary/figure4/figure4_citywide_cobenefits.png`, its source table `summary/figure4/figure4_citywide_cobenefits_data.csv`, and [aggregation and caption guidance](../../code/post_processing_layers/FIGURE4_METHODS.md).
 3. Open `summary/figure5/figure5_borough_cobenefits.png` and `summary/figure4/extended_data_citywide_vs_borough.png`.
 4. [Figure 6 candidate review pack](FIGURE6_REVIEW_DRAFTS.md): current PNGs, legends, Results and links to allocation-specific reporting. Use this pack rather than older centred-curve exports for the main figure decision.
-5. [Figure 7 maps](../../figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png), [paired comparison panels](../../figures/equity_map_biscale_revised_equal_area/fig7_cd_upgraded.png), and [headline results](../../figures/equity_map_biscale_revised_equal_area/fig7_quantitative_headline_results.csv). These provide the central distributional result.
+5. [Figure 7 maps](../../figures/figure7/png/fig7_ab_upgraded.png), [paired comparison panels](../../figures/figure7/png/fig7_cd_upgraded.png), and [headline results](../../figures/figure7/csv/fig7_quantitative_headline_results.csv). These provide the central distributional result.
 6. [Figure 2 tree-cover statistics](../../figures/figure2_statistical_reporting/figure2_TCC_kruskal_wallis.csv) and [revised notebook](../../code/equity-temp-tcc.Rmd). Temperature results have been recovered; review the regenerated panels.
 7. Open `urban_cooling_original_vs_revised_interactive_comparison_report_offline.html`. This inherited September 11 report explains original/revised workflows, canopy area/pixel/tree-equivalent comparisons, and alternative aggregation methods. Its existence was checked during the October 13 review; it was not rebuilt or visually revalidated in that recap.
 

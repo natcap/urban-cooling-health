@@ -185,6 +185,12 @@ Add the scenario to a configuration file or extend the shared component.
 
 ## Figure 6 candidate review entry point
 
+For the six-scenario supplement, run `Rscript code/compare_figure6_scenarios.R`.
+It keeps outputs in `figures/figure6/scenario_comparison/`, checks Green30
+against the main figure, and leaves existing figures unchanged. Interpretation,
+supplementary legends and reproduction details are maintained in the
+[Figure 6 review pack](../docs/manuscript/FIGURE6_REVIEW_DRAFTS.md#six-scenario-comparison-and-supplementary-figures).
+
 Run `Rscript code/run_figure6_candidates.R YYYYMMDD` from the repository root
 to execute only the canonical Figure 6 model/plot chunks in `equity-health.Rmd`
 for population and controlled uniform-area allocation. The area input is
