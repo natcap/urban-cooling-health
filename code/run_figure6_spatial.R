@@ -40,6 +40,11 @@ fit <- function(idx) {
   nd <- data.frame(x=sort(unique(c(seq(min(d$x),max(d$x),length.out=200),
                                   unname(quantile(d$x,c(.1,.9)))))),
                    E=median(d$E),N=median(d$N))
+  # Decision: compare the vulnerability contribution s(x) across spatial fits.
+  # terms keeps it separate from the intercept and geographic smooth s(E,N).
+  # response would combine all three and depend on the chosen location;
+  # these centred curves are therefore not absolute predicted deaths averted.
+  # Negative contributions indicate below-reference benefit, not harm.
   curve <- predict(m,nd,type="terms",se.fit=TRUE)
   # Convert response-scale exports only; spatial diagnostics are unitless.
   list(stats=data.frame(metric,k,n=nrow(d),rate_denominator=1000000L,contrast=10*est,low=10*(est-1.96*se),high=10*(est+1.96*se),

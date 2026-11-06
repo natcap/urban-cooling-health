@@ -1,7 +1,7 @@
 # Figure 6 candidates and manuscript text
 
 Prepared 5 November 2026. Drafts for author review; the Word manuscript has not
-been edited. Both candidates use the same revised Green30 cooling inputs,
+been edited. The original allocation candidates use the same revised Green30 cooling inputs,
 four-dimension SVI, fixed 2021 population, all 4,835 valid LSOAs, rates per
 million and full GAM predictions including the intercept. Allocation remains
 an author choice; population allocation is recommended for the main analysis.
@@ -16,46 +16,200 @@ Numerical exports, raw inputs and historical image archives remain local unless
 separately released. Links to those local outputs are reproduction references,
 not promises that those files are available on GitHub.
 
-## Candidate A population allocation
+## Proposed main-text comparison: Green30 and Target30
+
+[Open the separate 600-dpi PNG](../../figures/figure6/manuscript/equity_health_All_cause_gam_Green30_Target30_per_million_population_full_prediction.png).
+This population-allocation candidate adds a direct strategy comparison without
+replacing either original Green30 allocation candidate. Supplementary S1 and S2
+below retain the three intensities within each family. Figure 7's current
+redistribution results are in the [Figure 7 review](FIGURE7_REVIEW.md#proposed-results-paragraph).
+
+### Proposed legend for the comparison candidate
+
+**Fig. 6 | Contrasting neighborhood distributions of modelled health benefits
+under general and targeted greening.** Green solid and purple dashed curves
+compare Green30 and Target30, respectively. Panels show the proportions aged
+<5 and ≥75 and ethnic-minority population share (top row), and income
+deprivation and the four-dimension Social Vulnerability Index (SVI; bottom row).
+Curves are full fitted predictions, including the intercept, from separate
+univariable robust scaled-t generalized additive models fitted by restricted
+maximum likelihood across 4,835 London LSOAs. All-cause heat-related deaths
+averted per million residents are estimated relative to baseline land use under
+identical mid-century climate conditions, with 2021 population and registered
+mortality fixed and borough deaths allocated in proportion to population.
+Predictors are standardized z-scores; vertical dotted lines mark citywide means.
+Shaded bands show pointwise 95% model-conditional confidence intervals. Grey
+densities below zero show observed predictor distributions, rescaled independently
+of mortality units; arrows indicate lower to higher vulnerability. All valid
+LSOAs enter the fits; curves display P1–P99. Y-axis ranges differ between
+indicators but are shared by both scenarios within each panel. Associations
+are unadjusted for location; intervals exclude spatial dependence and upstream
+input uncertainty and are not tests of between-scenario differences.
+
+Reproduce only this candidate:
+`Rscript code/compare_figure6_scenarios.R --main-overlay-only`.
+Keep the Green Results below and the linked Target Results in separate sections,
+even if the combined Figure 6 candidate is selected. In that case, cite Figure 6
+alongside Supplementary Figure S2 in the Target section. No new fitting or
+numerical results are involved.
+
+## Candidate A population allocation (original Green30 version retained)
 
 [Open the 600-dpi PNG](../../figures/figure6/manuscript/equity_health_All_cause_gam_Green30_20261105_10_per_million_population_full_prediction.png).
 
 ### Proposed legend
 
-**Fig. 6 | Neighbourhood vulnerability and modelled health benefits of greening
-across London.** Curves show separate univariable generalized additive model
-(GAM) predictions of all-cause heat-related deaths averted per million residents
-under Green30 across 4,835 Lower Layer Super Output Areas (LSOAs). Benefits are
-estimated relative to baseline land use under identical mid-century climate
-conditions, holding 2021 population and registered mortality fixed. Borough
-mortality is allocated to pixels in proportion to population. Vulnerability
-metrics are standardized z-scores; the vertical dotted line marks the citywide
-mean. Arrows indicate less to more vulnerability. SVI denotes the
-four-dimension Social Vulnerability Index (Methods).
-Blue lines are full fitted predictions, including the intercept, from robust
-scaled-t GAMs fitted by REML; shaded bands are pointwise 95% conditional
-confidence intervals. Grey densities show predictor distributions, vertically rescaled
-for display rather than expressed in mortality units. All valid LSOAs are
-fitted; displayed predictor ranges span the 1st–99th percentiles. These are
-unadjusted citywide associations. Intervals do not account for spatial
-dependence or uncertainty in upstream model inputs.
+**Fig. 6 | Neighborhood vulnerability and modelled health benefits under Green30.**
+Green30 represents a 30% relative increase in tree-canopy cover and is shown as
+an illustrative general-greening scenario; Green10/20/30 and Target10/20/30
+comparisons are provided in Supplementary Figs. S1 and S2, respectively. Curves show
+separate univariable generalized additive model (GAM) predictions of all-cause
+heat-related deaths averted per million residents across 4,835 London Lower
+Layer Super Output Areas (LSOAs). Benefits are estimated relative to baseline
+land use under identical mid-century climate conditions, holding 2021 population
+and registered mortality fixed. Borough mortality is allocated to pixels in
+proportion to population. Vulnerability metrics, including the four-dimension
+Social Vulnerability Index (SVI; Methods), are standardized z-scores; vertical
+dotted lines mark the citywide mean. Blue lines show full predictions, including
+the intercept, from robust scaled-t GAMs fitted by restricted maximum likelihood.
+Shaded bands indicate pointwise 95% model-conditional confidence intervals.
+Grey densities show predictor distributions, rescaled independently of mortality
+units; arrows indicate lower to higher vulnerability. All valid LSOAs enter the
+models; curves display each predictor’s 1st–99th percentiles. These are
+unadjusted citywide associations, and intervals exclude spatial dependence and
+uncertainty in upstream model inputs.
 
 ### Proposed Results
 
-Under Green30, modelled per-resident health benefits varied nonlinearly with
-neighbourhood vulnerability (Fig. 6). Fitted benefits at the 90th versus 10th
-percentile were lower by 8.8 deaths per million for income deprivation, 14.9
-for the proportion aged <5, 16.5 for ethnic-minority population share and 9.8
-for overall SVI. Benefits were 5.7 deaths per million higher for the proportion
-aged ≥75, although the curve levelled off at higher values. Spatial adjustment
-attenuated these contrasts, with the under-five association becoming near zero
-and changing sign across sensitivity settings. Substantial residual spatial
-dependence remained, so these patterns should not be interpreted as independent
-causal effects of vulnerability.
+#### General greening yields uneven neighbourhood health benefits
 
-The spatial sentence is supported by the existing population-allocation
-[spatial report](SVI_SPATIAL_RESULTS.md). It is not a result for area allocation.
+Generalized additive models (GAMs) showed similar, non-linear patterns of
+modelled health benefits across Green10, Green20 and Green30, with Green30
+shown as an illustrative scenario (Fig. 6; Supplementary Fig. S1). Benefits
+were lower at high than at low income deprivation and ethnic-minority
+population share. Under Green30, predicted deaths averted per million residents
+were respectively 8.8 and 16.5 lower at the 90th than the 10th percentile.
+Income-deprivation curves declined before partially recovering, whereas
+ethnic-minority-share curves peaked below the citywide mean and then declined.
+Higher overall SVI and under-five population share also corresponded to lower
+benefits in all three Green scenarios.
+
+By contrast, neighborhoods with higher proportions of residents aged ≥75
+received greater modelled per-resident benefits under the Green scenarios.
+Curves generally rose before levelling off or declining modestly; under
+Green30, the 90th–10th percentile difference was +5.7 deaths averted per million.
+These citywide associations describe neighbourhood-level benefit distributions,
+not spatially adjusted or causal effects of vulnerability.
+
+*Continue with [Targeting redistributes benefits across vulnerability dimensions](FIGURE7_REVIEW.md#proposed-results-paragraph).
+The Target scenario comparisons and Figure 7 redistribution findings are kept
+there rather than repeated in this Green section.*
+
+Population-allocation spatial sensitivity is documented separately in the
+[spatial report](SVI_SPATIAL_RESULTS.md); its results do not apply to area allocation.
 The age variables describe neighbourhood composition, not age-specific deaths.
+
+## Six-scenario comparison and supplementary figures
+
+**Verified 5 November 2026:** 30 converged GAMs (six scenarios × five metrics),
+each using the same 4,835 LSOAs. All five contrast directions agree within
+Green10/20/30; all five reverse under each Target scenario. Green30 is therefore
+illustrative of the **Green family**, not all greening strategies.
+
+P90 minus P10, in deaths averted per million residents (negative = lower fitted
+benefit at higher vulnerability; not negative total benefit):
+
+| Metric | Green10 | Green20 | Green30 | Target10 | Target20 | Target30 |
+|---|---:|---:|---:|---:|---:|---:|
+| Income deprivation | −4.0 | −6.7 | −8.8 | +28.6 | +47.0 | +54.0 |
+| Age <5 share | −6.3 | −10.6 | −14.9 | +11.2 | +22.2 | +23.8 |
+| Age ≥75 share | +2.1 | +4.3 | +5.7 | −22.4 | −36.1 | −39.5 |
+| Ethnic-minority share | −6.8 | −11.9 | −16.5 | +32.3 | +53.2 | +63.1 |
+| Overall SVI | −4.2 | −7.3 | −9.8 | +34.0 | +51.2 | +58.0 |
+
+**Curve shapes:** Green curves are similar, but not identical. Correlations of
+the 200 fitted values over each metric's common P1–P99 grid with Green30 are
+0.955–1.000 for Green10/20; these are descriptive shape checks, not equivalence
+tests. Green10's older-age curve peaks earlier and declines slightly at high
+values. Target curves differ from Green curves: deprivation generally rises
+but develops an upper-range downturn under Target20/30, while the age-75+
+curve broadly declines. Matching contrast signs alone should not be described
+as identical or uniformly monotonic curves.
+
+### Supplementary Fig. S1 proposed legend
+
+**Supplementary Fig. S1 | Neighborhood vulnerability and modelled health
+benefits across general-greening scenarios.** Panels show, from left to right,
+the proportions aged <5 and ≥75 and ethnic-minority population share (top row),
+and income deprivation and the four-dimension Social Vulnerability Index
+(SVI; bottom row). Light-to-dark green dotted, dashed and solid lines represent
+Green10, Green20 and Green30, respectively. Curves are full fitted predictions,
+including the intercept, of all-cause heat-related deaths averted per million residents
+from separate univariable robust scaled-t GAMs fitted by REML to the same
+4,835 London LSOAs. Each scenario is compared with baseline land use under
+identical mid-century climate conditions, with 2021 population and registered
+mortality fixed and borough deaths allocated in proportion to population.
+Predictors are standardized z-scores; vertical dotted lines mark their
+citywide means and arrows indicate lower to higher vulnerability. Shaded
+bands are pointwise 95% model-conditional confidence intervals. All valid LSOAs
+enter the fits; displayed curves span P1–P99. Y-axis limits differ between
+vulnerability indicators; the three scenarios share an axis within each panel.
+Grey densities below zero show observed predictor distributions, rescaled
+independently of mortality units. Associations are unadjusted for location;
+intervals exclude spatial dependence and upstream input uncertainty.
+
+![Overlaid Green scenario comparison](../../figures/figure6/scenario_comparison/figure6_supplement_green_overlay.png)
+
+Regenerate only this figure, preserving other figures:
+`Rscript code/compare_figure6_scenarios.R --overlay-only`.
+
+### Supplementary Fig. S2 proposed legend
+
+**Supplementary Fig. S2 | Neighborhood vulnerability and modelled health
+benefits across targeted-greening scenarios.** Panels show, from left to right,
+the proportions aged <5 and ≥75 and ethnic-minority population share (top row),
+and income deprivation and the four-dimension Social Vulnerability Index
+(SVI; bottom row). Light-to-dark purple dotted, dashed and solid lines represent
+Target10, Target20 and Target30, respectively. Curves show full fitted predictions,
+including the intercept, of all-cause heat-related deaths averted per million residents
+from separate univariable robust scaled-t GAMs fitted by REML to the same
+4,835 London LSOAs. Population allocation, 2021 population and mortality,
+climate conditions and model settings match Supplementary Fig. S1. Each
+scenario is compared with baseline land use. Predictors are standardized
+z-scores; vertical dotted lines mark citywide means and arrows indicate lower
+to higher vulnerability. Shaded bands are pointwise 95% model-conditional
+confidence intervals. All valid LSOAs enter the fits; curves display P1–P99.
+Y-axis limits differ between vulnerability indicators; the three scenarios share
+an axis within each panel. Grey densities below zero show observed predictor
+distributions, rescaled independently of mortality units. Associations are unadjusted
+for location; intervals exclude spatial dependence and upstream input uncertainty.
+
+![Overlaid Target scenario comparison](../../figures/figure6/scenario_comparison/figure6_supplement_target_overlay.png)
+
+Regenerate only this version, preserving Green and main figures:
+`Rscript code/compare_figure6_scenarios.R --target-overlay-only`.
+
+S1/S2 are provisional manuscript numbers and now refer to the overlays above.
+The earlier 15-panel grids remain available for inspection, but are not the
+proposed supplementary versions. No figure files were changed by this text
+revision. Compare absolute values using axis labels rather than visual heights
+between panels or figures. The existing figure attribution above applies.
+
+**Reproduction:** `Rscript code/compare_figure6_scenarios.R` writes only to
+`figures/figure6/scenario_comparison/` and refuses to overwrite completed outputs.
+`--redraw` reuses saved results and replaces the two grid and two overlay PNGs.
+Fits use all-cause
+health outputs at `temperature_setting_c = 25`, the canonical four-dimension SVI,
+population allocation, fixed 2021 denominators, `scat()`, REML, `select = TRUE`
+and `s(x, k = 10, bs = "ts")`, matching main Figure 6. Predictions include the
+intercept; fitting is per 100,000, exported units per million. Source checksums
+and session information accompany [contrasts](../../figures/figure6/scenario_comparison/contrasts.csv),
+[curve data](../../figures/figure6/scenario_comparison/curves.csv) and
+[shape checks](../../figures/figure6/scenario_comparison/shape_checks.csv).
+Green30 health-input parity and all five main-figure contrasts passed; hashes
+confirmed that existing figures and numerical outputs were unchanged.
+No new spatially adjusted models were fitted. These are descriptive comparisons,
+not spatially corrected tests or paired tests of differences between scenarios.
 
 ## Candidate B uniform area allocation
 
@@ -122,12 +276,9 @@ and all saved high-vulnerability/low-benefit counts reproduced.
   Green30's tertile thresholds are reused for Target30. Figures 6 and 7 use
   different summaries of vulnerability (continuous GAM versus tertile groups),
   not different SVI constructions.
-- Saved Figure 7 thresholds are still per 100,000. A read-only test confirms
-  multiplying rates and thresholds by ten preserves every classification.
-  The corresponding thresholds are 33.20943 and 51.94653 per million.
-  **Next Figure 7 display edit:** rescale rate fields and labels together,
-  leaving percentages, counts and absolute deaths unchanged. No Figure 7
-  outputs have been replaced in this step.
+- Figure 7's per-million conversion is complete. The consistency test confirms
+  unchanged classifications and counts; see the [current Figure 7 legend](FIGURE7_REVIEW.md#proposed-revised-legend)
+  for thresholds and the preferred display. No further unit conversion is needed.
 - Retain the age-75+ trade-off: the high-age-75, low-benefit share rises from
   28.7% to 59.0%, with 26.8 fewer deaths averted in those neighbourhoods under
   Target30. This concerns neighbourhood age composition, not age-specific
@@ -137,7 +288,7 @@ and all saved high-vulnerability/low-benefit counts reproduced.
 - Review the realized canopy-budget audit before final equal-budget wording;
   equal canopy area does not establish equal costs or numbers of trees.
 
-Evidence: [Figure 7 headline table](../../figures/equity_map_biscale_revised_equal_area/fig7_quantitative_headline_results.csv)
+Evidence: [Figure 7 headline table](../../figures/figure7/csv/fig7_quantitative_headline_results.csv)
 and [production code](../../code/equity-health-fig7-production.Rmd).
 
 ## Current figure presentation
@@ -160,7 +311,9 @@ remain in the manuscript legends above.
   input checksums, session information and candidate manifests.
 - `figures/figure6/allocation_normalization_comparison/`: controlled comparisons
   and side-by-side review images, separate from candidate figures.
-- This document owns the proposed legends and Results. The V0–V1 record owns
+- This document owns Figure 6 legends and Green Results; the
+  [Figure 7 review](FIGURE7_REVIEW.md) owns its legend and the Target Results.
+  The V0–V1 record owns
   the method-change rationale; TODO owns outstanding decisions.
 
 `Rscript code/run_figure6_candidates.R 20261105` runs only the two canonical
