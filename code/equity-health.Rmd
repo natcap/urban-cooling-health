@@ -863,8 +863,13 @@ fit_figure6_gam <- function(data, metric, analysis_label, calculate_spatial = FA
     x = sort(unique(c(seq(min(model_data$x), max(model_data$x), length.out = 200),
                       unname(quantile(model_data$x, c(.01, .10, .90, .99))))))
   )
+  # Decision: show interpretable predicted benefits, not centred contributions.
+  # For this univariable identity-link GAM, response = intercept + s(x);
+  # terms would return s(x) alone. Adding the intercept shifts the curve but
+  # preserves its shape and P90–P10 contrast. Full-prediction SEs also include
+  # intercept uncertainty/covariance, so do not reuse terms-only bands.
+  # A negative centred term means below-reference benefit, not deaths caused.
   full_prediction <- predict(
-    # Full predictions include the intercept and its covariance in the bands.
     model, newdata = prediction_data, type = "response", se.fit = TRUE
   )
 
@@ -1353,14 +1358,9 @@ for (m in metrics) {
   colnames(pred_data) <- m_i
   
   
-  # B. Predict "Terms" (The Critical Fix)
-  # type = "terms" returns the Centered Effect (0 = Mean). 
-  # This makes "Predicted Change" accurate and aligns with y=0 line.
-  # preds <- predict(gam_model , newdata = pred_data, type = "terms", se.fit = TRUE)
-  
-  # Plot the centred smooth term so zero means the model's average effect.
-  # This matches the Figure 6 y-axis and must not be described as a predicted
-  # number of deaths.
+  # Historical display only (disabled chunk): terms excludes the intercept,
+  # showing a centred smooth contribution, not predicted deaths averted.
+  # Current Figure 6 uses response; see figure-6-production-models above.
   preds <- predict(
     gam_model, newdata = pred_data, type = "terms", se.fit = TRUE
   )
@@ -2526,8 +2526,8 @@ When `data/derived/lsoa_population_2021.csv` is available, the distributional
 benefit is expressed per 100,000 residents.
 
 ```{r fig-7-production, echo=FALSE, out.width='100%'}
-fig7_ab_path <- "./figures/equity_map_biscale_revised_equal_area/fig7_ab_upgraded.png"
-fig7_cd_path <- "./figures/equity_map_biscale_revised_equal_area/fig7_cd_upgraded.png"
+fig7_ab_path <- "./figures/figure7/png/fig7_ab_upgraded.png"
+fig7_cd_path <- "./figures/figure7/png/fig7_cd_upgraded.png"
 
 if (!all(file.exists(c(fig7_ab_path, fig7_cd_path)))) {
   stop(

@@ -48,11 +48,22 @@ figures/equity_map_biscale/*
 !figures/equity_map_biscale/fig7_*.png
 !figures/equity_map_biscale/fig7_session_info.txt
 
-!figures/equity_map_biscale_revised_equal_area/
-figures/equity_map_biscale_revised_equal_area/*
-!figures/equity_map_biscale_revised_equal_area/fig7_*.csv
-!figures/equity_map_biscale_revised_equal_area/fig7_*.png
-!figures/equity_map_biscale_revised_equal_area/fig7_session_info.txt
+!figures/figure7/
+figures/figure7/*
+!figures/figure7/csv/
+!figures/figure7/csv/*.csv
+!figures/figure7/png/
+!figures/figure7/png/*.png
+!figures/figure7/fig7_session_info.txt
+!figures/figure7/README.md
+
+# Reviewed Figure 6 comparisons and manuscript guidance selected for release.
+!figures/figure6/manuscript/equity_health_All_cause_gam_Green30_Target30_per_million_population_full_prediction.png
+!figures/figure6/scenario_comparison/
+figures/figure6/scenario_comparison/*
+!figures/figure6/scenario_comparison/*.png
+!docs/manuscript/FIGURE7_REVIEW.md
+!docs/manuscript/MANUSCRIPT_ORGANIZATION_REVIEW.md
 
 # Track the small, documented inputs needed to reproduce Figure 7. Large raw
 # rasters remain excluded by data/*.

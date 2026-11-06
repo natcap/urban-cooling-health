@@ -1,0 +1,6 @@
+metric,metric_label,n_high_vulnerability,low_Green30,remained_low,left_low,newly_low,neither_low,low_Target30
+SVI,Overall SVI,1612,733,11,722,62,817,73
+p5under,Population aged <5,1609,737,50,687,308,564,358
+p75over,Population aged 75+,1608,461,214,247,735,412,949
+pBAME,Ethnic-minority share,1612,828,4,824,52,732,56
+pIncomeDeprivation,Income deprivation,1608,669,16,653,82,857,98

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 # not projections of London's 2050 demographic composition.
 #
 # Green30 benefit tertiles are fixed and reused for Target30. When an LSOA
-# population table is present, benefit is expressed per 100,000 residents.
+# population table is present, benefit is expressed per million residents.
 # Otherwise population-weighted fields remain missing instead of silently
 # treating every LSOA as having the same population.
 
@@ -36,23 +36,30 @@ temperature_period <- 2050L
 bootstrap_draws <- 2000L
 bootstrap_seed <- 20260908L
 
-main_vulnerability_vars <- c("pIncomeDeprivation", "p75over", "pBAME")
-# Age <5 is less directly aligned with all-cause mortality. SVI partly
-# reproduces the targeting rule, so both are supplementary checks.
-supplementary_vulnerability_vars <- c("p5under", "SVI")
+main_vulnerability_vars <- c("SVI", "pIncomeDeprivation", "p75over", "pBAME")
+# SVI assesses the intended targeting distribution, not independent validation.
+# Age shares describe neighbourhood composition, not age-specific mortality.
+supplementary_vulnerability_vars <- "p5under"
 vulnerability_vars <- c(main_vulnerability_vars, supplementary_vulnerability_vars)
 vulnerability_labels <- c(
   pIncomeDeprivation = "Income deprivation",
-  p5under = "Age <5",
-  p75over = "Age 75+",
-  pBAME = "Ethnic minority",
-  SVI = "SVI"
+  p5under = "Population aged <5",
+  p75over = "Population aged 75+",
+  pBAME = "Ethnic-minority share",
+  SVI = "Overall SVI"
 )
 
 output_dir <- Sys.getenv(
   "URBAN_COOLING_FIG7_OUTPUT_DIR",
-  unset = "./figures/equity_map_biscale_revised_equal_area"
+  unset = "./figures/figure7"
 )
+# Keep images and numerical tables separate; session metadata stays at the root.
+# Vectorized so the manifest records the same destinations as the writers.
+fig7_output_path <- function(filename) {
+  subdir <- ifelse(grepl("\\.png$", filename), "png",
+                   ifelse(grepl("\\.csv$", filename), "csv", ""))
+  file.path(output_dir, subdir, filename)
+}
 population_file <- "./data/derived/lsoa_population_2021_by_lsoa11cd.csv"
 health_zonal_file <- "./data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv"
 green30_mc_file <- "./data/derived/green30_revised_equal_area_25c_city_total_draws_by_cause.csv"
@@ -190,12 +197,12 @@ if (anyNA(equity_wide[, c("cases_Green30", "cases_Target30")])) {
 equity_wide <- equity_wide %>%
   mutate(
     delta_cases = cases_Target30 - cases_Green30,
-    benefit_Green30 = if (has_population) 100000 * cases_Green30 / population_2021 else cases_Green30,
-    benefit_Target30 = if (has_population) 100000 * cases_Target30 / population_2021 else cases_Target30,
+    benefit_Green30 = if (has_population) 1000000 * cases_Green30 / population_2021 else cases_Green30,
+    benefit_Target30 = if (has_population) 1000000 * cases_Target30 / population_2021 else cases_Target30,
     delta_benefit = benefit_Target30 - benefit_Green30
   )
 benefit_unit <- if (has_population) {
-  "Deaths averted per 100,000 residents (2021 population)"
+  "Deaths averted per million residents (2021 population)"
 } else {
   "Absolute deaths averted per LSOA (population denominator pending)"
 }
@@ -318,6 +325,8 @@ blue_transitions <- metric_data %>%
 # Resampling keeps each LSOA's two scenario values paired. These intervals test
 # robustness to neighborhood composition; they do not propagate model-input
 # uncertainty because LSOA-level health-model draws are not currently retained.
+# No spatial blocks: retain these as composition sensitivity in the CSV only,
+# not inferential whiskers on the descriptive main figure.
 set.seed(bootstrap_seed)
 bootstrap_results <- map_dfr(vulnerability_vars, function(metric_name) {
   dat <- metric_data %>% filter(metric == metric_name, high_vulnerability)
@@ -442,7 +451,9 @@ if (file.exists(green30_mc_file) && file.exists(target30_mc_file)) {
 ## Figure 7a-b: maps with common thresholds
 
 ```{r maps}
-main_metric_labels <- unname(vulnerability_labels[main_vulnerability_vars])
+# One renderer keeps main and supplementary panels identical in definition/style.
+make_figure7 <- function(display_vars) {
+main_metric_labels <- unname(vulnerability_labels[display_vars])
 geometry_by_lsoa <- health_sf %>%
   select(LSOA11CD) %>%
   group_by(LSOA11CD) %>%
@@ -452,7 +463,7 @@ geometry_by_lsoa <- health_sf %>%
 map_data <- geometry_by_lsoa %>%
   left_join(
     metric_data %>%
-      filter(metric %in% main_vulnerability_vars) %>%
+      filter(metric %in% display_vars) %>%
       select(
         LSOA11CD, metric_label, vulnerability_class,
         benefit_class_Green30, benefit_class_Target30
@@ -483,36 +494,49 @@ map_panels <- map2(c("Green30", "Target30"), c("a", "b"), function(scenario_name
         plot.margin = margin(1, 1, 1, 1), legend.position = "none"
       )
   })
-  plot_grid(plotlist = scenario_maps, nrow = 1, labels = c(panel_label, "", ""), label_size = 11)
+  plot_grid(plotlist = scenario_maps, nrow = 1, labels = c(panel_label, rep("", length(display_vars) - 1)), label_size = 11)
 })
 
 map_legend <- bi_legend(
   pal = "DkCyan", dim = 3,
-  xlab = "Vulnerability", ylab = "Benefit", size = 7
+  xlab = "Vulnerability", ylab = "Benefit", size = 9
 )
 fig7_ab_upgraded <- ggdraw() +
-  draw_plot(plot_grid(plotlist = map_panels, ncol = 1), 0, 0.13, 1, 0.87) +
-  draw_plot(map_legend, 0.39, 0.005, 0.22, 0.16)
-```
-
-## Figure 7c-d: paired comparison and transitions
-
-```{r comparison-plots}
+  draw_plot(plot_grid(plotlist = map_panels, ncol = 1), 0, 0.22, 1, 0.78) +
+  draw_plot(map_legend, 0.02, 0.015, 0.24, 0.20) +
+  draw_label(sprintf(
+    "Benefit: deaths averted per million residents\nFixed Green30 cutpoints: %.2f and %.2f\nBlue: high vulnerability, low benefit\nVulnerability: metric-specific tertiles",
+    green30_benefit_breaks[1], green30_benefit_breaks[2]),
+    x = 0.30, y = 0.10, hjust = 0, size = 9)
+# Figure 7c-d: paired comparison and transitions
 blue_plot_data <- headline_results %>%
-  filter(metric %in% main_vulnerability_vars) %>%
+  filter(metric %in% display_vars) %>%
   mutate(
     metric_label = factor(metric_label, levels = rev(main_metric_labels)),
-    change_label = sprintf(
-      "%+.1f pp [%+.1f, %+.1f]",
-      change_blue_percentage_points, change_low, change_high
-    )
+    change_label = sprintf("%+.1f pp", change_blue_percentage_points)
   )
-blue_transition_plot_data <- blue_transitions %>%
-  filter(metric %in% main_vulnerability_vars) %>%
-  mutate(
-    metric_label = factor(metric_label, levels = rev(main_metric_labels)),
-    benefit_Target30_group = factor(benefit_Target30_group, levels = benefit_levels)
-  )
+# Three disjoint transition groups across ALL high-vulnerability LSOAs.
+# Neither-low LSOAs are retained in the audit table, not drawn as transitions.
+transition_balance <- headline_results %>%
+  transmute(metric, metric_label, n_high_vulnerability,
+    low_Green30 = n_blue_Green30,
+    remained_low = n_blue_Green30 - n_blue_resolved,
+    left_low = n_blue_resolved, newly_low = n_new_blue,
+    neither_low = n_high_vulnerability - n_blue_Green30 - n_new_blue,
+    low_Target30 = n_blue_Target30)
+stopifnot(all(transition_balance$low_Green30 - transition_balance$left_low +
+                transition_balance$newly_low == transition_balance$low_Target30),
+          all(transition_balance$neither_low >= 0))
+transition_plot_data <- transition_balance %>%
+  filter(metric %in% display_vars) %>%
+  mutate(metric_label = factor(metric_label, levels = main_metric_labels),
+    group_label = paste0(metric_label, " (n = ", n_high_vulnerability, ")")) %>%
+  arrange(metric_label) %>%
+  mutate(group_label = factor(group_label, levels = group_label)) %>%
+  pivot_longer(c(remained_low, left_low, newly_low),
+               names_to = "movement", values_to = "n_LSOA") %>%
+  mutate(movement = factor(movement,
+    levels = c("newly_low", "left_low", "remained_low")))
 
 citywide_note <- sprintf(
   "Citywide deaths averted: Green30 %.1f; Target30 %.1f (%+.1f%%)",
@@ -526,14 +550,7 @@ p_blue_gap <- ggplot(blue_plot_data, aes(y = metric_label)) +
     aes(x = pct_blue_Green30, xend = pct_blue_Target30, yend = metric_label),
     color = "grey70", linewidth = 0.8
   ) +
-  geom_errorbar(
-    aes(xmin = pct_blue_Green30_low, xmax = pct_blue_Green30_high),
-    orientation = "y", height = 0.10, color = "#4D4D4D", linewidth = 0.45
-  ) +
-  geom_errorbar(
-    aes(xmin = pct_blue_Target30_low, xmax = pct_blue_Target30_high),
-    orientation = "y", height = 0.10, color = "#007C91", linewidth = 0.45
-  ) +
+  # Descriptive finite-population shares; bootstrap sensitivity stays in CSV.
   geom_point(
     aes(x = pct_blue_Green30), shape = 21, size = 3.2, stroke = 0.9,
     fill = "white", color = "#4D4D4D"
@@ -549,11 +566,11 @@ p_blue_gap <- ggplot(blue_plot_data, aes(y = metric_label)) +
   ) +
   geom_text(aes(x = 79, label = change_label), hjust = 1, color = "#333333", size = 2.7) +
   scale_x_continuous(
-    limits = c(0, 80), breaks = seq(0, 80, 20),
+    limits = c(0, 84), breaks = seq(0, 60, 20),
     labels = label_number(suffix = "%"), expand = expansion(mult = c(0, 0))
   ) +
   labs(
-    title = "Relatively low mortality benefit among high-vulnerability LSOAs",
+    title = "Low-benefit share among high-vulnerability neighbourhoods",
     subtitle = paste0(
       benefit_unit, ".\n",
       "Green30 reference tertiles applied to both scenarios.\n",
@@ -562,7 +579,7 @@ p_blue_gap <- ggplot(blue_plot_data, aes(y = metric_label)) +
     x = "Share of high-vulnerability LSOAs", y = NULL,
     caption = paste0(
       "Open circles: Green30; filled circles: Target30.\n",
-      "Whiskers and bracketed changes: 95% paired-LSOA bootstrap sensitivity intervals."
+      "Right-hand labels: Target30 minus Green30 (percentage points); descriptive estimates."
     )
   ) +
   theme_classic(base_size = 10) +
@@ -575,80 +592,216 @@ p_blue_gap <- ggplot(blue_plot_data, aes(y = metric_label)) +
   )
 
 p_blue_transition <- ggplot(
-  blue_transition_plot_data,
-  aes(y = metric_label, x = pct, fill = benefit_Target30_group)
+  transition_plot_data, aes(x = n_LSOA, y = movement, fill = movement)
 ) +
-  geom_col(
-    width = 0.65, color = "white", linewidth = 0.3,
-    position = position_stack(reverse = TRUE)
-  ) +
-  geom_text(
-    aes(label = if_else(pct >= 7, paste0(round(pct), "%\n(n=", n_LSOA, ")"), "")),
-    position = position_stack(vjust = 0.5, reverse = TRUE), size = 2.8, lineheight = 0.9
-  ) +
-  scale_fill_manual(
-    values = c(Low = "#3B77A6", Moderate = "#86C5B5", High = "#006D5B"),
-    labels = c(
-      Low = "Remained low benefit",
-      Moderate = "Shifted to moderate benefit",
-      High = "Shifted to high benefit"
-    ), drop = FALSE
-  ) +
-  scale_x_continuous(
-    limits = c(0, 100), breaks = seq(0, 100, 25),
-    labels = percent_format(scale = 1), expand = expansion(mult = c(0, 0.01))
-  ) +
-  labs(
-    title = "Target30 outcomes for the same Green30 low-benefit LSOAs",
-    subtitle = "Each bar totals 100%; labels report within-bar percentages and LSOA counts.",
-    x = "Distribution under Target30", y = NULL, fill = NULL
-  ) +
+  geom_col(width = 0.65) +
+  geom_text(aes(label = n_LSOA), hjust = -0.2, size = 3) +
+  facet_wrap(~group_label, ncol = 1) +
+  scale_fill_manual(values = c(remained_low = "#526677",
+                               left_low = "#007C91", newly_low = "#C07924"),
+                    guide = "none") +
+  scale_y_discrete(labels = c(remained_low = "Remained low",
+                             left_low = "Left low benefit",
+                             newly_low = "Newly low benefit")) +
+  scale_x_continuous(limits = c(0, max(transition_plot_data$n_LSOA) * 1.13),
+                     expand = expansion(mult = c(0, 0))) +
+  labs(title = "Entries into and exits from low benefit",
+    subtitle = "All high-vulnerability LSOAs; counts from Green30 to Target30.",
+    x = "Number of LSOAs", y = NULL,
+    caption = paste0("Green30 low = remained + left; Target30 low = remained + newly low.\n",
+                     "LSOAs with moderate/high benefits in both scenarios are not drawn.")) +
   theme_classic(base_size = 10) +
-  theme(
-    legend.position = "top", plot.title = element_text(face = "bold", size = 12),
-    plot.subtitle = element_text(size = 9), axis.line.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    plot.margin = margin(5.5, 10, 5.5, 5.5)
-  )
+  theme(plot.title = element_text(face = "bold", size = 12),
+    plot.subtitle = element_text(size = 9),
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold", hjust = 0, size = 9),
+    axis.line.y = element_blank(), axis.ticks.y = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 8),
+    panel.spacing = grid::unit(0.45, "lines"),
+    plot.margin = margin(5.5, 12, 5.5, 5.5))
 
 fig7_cd_upgraded <- plot_grid(
   p_blue_gap, p_blue_transition, labels = c("c", "d"),
-  ncol = 1, rel_heights = c(1.08, 1), label_size = 11
+  ncol = 1, rel_heights = c(1, 1.7), label_size = 11
 )
+list(ab = fig7_ab_upgraded, cd = fig7_cd_upgraded, balance = transition_balance)
+}
+main_fig7 <- make_figure7(main_vulnerability_vars)
+supplement_fig7 <- make_figure7(vulnerability_vars)
+transition_balance <- main_fig7$balance
 ```
 
 ## Save publication outputs and audit metadata
 
 ```{r save-outputs}
+# Map-led manuscript candidate: preserve expanded versions when rendering only
+# this layout with URBAN_COOLING_FIG7_MAPLED_ONLY=1.
+svi_rows <- metric_data %>% filter(metric == "SVI", high_vulnerability)
+svi_distribution <- svi_rows %>%
+  select(LSOA11CD, benefit_Green30_group, benefit_Target30_group) %>%
+  pivot_longer(starts_with("benefit_"), names_to = "scenario", values_to = "benefit") %>%
+  mutate(scenario = factor(if_else(grepl("Green30", scenario), "Green30", "Target30"),
+                           levels = scenario_keep)) %>%
+  count(scenario, benefit, .drop = FALSE) %>%
+  group_by(scenario) %>% mutate(pct = 100 * n / sum(n)) %>% ungroup()
+stopifnot(all(tapply(svi_distribution$n, svi_distribution$scenario, sum) == nrow(svi_rows)))
+svi_balance <- transition_balance %>% filter(metric == "SVI")
+palette9 <- bi_pal("DkCyan", dim = 3, preview = FALSE)
+# One named palette for maps, key, key labels and high-SVI bars: no independent scales.
+high_svi_colors <- setNames(unname(palette9[c("3-1", "3-2", "3-3")]), benefit_levels)
+svi_maps <- lapply(scenario_keep, function(sc) {
+  classes <- metric_data %>% filter(metric == "SVI") %>%
+    transmute(LSOA11CD, bi_class = paste(vulnerability_class,
+      .data[[paste0("benefit_class_", sc)]], sep = "-"))
+  ggplot(health_sf %>% select(LSOA11CD) %>% distinct(LSOA11CD, .keep_all = TRUE) %>%
+           left_join(classes, by = "LSOA11CD")) +
+    geom_sf(aes(fill = bi_class), colour = NA) +
+    scale_fill_manual(values = palette9, drop = FALSE) + coord_sf(datum = NA) +
+    labs(title = sc) + bi_theme(base_size = 10) +
+    theme(legend.position = "none", plot.title = element_text(face = "bold", size = 13))
+})
+# Arrows originate at the high-vulnerability legend cells, not map locations.
+key <- ggplot(expand_grid(v = 1:3, b = 1:3) %>%
+                mutate(cell = paste(v, b, sep = "-")), aes(v, b)) +
+  geom_tile(aes(fill = cell), width = 1, height = 1) +
+  scale_fill_manual(values = palette9, guide = "none") +
+  annotate("segment", x = 3, y = 3, xend = 4.1, yend = 3.4,
+           arrow = grid::arrow(length = grid::unit(0.09, "inches"))) +
+  annotate("segment", x = 3, y = 1, xend = 4.1, yend = 0.8,
+           arrow = grid::arrow(length = grid::unit(0.09, "inches"))) +
+  annotate("text", x = 4.3, y = 3.4, label = "High vulnerability\nHigh benefit",
+           hjust = 0, size = 3, colour = high_svi_colors[["High"]]) +
+  annotate("text", x = 4.3, y = 0.8, label = "High vulnerability\nLow benefit",
+           hjust = 0, size = 3, colour = high_svi_colors[["Low"]]) +
+  annotate("text", x = 2, y = -0.15, label = "SVI →", size = 3) +
+  annotate("text", x = 0.05, y = 2, label = "Benefit →", angle = 90, size = 3) +
+  coord_fixed(xlim = c(-0.3, 10), ylim = c(-0.6, 4), clip = "off") + theme_void()
+distribution_plot <- ggplot(svi_distribution, aes(scenario, pct, fill = benefit)) +
+  geom_col(width = 0.55, position = position_stack(reverse = TRUE)) +
+  geom_text(aes(label = if_else(pct < 7, "", sprintf("%.1f%%", pct))), colour = "white", size = 2.5,
+            position = position_stack(vjust = 0.5, reverse = TRUE)) +
+  geom_text(data = filter(svi_distribution, benefit == "Low", pct < 7),
+            aes(y = pct / 2 + 2, label = sprintf("%.1f%%", pct)),
+            nudge_x = 0.32, hjust = 0, size = 2.5, colour = "#333333") +
+  scale_fill_manual(values = high_svi_colors, drop = FALSE, guide = "none") +
+  scale_y_continuous(breaks = c(0, 50, 100), labels = label_number(suffix = "%"),
+                     expand = expansion(mult = c(0, 0.02))) +
+  labs(title = "Benefits within high-SVI neighbourhoods",
+       subtitle = sprintf("Same %s LSOAs; low-benefit share: %+.1f pp", nrow(svi_rows),
+                          headline_results$change_blue_percentage_points[headline_results$metric == "SVI"]),
+       x = NULL, y = NULL, fill = NULL,
+       caption = NULL) +
+  theme_classic(base_size = 9) +
+  theme(legend.position = "top", legend.margin = margin(0,0,0,0),
+        plot.title = element_text(face = "bold", size = 10),
+        plot.subtitle = element_text(size = 8), plot.caption = element_text(size = 8, hjust = 0))
+gap_rows <- headline_results %>% filter(metric %in% main_vulnerability_vars) %>%
+  mutate(metric_label = factor(metric_label, levels = rev(unname(vulnerability_labels[main_vulnerability_vars]))))
+gap_plot <- ggplot(gap_rows, aes(y = metric_label)) +
+  # One connector, with a small matching arrowhead ending just before Target30.
+  # Point coordinates remain exact; the short clearance prevents head occlusion.
+  geom_segment(aes(x = pct_blue_Green30,
+                   xend = pct_blue_Target30 - sign(pct_blue_Target30 - pct_blue_Green30) *
+                     pmin(1.7, abs(pct_blue_Target30 - pct_blue_Green30) / 4),
+                   yend = metric_label), colour = "grey65", linewidth = 0.4,
+               arrow = grid::arrow(type = "closed", length = grid::unit(0.045, "inches"))) +
+  geom_point(aes(x = pct_blue_Green30), shape = 21, fill = "white", size = 2.5) +
+  geom_point(aes(x = pct_blue_Target30), colour = "#007C91", size = 2.5) +
+  geom_text(aes(x = pct_blue_Green30, label = sprintf("%.1f%%", pct_blue_Green30)),
+            nudge_y = -0.22, size = 2.5) +
+  geom_text(aes(x = pct_blue_Target30, label = sprintf("%.1f%%", pct_blue_Target30)),
+            nudge_y = -0.22, size = 2.5, colour = "#007C91") +
+  geom_text(data = filter(gap_rows, metric == "SVI"),
+            aes(x = pct_blue_Green30, label = "Green30"),
+            nudge_y = 0.26, hjust = 0.5, size = 2.3, colour = "grey30") +
+  geom_text(data = filter(gap_rows, metric == "SVI"),
+            aes(x = pct_blue_Target30, label = "Target30"),
+            nudge_y = 0.26, hjust = 0.5, size = 2.3, colour = "#007C91") +
+  scale_x_continuous(limits = c(0,65), breaks = c(0,20,40,60), labels = label_number(suffix = "%")) +
+  labs(title = "Low benefit across vulnerability indicators",
+       subtitle = "Within each indicator's high-vulnerability group",
+       x = "Share of high-vulnerability LSOAs", y = NULL,
+       caption = NULL) +
+  theme_classic(base_size = 9) +
+  theme(plot.title = element_text(face = "bold", size = 10),
+        plot.subtitle = element_text(size = 8), plot.caption = element_text(size = 7, hjust = 0),
+        axis.line.y = element_blank(), axis.ticks.y = element_blank())
+# Dedicated headers align bold panel letters and titles independently of axis
+# label widths. Final review canvas is 180 mm wide; earlier PNGs are preserved.
+panel_header <- function(p, letter, title) {
+  # Shared x anchor keeps subtitle directly below title, regardless of axes.
+  subtitle <- p$labels$subtitle
+  has_subtitle <- !is.null(subtitle) && nzchar(subtitle)
+  header_plot <- ggdraw() +
+    draw_plot(p + labs(title = NULL, subtitle = NULL), 0, 0, 1,
+              if (has_subtitle) 0.84 else 0.92) +
+    draw_label(letter, x = 0.015, y = 0.95, hjust = 0, vjust = 0.5,
+               fontface = "bold", size = 11) +
+    draw_label(title, x = 0.085, y = 0.95, hjust = 0, vjust = 0.5,
+               fontface = "bold", size = 8)
+  if (has_subtitle) header_plot <- header_plot +
+    draw_label(subtitle, x = 0.085, y = 0.89, hjust = 0, vjust = 1,
+               colour = "grey45", size = 7)
+  header_plot
+}
+compact_theme <- theme(text = element_text(family = "sans", size = 7),
+  axis.text = element_text(size = 7), axis.title = element_text(size = 7),
+  plot.subtitle = element_text(size = 7, hjust = 0),
+  legend.text = element_text(size = 7), legend.key.size = grid::unit(0.3, "cm"),
+  plot.caption = element_text(size = 6, hjust = 0), plot.margin = margin(4, 6, 4, 4))
+distribution_plot <- distribution_plot + compact_theme +
+  labs(subtitle = "Benefit classes among 1,612 high-SVI LSOAs")
+gap_plot <- gap_plot + compact_theme +
+  labs(subtitle = "Within each high-vulnerability group",
+       x = "LSOAs receiving low benefit (%)",
+       caption = NULL) +
+  scale_y_discrete(labels = c("Overall SVI" = "Overall SVI",
+    "Income deprivation" = "Income\ndeprivation",
+    "Population aged 75+" = "Population\naged ≥75",
+    "Ethnic-minority share" = "Ethnic-minority\nshare"))
+left_column <- plot_grid(panel_header(svi_maps[[1]], "a", "Green30 scenario"),
+  panel_header(svi_maps[[2]], "b", "Target30 scenario"), key,
+  ncol = 1, rel_heights = c(1, 1, 0.5))
+right_column <- plot_grid(panel_header(distribution_plot, "c", "Benefit distribution"),
+  panel_header(gap_plot, "d", "Change in low-benefit share"),
+  ncol = 1, rel_heights = c(1, 1))
+fig7_mapled <- ggdraw() +
+  draw_plot(plot_grid(left_column, right_column, nrow = 1, rel_widths = c(1, 1.15)),
+            0, 0.045, 1, 0.955) +
+  draw_label("Benefit: deaths averted per million residents.",
+             x = 0.03, y = 0.022, hjust = 0, size = 6)
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-write_csv(headline_results, file.path(output_dir, "fig7_quantitative_headline_results.csv"))
-write_csv(transition_results, file.path(output_dir, "fig7_paired_transition_matrix.csv"))
-write_csv(citywide_results, file.path(output_dir, "fig7_citywide_tradeoff.csv"))
-write_csv(age75_group_summary, file.path(output_dir, "fig7_age75_group_summary.csv"))
-write_csv(age75_correlations, file.path(output_dir, "fig7_age75_correlations.csv"))
-write_csv(age75_transition_summary, file.path(output_dir, "fig7_age75_transition_summary.csv"))
+dir.create(file.path(output_dir, "png"), showWarnings = FALSE)
+dir.create(file.path(output_dir, "csv"), showWarnings = FALSE)
+ggsave(fig7_output_path("fig7_main_mapled_SVI_20261105_v4.png"), fig7_mapled,
+       width = 180, height = 170, units = "mm", dpi = 600, device = ragg::agg_png, bg = "white")
+write_csv(svi_distribution, fig7_output_path("fig7_mapled_SVI_distribution.csv"))
+if (Sys.getenv("URBAN_COOLING_FIG7_MAPLED_ONLY") != "1") {
+write_csv(headline_results, fig7_output_path("fig7_quantitative_headline_results.csv"))
+write_csv(transition_balance, fig7_output_path("fig7_low_benefit_entries_exits.csv"))
+write_csv(transition_results, fig7_output_path("fig7_paired_transition_matrix.csv"))
+write_csv(citywide_results, fig7_output_path("fig7_citywide_tradeoff.csv"))
+write_csv(age75_group_summary, fig7_output_path("fig7_age75_group_summary.csv"))
+write_csv(age75_correlations, fig7_output_path("fig7_age75_correlations.csv"))
+write_csv(age75_transition_summary, fig7_output_path("fig7_age75_transition_summary.csv"))
 if (nrow(citywide_uncertainty) > 0) {
-  write_csv(citywide_uncertainty, file.path(output_dir, "fig7_citywide_uncertainty.csv"))
+  write_csv(citywide_uncertainty, fig7_output_path("fig7_citywide_uncertainty.csv"))
 }
 
-ggsave(
-  file.path(output_dir, "fig7_ab_upgraded.png"), fig7_ab_upgraded,
-  width = 7, height = 6.2, dpi = 600, bg = "white", device = ragg::agg_png
-)
-ggsave(
-  file.path(output_dir, "fig7_cd_upgraded.png"), fig7_cd_upgraded,
-  width = 7, height = 6.8, dpi = 600, bg = "white", device = ragg::agg_png
-)
-for (extension in c("pdf", "svg")) {
-  ggsave(
-    file.path(output_dir, paste0("fig7_ab_upgraded.", extension)),
-    fig7_ab_upgraded, width = 7, height = 6.2, bg = "white"
-  )
-  ggsave(
-    file.path(output_dir, paste0("fig7_cd_upgraded.", extension)),
-    fig7_cd_upgraded, width = 7, height = 6.8, bg = "white"
-  )
+# PNG only. Supplement uses all five indicators; no analysis is redefined.
+save_figure7 <- function(plots, suffix, map_width, comparison_height) {
+  ggsave(fig7_output_path(paste0("fig7_ab_", suffix, ".png")), plots$ab,
+    width = map_width, height = 6.2, dpi = 600, bg = "white", device = ragg::agg_png)
+  ggsave(fig7_output_path(paste0("fig7_cd_", suffix, ".png")), plots$cd,
+    width = 8, height = comparison_height, dpi = 600, bg = "white", device = ragg::agg_png)
+  combined <- plot_grid(plots$ab, plots$cd, ncol = 1,
+                       rel_heights = c(6.2, comparison_height))
+  ggsave(fig7_output_path(paste0("fig7_complete_", suffix, ".png")), combined,
+    width = map_width, height = 6.2 + comparison_height, dpi = 600,
+    bg = "white", device = ragg::agg_png)
 }
+save_figure7(main_fig7, "upgraded", 10, 10)
+save_figure7(supplement_fig7, "supplement_all_five", 12.5, 12)
 
 run_metadata <- tibble(
   run_timestamp_utc = format(Sys.time(), tz = "UTC", usetz = TRUE),
@@ -666,11 +819,11 @@ run_metadata <- tibble(
   bootstrap_draws = bootstrap_draws,
   bootstrap_seed = bootstrap_seed
 )
-write_csv(run_metadata, file.path(output_dir, "fig7_run_metadata.csv"))
+write_csv(run_metadata, fig7_output_path("fig7_run_metadata.csv"))
 session_info_lines <- sub(
   "[[:space:]]+$", "", capture.output(sessionInfo())
 )
-writeLines(session_info_lines, file.path(output_dir, "fig7_session_info.txt"))
+writeLines(session_info_lines, fig7_output_path("fig7_session_info.txt"))
 
 # A compact checksum table makes it possible to verify that a manuscript
 # figure and its exact inputs/outputs still match after files are copied.
@@ -678,7 +831,7 @@ input_paths <- c(
   population_file, health_zonal_file, green30_mc_file, target30_mc_file,
   svi_file
 )
-output_paths <- file.path(output_dir, c(
+output_paths <- fig7_output_path(c(
   "fig7_quantitative_headline_results.csv",
   "fig7_paired_transition_matrix.csv",
   "fig7_citywide_tradeoff.csv",
@@ -687,12 +840,14 @@ output_paths <- file.path(output_dir, c(
   "fig7_age75_transition_summary.csv",
   "fig7_run_metadata.csv",
   "fig7_session_info.txt",
-  "fig7_ab_upgraded.png", "fig7_ab_upgraded.pdf", "fig7_ab_upgraded.svg",
-  "fig7_cd_upgraded.png", "fig7_cd_upgraded.pdf", "fig7_cd_upgraded.svg"
+  "fig7_ab_upgraded.png", "fig7_cd_upgraded.png", "fig7_complete_upgraded.png",
+  "fig7_low_benefit_entries_exits.csv",
+  "fig7_ab_supplement_all_five.png", "fig7_cd_supplement_all_five.png",
+  "fig7_complete_supplement_all_five.png"
 ))
-if (file.exists(file.path(output_dir, "fig7_citywide_uncertainty.csv"))) {
+if (file.exists(fig7_output_path("fig7_citywide_uncertainty.csv"))) {
   output_paths <- c(
-    output_paths, file.path(output_dir, "fig7_citywide_uncertainty.csv")
+    output_paths, fig7_output_path("fig7_citywide_uncertainty.csv")
   )
 }
 manifest_paths <- c(input_paths[file.exists(input_paths)], output_paths)
@@ -707,15 +862,16 @@ write_csv(
       manifest_paths, ~ digest(file = .x, algo = "sha256", serialize = FALSE)
     )
   ),
-  file.path(output_dir, "fig7_file_manifest.csv")
+  fig7_output_path("fig7_file_manifest.csv")
 )
+
+} # Preserve existing exports in map-led-only mode.
 
 print(headline_results)
 print(citywide_results)
 print(age75_group_summary)
 print(age75_correlations)
 if (interactive()) {
-  print(fig7_ab_upgraded)
-  print(fig7_cd_upgraded)
+  print(fig7_mapled)
 }
 ```
