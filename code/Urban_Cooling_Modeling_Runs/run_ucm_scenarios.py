@@ -225,7 +225,7 @@ def main() -> int:
         if args.output_root
         else data_root
         / "2_postprocess_intermediate/UCM_official_runs/"
-        "revised_equal_area_invest3202_2026-09-10"
+        "production/equal_area_2026-09/01_temperature_invest3202"
     )
     repo_root = args.repo_root.expanduser().resolve() if args.repo_root else None
     try:

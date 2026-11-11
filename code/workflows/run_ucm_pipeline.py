@@ -41,11 +41,11 @@ def _git_record(repo_root: Path) -> dict[str, object]:
     try:
         commit = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=repo_root, check=True,
-            capture_output=True, text=True,
+            capture_output=True, text=True
         ).stdout.strip()
         status = subprocess.run(
             ["git", "status", "--porcelain"], cwd=repo_root, check=True,
-            capture_output=True, text=True,
+            capture_output=True, text=True
         ).stdout
         return {"commit": commit, "dirty": bool(status)}
     except (OSError, subprocess.CalledProcessError):
@@ -206,7 +206,7 @@ def main() -> int:
                 "price_basis", "late-2025 input-price assumptions"
             )),
             "--output-dir",
-            str(output_root / "summary/figure4"),
+            str(output_root / "summary"),
         ]
     if figure5_config.get("enabled", False):
         health_output_root = figure5_config.get(
@@ -228,7 +228,7 @@ def main() -> int:
             "--temperature",
             str(figure5_config.get("temperature_c", 25)),
             "--output-dir",
-            str(output_root / "summary/figure5"),
+            str(output_root / "summary"),
         ]
 
     if args.dry_run or args.validate_only:

@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-10",
+  "compatibility": "relative_symlinks",
+  "moves": [
+    {
+      "old": "baseline_health_invest3202",
+      "new": "archive/diagnostic_runs/baseline_health_invest3202"
+    },
+    {
+      "old": "camden_JL_runs",
+      "new": "archive/reference_outputs/camden_JL_runs"
+    },
+    {
+      "old": "green30_health_invest3202",
+      "new": "archive/diagnostic_runs/green30_health_invest3202"
+    },
+    {
+      "old": "green30_health_invest3202_nodata_harmonized",
+      "new": "archive/diagnostic_runs/green30_health_invest3202_nodata_harmonized"
+    },
+    {
+      "old": "health_output_s0_s1",
+      "new": "archive/legacy_runs/health_output_s0_s1"
+    },
+    {
+      "old": "health_output_s0_s1_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s1_2050_2050"
+    },
+    {
+      "old": "health_output_s0_s1_2070_2070",
+      "new": "archive/legacy_runs/health_output_s0_s1_2070_2070"
+    },
+    {
+      "old": "health_output_s0_s2",
+      "new": "archive/legacy_runs/health_output_s0_s2"
+    },
+    {
+      "old": "health_output_s0_s2_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s2_2050_2050"
+    },
+    {
+      "old": "health_output_s0_s3",
+      "new": "archive/legacy_runs/health_output_s0_s3"
+    },
+    {
+      "old": "health_output_s0_s3_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s3_2050_2050"
+    },
+    {
+      "old": "health_output_s0_s41",
+      "new": "archive/legacy_runs/health_output_s0_s41"
+    },
+    {
+      "old": "health_output_s0_s41_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s41_2050_2050"
+    },
+    {
+      "old": "health_output_s0_s41_2070_2070",
+      "new": "archive/legacy_runs/health_output_s0_s41_2070_2070"
+    },
+    {
+      "old": "health_output_s0_s42",
+      "new": "archive/legacy_runs/health_output_s0_s42"
+    },
+    {
+      "old": "health_output_s0_s42_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s42_2050_2050"
+    },
+    {
+      "old": "health_output_s0_s42_2070_2070",
+      "new": "archive/legacy_runs/health_output_s0_s42_2070_2070"
+    },
+    {
+      "old": "health_output_s0_s43",
+      "new": "archive/legacy_runs/health_output_s0_s43"
+    },
+    {
+      "old": "health_output_s0_s43_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s43_2050_2050"
+    },
+    {
+      "old": "health_output_s0_s510_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s510_2050_2050"
+    },
+    {
+      "old": "health_output_s0_s520_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s520_2050_2050"
+    },
+    {
+      "old": "health_output_s0_s530_2050_2050",
+      "new": "archive/legacy_runs/health_output_s0_s530_2050_2050"
+    },
+    {
+      "old": "health_output_stats",
+      "new": "archive/legacy_runs/health_output_stats"
+    },
+    {
+      "old": "health_v2",
+      "new": "archive/diagnostic_runs/health_v2"
+    },
+    {
+      "old": "health_v2_invest3202_population_weighted_2021",
+      "new": "archive/diagnostic_runs/health_v2_invest3202_population_weighted_2021"
+    },
+    {
+      "old": "health_v2_invest3202_population_weighted_2021_nodata_harmonized",
+      "new": "archive/diagnostic_runs/health_v2_invest3202_population_weighted_2021_nodata_harmonized"
+    },
+    {
+      "old": "health_v3_revised_equal_area_population_weighted_2021_2026-09-10",
+      "new": "production/equal_area_2026-09/02_health_population2021"
+    },
+    {
+      "old": "historical_changes_scenario",
+      "new": "archive/reference_outputs/historical_changes_scenario"
+    },
+    {
+      "old": "new_work_intensity",
+      "new": "archive/legacy_runs/new_work_intensity"
+    },
+    {
+      "old": "revised_equal_area_invest3202_2026-09-10",
+      "new": "production/equal_area_2026-09/01_temperature_invest3202"
+    },
+    {
+      "old": "revised_equal_area_invest3202_2026-09-11_valuations",
+      "new": "production/equal_area_2026-09/03_energy_work_capacity"
+    },
+    {
+      "old": "scenario0",
+      "new": "archive/legacy_runs/scenario0"
+    },
+    {
+      "old": "scenario0 = current_lulc (a note)",
+      "new": "archive/legacy_runs/scenario0 = current_lulc (a note)"
+    },
+    {
+      "old": "scenario1",
+      "new": "archive/legacy_runs/scenario1"
+    },
+    {
+      "old": "scenario2",
+      "new": "archive/legacy_runs/scenario2"
+    },
+    {
+      "old": "scenario3",
+      "new": "archive/legacy_runs/scenario3"
+    },
+    {
+      "old": "scenario41",
+      "new": "archive/legacy_runs/scenario41"
+    },
+    {
+      "old": "scenario42",
+      "new": "archive/legacy_runs/scenario42"
+    },
+    {
+      "old": "scenario43",
+      "new": "archive/legacy_runs/scenario43"
+    },
+    {
+      "old": "scenario43_updated_no_urban",
+      "new": "archive/legacy_runs/scenario43_updated_no_urban"
+    },
+    {
+      "old": "scenario510",
+      "new": "archive/legacy_runs/scenario510"
+    },
+    {
+      "old": "scenario520",
+      "new": "archive/legacy_runs/scenario520"
+    },
+    {
+      "old": "scenario530",
+      "new": "archive/legacy_runs/scenario530"
+    },
+    {
+      "old": "scenario730v4_equal_budget",
+      "new": "archive/diagnostic_runs/scenario730v4_equal_budget"
+    },
+    {
+      "old": "scenario730v4_equal_budget_health_invest3202",
+      "new": "archive/diagnostic_runs/scenario730v4_equal_budget_health_invest3202"
+    },
+    {
+      "old": "scenario730v4_equal_budget_health_invest3202_publication",
+      "new": "archive/diagnostic_runs/scenario730v4_equal_budget_health_invest3202_publication"
+    },
+    {
+      "old": "ucm_output_postprocess",
+      "new": "archive/reference_outputs/ucm_output_postprocess"
+    },
+    {
+      "old": "zonal_stats_lsoa",
+      "new": "archive/reference_outputs/zonal_stats_lsoa"
+    },
+    {
+      "old": "production/equal_area_2026-09/03_energy_work_capacity/hothaps_work_intensity",
+      "new": "production/equal_area_2026-09/03_energy_work_capacity/derived_heavy_work_capacity"
+    }
+  ]
+}

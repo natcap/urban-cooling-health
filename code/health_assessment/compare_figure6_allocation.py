@@ -30,7 +30,7 @@ def main():
     if args.output.exists():
         raise FileExistsError("Use a fresh output directory to preserve previous comparisons")
     protected = {str(p): digest(p) for p in Path("figures").rglob("*") if p.is_file()}
-    run = args.data_root / "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10/green30_25c"
+    run = args.data_root / "2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/02_health_population2021/green30_25c"
     manifest = json.loads((run / "run_manifest.json").read_text())
     mortality = Path(manifest["inputs"]["mortality_all_cause"]["path"])
     am = json.loads((mortality.parent / "manifest.json").read_text())

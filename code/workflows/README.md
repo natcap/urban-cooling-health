@@ -116,10 +116,10 @@ The Figure 4 stage is similarly opt-in because health assessment is a separate
 review gate. After the reviewed health run exists, set `figure4.enabled` to
 `true` and point `figure4.health_output_root` to it. The stage produces the
 citywide manuscript figure and aggregation-sensitivity artifacts under
-`summary/figure4/` without rerunning UCM.
+`summary/` without rerunning UCM.
 
 Enable `figure5` after the same health review gate to produce the configured-scenario
-borough maps under `summary/figure5/`. If its health path is omitted, the
+borough maps under `summary/`. If its health path is omitted, the
 pipeline reuses `figure4.health_output_root`; otherwise provide the reviewed
 health output explicitly.
 

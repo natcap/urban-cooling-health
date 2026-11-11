@@ -2,6 +2,11 @@
 
 ## Scope
 
+The original seven-case batch described below was subsequently expanded to
+baseline plus all nine manuscript scenarios. See the
+[current run-version index](../../docs/methods/RUN_VERSION_INDEX.md) for current
+folder roles; the original batch counts below document its initial execution.
+
 The final revised scenario set was run with InVEST 3.20.2 at the approved
 25°C primary and 28°C sensitivity settings. The batch includes the baseline
 and Green10/20/30 and Target10/20/30, uses identical model parameters, and
@@ -9,7 +14,7 @@ writes temperature-only results to a new versioned directory:
 
 ```text
 2_postprocess_intermediate/UCM_official_runs/
-└── revised_equal_area_invest3202_2026-09-10/
+└── production/equal_area_2026-09/01_temperature_invest3202/
 ```
 
 Use
@@ -64,7 +69,7 @@ temperature/health workspaces under:
 
 ```text
 2_postprocess_intermediate/UCM_official_runs/
-└── revised_equal_area_invest3202_2026-09-11_valuations/
+└── production/equal_area_2026-09/03_energy_work_capacity/
 ```
 
 Each scenario contains a unique-building energy layer, WBGT raster and run

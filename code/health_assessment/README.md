@@ -376,7 +376,7 @@ After the reviewed health scenarios finish, create the Figure 7 table and restor
 official LSOA11 codes with:
 
 ```bash
-HEALTH_OUTPUT_ROOT="$URBAN_COOLING_DATA_ROOT/2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10"
+HEALTH_OUTPUT_ROOT="$URBAN_COOLING_DATA_ROOT/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/02_health_population2021"
 python code/health_assessment/prepare_health_lsoa_zonal_stats.py \
   "$HEALTH_OUTPUT_ROOT" \
   --output-csv data/derived/health_lsoa_fig7_revised_equal_area_population_weighted_2021.csv \

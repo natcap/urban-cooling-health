@@ -145,7 +145,7 @@ def main() -> None:
             parser.error(f"Unknown scenario(s): {sorted(unknown)}")
         scenarios = {name: scenarios[name] for name in args.scenarios}
     default_health_folder = (
-        "health_v3_revised_equal_area_population_weighted_2021_2026-09-10"
+        "production/equal_area_2026-09/02_health_population2021"
         if args.scenario_set == "revised-equal-area"
         else "health_v2_invest3202_population_weighted_2021_nodata_harmonized"
     )

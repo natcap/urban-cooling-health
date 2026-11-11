@@ -53,7 +53,7 @@ Health rasters and run manifests are stored externally under:
 
 ```text
 2_postprocess_intermediate/UCM_official_runs/
-└── health_v3_revised_equal_area_population_weighted_2021_2026-09-10/
+└── production/equal_area_2026-09/02_health_population2021/
 ```
 
 Small LSOA inputs, paired draws, Figure 7 panels and quantitative tables are

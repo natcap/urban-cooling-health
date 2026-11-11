@@ -24,13 +24,13 @@
   },
   "figure4": {
     "enabled": false,
-    "health_output_root": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10",
+    "health_output_root": "2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/02_health_population2021",
     "temperature_c": 25,
     "price_basis": "late-2025 input-price assumptions"
   },
   "figure5": {
     "enabled": false,
-    "health_output_root": "2_postprocess_intermediate/UCM_official_runs/health_v3_revised_equal_area_population_weighted_2021_2026-09-10",
+    "health_output_root": "2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/02_health_population2021",
     "temperature_c": 25
   }
 }
