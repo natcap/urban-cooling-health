@@ -110,7 +110,7 @@ figure4_add_value_labels <- function(plot, data, digits, size = 3) {
 
 figure4_save_panel <- function(plot, output_dir, stem) {
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-  for (extension in c("png", "pdf", "svg")) {
+  for (extension in c("png")) {
     ggsave(
       file.path(output_dir, paste0(stem, ".", extension)),
       plot, width = 5.2, height = 4.2, units = "in", dpi = 400, bg = "white"

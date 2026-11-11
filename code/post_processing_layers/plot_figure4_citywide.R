@@ -46,7 +46,7 @@ args <- parse_args(commandArgs(trailingOnly = TRUE))
 city_path <- required_path(args$citywide_summary, "citywide_summary")
 health_root <- required_path(args$health_root, "health_root", directory = TRUE)
 output_dir_value <- if (is.null(args$output_dir)) {
-  file.path(dirname(city_path), "figure4")
+  dirname(city_path)
 } else {
   args$output_dir
 }
@@ -149,7 +149,7 @@ write.csv(
       scenario = scenario_id,
       metric, estimate, lower95, upper95, unit, aggregation, strategy
     ),
-  file.path(output_dir, "figure4_citywide_cobenefits_data.csv"),
+  file.path(output_dir, "figure4_citywide_cobenefits_20261110_v2_data.csv"),
   row.names = FALSE
 )
 
@@ -159,7 +159,10 @@ panel_units <- c(
   "c  Heat-related deaths averted" = "Annual deaths"
 )
 
-scenario_colours <- figure4_colours
+# Use the canonical nine-scenario palette without replacing local axis labels.
+palette_env <- new.env()
+sys.source(file.path(script_dir, "..", "func_colors.R"), envir = palette_env)
+scenario_colours <- palette_env$scenario_colors[scenario_order]
 
 # Match the signed-label convention in func_plot_change_point(), while using
 # panel-specific precision and placing health labels beyond its 95% interval.
@@ -178,9 +181,8 @@ figure_data <- figure_data %>%
     label_vjust = ifelse(estimate >= 0, -0.45, 1.35)
   )
 
-main_plot <- ggplot(figure_data, aes(x = scenario, y = estimate, fill = strategy)) +
+main_plot <- ggplot(figure_data, aes(x = scenario, y = estimate, fill = scenario_id)) +
   geom_hline(yintercept = 0, colour = "#777777", linewidth = 0.3) +
-  geom_vline(xintercept = 3.5, colour = "#B8B8B8", linewidth = 0.35) +
   geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25) +
   geom_errorbar(
     data = figure_data %>% filter(!is.na(lower95)),
@@ -189,7 +191,7 @@ main_plot <- ggplot(figure_data, aes(x = scenario, y = estimate, fill = strategy
   ) +
   geom_text(
     aes(y = label_anchor, label = value_label, vjust = label_vjust),
-    size = 3, fontface = "bold", show.legend = FALSE
+    size = 3, fontface = "plain", colour = "#505050", show.legend = FALSE
   ) +
   facet_wrap(~metric, scales = "free_y", nrow = 1) +
   scale_fill_manual(values = scenario_colours) +
@@ -197,18 +199,14 @@ main_plot <- ggplot(figure_data, aes(x = scenario, y = estimate, fill = strategy
   labs(
     x = NULL,
     y = NULL,
-    fill = "Scenario type",
-    caption = paste(strwrap(paste0(
-      "Bars are relative to the matching baseline under identical climate conditions. ",
-      "Energy uses ", args$price_basis, ". Error bars are shown only for health and ",
-      "represent the 95% interval from paired exposure-response draws."
-    ), width = 175), collapse = "\n")
+    fill = NULL
   ) +
   theme_classic(base_size = 11) +
   theme(
-    legend.position = "top",
+    legend.position = "none",
     strip.background = element_blank(),
-    strip.text = element_text(face = "bold", hjust = 0, size = 10),
+    strip.text = element_text(face = "bold", hjust = 0, size = 10,
+                              margin = margin(t = 4, r = 0, b = 4, l = 0)),
     axis.text.y = element_text(size = 9),
     axis.text.x = element_text(size = 8.5),
     legend.title = element_text(size = 9),
@@ -231,9 +229,9 @@ main_plot <- main_plot + geom_text(
   inherit.aes = FALSE, size = 2.7, colour = "#4A4A4A"
 )
 
-for (extension in c("png", "pdf", "svg")) {
+for (extension in c("png")) {
   ggsave(
-    file.path(output_dir, paste0("figure4_citywide_cobenefits.", extension)),
+    file.path(output_dir, paste0("figure4_citywide_cobenefits_20261110_v2.", extension)),
     main_plot, width = 12, height = 4.4, units = "in", dpi = 400,
     bg = "white"
   )
@@ -255,8 +253,7 @@ if (!is.null(args$borough_summary)) {
       borough, borough_code, scenario,
       energy_change_million_gbp = (energy_savings - baseline_energy) / 1e6,
       productivity_change_pp =
-        round(workability_fraction * 100, 2) -
-        round(baseline_workability * 100, 2)
+        (workability_fraction - baseline_workability) * 100
     )
   if (any(table(borough_change$scenario) != 33)) {
     stop("Borough sensitivity requires exactly 33 boroughs per scenario", call. = FALSE)
@@ -291,34 +288,29 @@ if (!is.null(args$borough_summary)) {
         scenario = scenario_id,
         metric, value, strategy
       ),
-    file.path(output_dir, "figure4_borough_sensitivity_data.csv"),
+    file.path(output_dir, "figure4_borough_sensitivity_20261110_v2_data.csv"),
     row.names = FALSE
   )
   sensitivity_plot <- ggplot(
     borough_long,
-    aes(x = scenario, y = value, fill = strategy)
+    aes(x = scenario, y = value, fill = scenario_id)
   ) +
     geom_hline(yintercept = 0, colour = "#777777", linewidth = 0.3) +
-    geom_vline(xintercept = 3.5, colour = "#B8B8B8", linewidth = 0.35) +
     geom_boxplot(width = 0.66, outlier.size = 0.8, linewidth = 0.35) +
     facet_wrap(~metric, scales = "free_y", nrow = 1) +
     scale_fill_manual(values = scenario_colours) +
     labs(
-      x = NULL, y = NULL, fill = "Scenario type",
-      caption = paste0(
-        "Boxes show the spatial distribution across 33 boroughs, not model uncertainty. ",
-        "Each borough has equal weight."
-      )
+      x = NULL, y = NULL
     ) +
     theme_classic(base_size = 10) +
     theme(
-      legend.position = "top", strip.background = element_blank(),
-      strip.text = element_text(face = "bold"), axis.text.x = element_text(size = 8),
+      legend.position = "none", strip.background = element_blank(),
+      strip.text = element_text(face = "bold", hjust = 0, margin = margin(4, 0, 4, 0)), axis.text.x = element_text(size = 8),
       plot.caption = element_text(hjust = 0, size = 8, colour = "#4A4A4A")
     )
-  for (extension in c("png", "pdf", "svg")) {
+  for (extension in c("png")) {
     ggsave(
-      file.path(output_dir, paste0("figure4_borough_sensitivity.", extension)),
+      file.path(output_dir, paste0("figure4_borough_sensitivity_20261110_v2.", extension)),
       sensitivity_plot, width = 8.2, height = 4.2, units = "in", dpi = 400,
       bg = "white"
     )
@@ -380,19 +372,22 @@ if (!is.null(args$borough_summary)) {
         scenario_label = gsub("\n", " ", as.character(scenario)),
         metric, estimand, estimate, strategy
       ),
-    file.path(output_dir, "extended_data_citywide_vs_borough_data.csv"),
+    file.path(output_dir, "extended_data_citywide_vs_borough_20261110_v2_data.csv"),
     row.names = FALSE
   )
 
   make_comparison_panel <- function(estimand_name, panel_label) {
     ggplot(
       filter(aggregation_comparison, estimand == estimand_name),
-      aes(x = scenario, y = estimate, fill = strategy)
+      aes(x = scenario, y = estimate, fill = scenario_id)
     ) +
       geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25) +
       scale_fill_manual(values = scenario_colours) +
       scale_y_continuous(expand = expansion(mult = c(0, 0.10))) +
-      labs(title = panel_label, subtitle = estimand_name, x = NULL, y = NULL) +
+      labs(title = panel_label, x = NULL,
+           y = if (grepl("Energy", panel_label)) {
+             if (grepl("citywide", panel_label)) "£ million/month" else "£ million/month per borough"
+           } else "Percentage points") +
       theme_classic(base_size = 9) +
       theme(
         plot.title = element_text(face = "bold", size = 10),
@@ -412,34 +407,21 @@ if (!is.null(args$borough_summary)) {
     ) +
     make_comparison_panel(
       "Citywide area-weighted mean (percentage points)",
-      "c  Productivity: citywide"
+      "c  Work capacity: citywide"
     ) +
     make_comparison_panel(
       "Unweighted mean borough (percentage points)",
-      "d  Productivity: equal-weight borough"
+      "d  Work capacity: equal-weight borough"
     ) +
     plot_layout(ncol = 2, guides = "collect") +
-    plot_annotation(
-      title = "Sensitivity of co-benefit summaries to geographic aggregation",
-      caption = paste(
-        "Citywide panels answer the London-wide benefit question. Equal-weight",
-        "borough panels describe the average local borough response. Different",
-        "scales are intentional; compare scenario ordering, not bar heights",
-        "between panels. Health is excluded because no reviewed borough-level",
-        "uncertainty workflow is currently available."
-      ),
-      theme = theme(
-        plot.title = element_text(face = "bold", size = 12),
-        plot.caption = element_text(hjust = 0, size = 8, colour = "#4A4A4A"),
-        legend.position = "top"
-      )
-    ) & theme(legend.position = "top")
+    plot_annotation(theme = theme(legend.position = "none")) &
+    theme(legend.position = "none")
 
-  for (extension in c("png", "pdf", "svg")) {
+  for (extension in c("png")) {
     ggsave(
       file.path(
         output_dir,
-        paste0("extended_data_citywide_vs_borough.", extension)
+        paste0("extended_data_citywide_vs_borough_20261110_v2.", extension)
       ),
       aggregation_plot, width = 9.2, height = 7.0, units = "in", dpi = 400,
       bg = "white"
@@ -450,31 +432,78 @@ if (!is.null(args$borough_summary)) {
       path = borough_path,
       sha256 = digest::digest(file = borough_path, algo = "sha256")
     ),
-    data = file.path(output_dir, "figure4_borough_sensitivity_data.csv"),
+    data = file.path(output_dir, "figure4_borough_sensitivity_20261110_v2_data.csv"),
     aggregation_comparison = file.path(
-      output_dir, "extended_data_citywide_vs_borough_data.csv"
+      output_dir, "extended_data_citywide_vs_borough_20261110_v2_data.csv"
     ),
     interpretation = "Spatial borough distribution; not a confidence interval"
   )
 }
 
-artifact_names <- c(
-  "figure4_citywide_cobenefits_data.csv",
-  "figure4_citywide_cobenefits.png",
-  "figure4_citywide_cobenefits.pdf",
-  "figure4_citywide_cobenefits.svg"
+# Optional Extended Data Fig. 1 uses the very same run roots and sign convention.
+# Cause-specific outcomes are separate models, not additive parts of all-cause.
+cause_artifacts <- character()
+if (identical(args$cause_specific, "true")) {
+  cause_labels <- c(all_cause = "a  All-cause", cardiovascular = "b  Cardiovascular",
+    mental_disorder = "c  Mental disorders", respiratory = "d  Respiratory",
+    self_harm = "e  Self-harm")
+  cause_data <- bind_rows(lapply(scenario_order, function(s) {
+    paths <- health_input_manifest[[s]]
+    point <- read.csv(paths$deterministic$path)
+    draws <- read.csv(paths$draws$path)
+    stopifnot(nrow(draws) == 2000, !anyDuplicated(draws$draw))
+    bind_rows(lapply(names(cause_labels), function(cause) {
+      p <- point[point$cause == cause, ]
+      stopifnot(nrow(p) == 1, cause %in% names(draws))
+      d <- -draws[[cause]]
+      stopifnot(all(is.finite(d)), is.finite(p$deaths_averted))
+      data.frame(scenario = s, cause = cause, estimate = p$deaths_averted,
+        lower95 = unname(quantile(d, .025)), upper95 = unname(quantile(d, .975)),
+        draws = length(d))
+    }))
+  }))
+  # Explicit equality gate against the Figure 4 all-cause panel.
+  allcause <- cause_data[cause_data$cause == "all_cause", ]
+  stopifnot(isTRUE(all.equal(allcause$estimate, health_rows$estimate)),
+    isTRUE(all.equal(allcause$lower95, health_rows$lower95)),
+    isTRUE(all.equal(allcause$upper95, health_rows$upper95)))
+  stem <- "extended_data_fig1_mortality_by_cause_20261110_v1"
+  write.csv(cause_data, file.path(output_dir, paste0(stem, "_data.csv")), row.names = FALSE)
+  plotted <- cause_data %>% figure4_prepare_scenarios() %>% mutate(
+    panel = factor(cause, levels = names(cause_labels), labels = cause_labels),
+    text = ifelse(cause == "self_harm", sprintf("%.1f", estimate), sprintf("%.0f", estimate)),
+    anchor = ifelse(estimate >= 0, upper95, lower95),
+    vjust = ifelse(estimate >= 0, -.5, 1.4))
+  p <- ggplot(plotted, aes(scenario, estimate, colour = scenario_id)) +
+    geom_hline(yintercept = 0, colour = "grey65", linewidth = .3) +
+    geom_segment(aes(xend = scenario, y = 0, yend = estimate), linewidth = .6) +
+    geom_errorbar(aes(ymin = lower95, ymax = upper95), width = .18, linewidth = .4) +
+    geom_point(size = 2) +
+    geom_text(aes(y = anchor, label = text, vjust = vjust), colour = "grey35", size = 2.6) +
+    scale_colour_manual(values = scenario_colours) +
+    facet_wrap(~panel, ncol = 3, scales = "free_y") +
+    scale_y_continuous(expand = expansion(mult = c(.14, .20))) +
+    labs(x = NULL, y = "Heat-related deaths averted (annual deaths)") +
+    theme_classic(base_size = 11) + theme(legend.position = "none",
+      strip.background = element_blank(),
+      strip.text = element_text(face = "bold", hjust = 0, margin = margin(4, 0, 4, 0)),
+      axis.text.x = element_text(size = 8), panel.spacing = grid::unit(1.3, "lines"))
+  ggsave(file.path(output_dir, paste0(stem, ".png")), p,
+    width = 12, height = 7.5, dpi = 400, bg = "white")
+  cause_artifacts <- paste0(stem, c(".png", "_data.csv"))
+}
+
+artifact_names <- c(cause_artifacts,
+  "figure4_citywide_cobenefits_20261110_v2_data.csv",
+  "figure4_citywide_cobenefits_20261110_v2.png"
 )
 if (!is.null(borough_outputs)) {
   artifact_names <- c(
     artifact_names,
-    "figure4_borough_sensitivity_data.csv",
-    "figure4_borough_sensitivity.png",
-    "figure4_borough_sensitivity.pdf",
-    "figure4_borough_sensitivity.svg",
-    "extended_data_citywide_vs_borough_data.csv",
-    "extended_data_citywide_vs_borough.png",
-    "extended_data_citywide_vs_borough.pdf",
-    "extended_data_citywide_vs_borough.svg"
+    "figure4_borough_sensitivity_20261110_v2_data.csv",
+    "figure4_borough_sensitivity_20261110_v2.png",
+    "extended_data_citywide_vs_borough_20261110_v2_data.csv",
+    "extended_data_citywide_vs_borough_20261110_v2.png"
   )
 }
 artifact_manifest <- setNames(lapply(artifact_names, function(name) {
@@ -483,6 +512,10 @@ artifact_manifest <- setNames(lapply(artifact_names, function(name) {
 }), artifact_names)
 
 manifest <- list(
+  generator = normalizePath(file.path(script_dir, "plot_figure4_citywide.R")),
+  generator_sha256 = digest::digest(file = file.path(script_dir, "plot_figure4_citywide.R"), algo = "sha256"),
+  palette_source = normalizePath(file.path(script_dir, "..", "func_colors.R")),
+  figure_version = "20261110_v2",
   schema_version = 1,
   created_utc = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
   temperature_c = temperature,
@@ -506,7 +539,18 @@ manifest <- list(
 )
 write_json(
   manifest,
-  file.path(output_dir, "figure4_citywide_cobenefits_manifest.json"),
+  file.path(output_dir, "figure4_citywide_cobenefits_20261110_v2_manifest.json"),
   pretty = TRUE, auto_unbox = TRUE
 )
+if (length(cause_artifacts)) {
+  write_json(list(schema_version = 1, created_utc = manifest$created_utc,
+    generator = manifest$generator, generator_sha256 = manifest$generator_sha256,
+    palette_source = manifest$palette_source, figure_version = "20261110_v1",
+    temperature_c = temperature, inputs = health_input_manifest,
+    estimand = "Annual citywide deaths averted; deterministic cause-specific RR point estimates",
+    uncertainty = "2.5th/97.5th percentiles of 2000 exposure-response draws; sign reversed before quantiles",
+    checks = "45 scenario-cause estimates; all-cause points and intervals equal Figure 4; categories not additive",
+    outputs = artifact_manifest[cause_artifacts]),
+    file.path(output_dir, paste0(stem, "_manifest.json")), pretty = TRUE, auto_unbox = TRUE)
+}
 message("Created Figure 4 outputs in ", output_dir)

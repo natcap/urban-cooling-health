@@ -9,6 +9,11 @@ scenario mappings.
 
 ## Which workflow should I use?
 
+For current versus historical output folders, see the
+[run-version index](../../docs/methods/RUN_VERSION_INDEX.md).
+The valuation package's `derived_heavy_work_capacity/` is its downstream continuous
+capacity calculation, not a separate UCM version.
+
 | Purpose | Production entry point | Status |
 |---|---|---|
 | Run the full production workflow | `../workflows/run_ucm_pipeline.py` | Recommended |
@@ -96,6 +101,12 @@ manuscript workflow.
 
 ### 3. Calculate the project-specific Hothaps productivity measure
 
+This is a **modified work-capacity component** of the study's modelling framework,
+implemented in separate post-processing. It replaces the built-in threshold-based
+work-loss indicator with continuous Hothaps capacity for this study; InVEST's
+cooling, temperature, WBGT and energy calculations remain unchanged. Improved
+predictive accuracy is not established. See the [brief rationale](../../docs/methods/RUN_VERSION_INDEX.md#is-hothaps-an-invest-replacement-or-improvement).
+
 ```bash
 conda run -n urban-cooling-invest-3.20.2 python \
   code/post_processing_layers/calculate_hothaps_workability.py \
@@ -130,18 +141,24 @@ Outputs are written under `summary/`:
 - `borough_energy_productivity_summary.csv`; and
 - `energy_productivity_summary_manifest.json`.
 
-The citywide energy value sums each building exactly once. InVEST's borough
-energy field counts a building in every borough polygon it intersects. The
-summary therefore reports the difference between the summed borough field and
-the unique-building city total. If that discrepancy is material, allocate
-cross-boundary buildings by intersection-area share before using borough
-energy results.
+Citywide energy counts each building with positive London overlap once.
+Cross-borough building totals are split by normalized intersection-area shares;
+wholly outside buildings are excluded. Borough sums conserve the London total.
+Original intersection aggregates, outside-building counts and full-layer values
+are retained as QA fields. A checksum-keyed building allocation cache avoids
+repeating geometry work; keep it local, not in public Git.
 
-Productivity is summarized as the area-weighted mean across valid 10 m pixels.
+Capacity uses one common valid 10 m cell-centre mask inside the borough union,
+with an exclusive borough assignment. Cell-count-weighted borough means exactly
+reproduce the London mean; the unweighted borough mean remains sensitivity.
 If an exposure- or worker-weighted interpretation is desired, add a suitable
 worker-location raster and report that as a separate sensitivity analysis.
 
 ### 5. Compare with the manuscript-era results
+
+This optional historical comparison uses full model-domain quantities, not the
+corrected London-boundary primary estimates. It is not the Figure 4–5 aggregation
+sensitivity; use `write_figure45_comparison.py <summary-folder>` for that table.
 
 ```bash
 conda run -n urban-cooling-invest-3.20.2 python \
@@ -168,7 +185,7 @@ an independent rebuild.
 
 Before updating figures or manuscript text, confirm:
 
-1. all seven scenarios use the same InVEST version, 25°C reference
+1. the baseline and all nine scenarios use the same InVEST version, 25°C reference
    temperature, UHI maximum and humidity;
 2. every scenario has a `T_air`, building-energy, WBGT and Hothaps output;
 3. Hothaps values remain within 0.1–1.0 and use the same valid-cell mask;
@@ -200,12 +217,12 @@ Run:
 Rscript code/post_processing_layers/plot_figure4_citywide.R \
   --citywide-summary /path/to/run/summary/citywide_energy_productivity_summary.csv \
   --borough-summary /path/to/run/summary/borough_energy_productivity_summary.csv \
-  --health-root /path/to/health_v3_revised_equal_area_population_weighted_2021_2026-09-10 \
+  --health-root /path/to/production/equal_area_2026-09/02_health_population2021 \
   --temperature 25 \
-  --output-dir /path/to/run/summary/figure4
+  --output-dir /path/to/run/summary
 ```
 
-The script writes PNG, PDF and SVG versions of the primary figure, its exact
+The script writes PNG versions of the primary figure, its exact
 plotting data, and a provenance manifest. When `--borough-summary` is supplied,
 it also writes a boxplot and source table showing the equal-weight distribution
 across 33 boroughs, plus a four-panel Extended Data comparison of the citywide
@@ -221,12 +238,12 @@ Bars are directly labelled with signed values, following the established
 `func_plot_change_point()` convention. Energy uses one decimal place,
 productivity two decimal places and health whole deaths. Health labels are
 placed beyond the 95% interval to avoid obscuring its uncertainty bars. The
-shared theme uses an 11-point base font and exports vector PDF/SVG files for
+shared theme uses an 11-point base font and exports PNG files for
 final typesetting. At the intended 183 mm double-column width, the combined
 figure scales to approximately 5–7 point text, matching Nature's current
 figure-artwork guidance; recheck this after any layout or publisher resizing.
 
-See `FIGURE4_METHODS.md` for the manuscript recommendation, estimand wording
+See [Figure 4 methods and script index](../../docs/manuscript/figure4_methods.md) for the manuscript recommendation, estimand wording
 and revised legend.
 
 The three established Figure 4 R Markdown notebooks remain the transparent
@@ -245,7 +262,7 @@ Rscript code/post_processing_layers/plot_figure5_borough_cobenefits.R \
   --health-root /path/to/reviewed/health-output \
   --borough-vector /path/to/London_Borough_aoi.shp \
   --temperature 25 \
-  --output-dir /path/to/run/summary/figure5
+  --output-dir /path/to/run/summary
 ```
 
 The production Figure 5 includes all nine manuscript scenarios. For
@@ -255,7 +272,7 @@ a second block. Every outcome uses a symmetric diverging colour scale shared
 across both blocks, with zero as the neutral midpoint, so negative and positive
 scenario effects remain directly comparable.
 
-The builder writes the mapped data, PNG/PDF/SVG figures and a checksum
+The builder writes the mapped data, PNG figures and a checksum
 manifest. A common scale is used across all nine scenarios within each outcome
 row. Health is aggregated from the reviewed all-cause mortality-change raster
 by borough; no borough uncertainty interval is inferred.

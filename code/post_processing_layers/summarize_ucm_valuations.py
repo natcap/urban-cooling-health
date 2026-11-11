@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """Summarize revised UCM energy and Hothaps productivity outputs.
 
-Citywide energy totals are summed once across the unique building layer. The
-InVEST borough field is retained for spatial summaries and reconciled against
-that unique total because a building intersecting two boroughs can otherwise
-be counted twice. Productivity is the area-weighted mean Hothaps workability
-fraction over valid 10 m cells; scenario changes are percentage points versus
-the matching-temperature baseline.
+Citywide energy includes unique buildings with positive London overlap. Borough
+allocations use normalized intersection-area shares; original InVEST intersection
+totals and outside-building exclusions remain QA fields. Productivity uses one
+exclusive borough-cell grid and common valid London mask for every scenario.
+Changes are percentage points versus the matching-temperature baseline.
 """
 
 from __future__ import annotations
@@ -21,6 +20,11 @@ from pathlib import Path
 import numpy
 import pygeoprocessing
 from osgeo import gdal
+
+try:
+    from .valuation_accounting import london_grid, masked_means, allocated_energy
+except ImportError:
+    from valuation_accounting import london_grid, masked_means, allocated_energy
 
 
 def _sha256(path: Path) -> str:
@@ -138,11 +142,18 @@ def main() -> int:
         if args.output_dir
         else ucm_root / "summary"
     )
-    hothaps_root = ucm_root / "hothaps_work_intensity"
+    hothaps_root = ucm_root / "derived_heavy_work_capacity"
     city_rows = []
     borough_rows = []
 
-    for workability_path in sorted(hothaps_root.glob("*/high_work_productivity_*.tif")):
+    rasters = sorted(hothaps_root.glob("*/high_work_productivity_*.tif"))
+    if not rasters:
+        parser.error(f"No Hothaps outputs found under {hothaps_root}")
+    identities, zones, counts = london_grid(borough_path, rasters)
+    cache = output_dir / "building_borough_allocation_weights.npz"
+    print(f"Common London cell-centre mask: {int(counts.sum()):,} pixels", flush=True)
+
+    for workability_path in rasters:
         scenario = workability_path.parent.name
         suffix = workability_path.stem.removeprefix("high_work_productivity_")
         workspace = ucm_root / scenario
@@ -153,11 +164,15 @@ def main() -> int:
                 parser.error(f"Missing required output: {required}")
 
         temperature = float(suffix.split("deg_", 1)[0].rsplit("_", 1)[-1])
-        energy_unique, valid_buildings, missing_energy = _sum_field(
-            buildings_path, "energy_sav"
+        print(f"Summarizing {scenario}", flush=True)
+        energy_unique, allocated, valid_buildings, extra_intersections, outside_buildings, full_energy = allocated_energy(
+            buildings_path, borough_path, cache
         )
+        missing_energy = 0
         energy_borough_sum, _, _ = _sum_field(uhi_path, "avd_eng_cn")
-        workability_mean, valid_pixels = _raster_mean(workability_path)
+        full_mean, full_pixels = _raster_mean(workability_path)
+        workability_mean, borough_means = masked_means(workability_path, zones, counts)
+        valid_pixels = int(counts.sum())
         city_rows.append({
             "scenario": scenario,
             "temperature_c": temperature,
@@ -172,18 +187,29 @@ def main() -> int:
             "buildings_missing_energy": missing_energy,
             "workability_fraction": workability_mean,
             "valid_productivity_pixels": valid_pixels,
+            "workability_fraction_full_domain": full_mean,
+            "full_domain_pixels": full_pixels,
+            "energy_allocated_borough_sum": float(allocated.sum()),
+            "allocation_residual_gbp": float(allocated.sum()) - energy_unique,
+            "additional_building_intersections": extra_intersections,
+            "buildings_outside_london": outside_buildings,
+            "energy_savings_full_building_layer": full_energy,
         })
 
         energy_by_borough = {
             row["borough_code"]: row for row in _borough_energy(uhi_path)
         }
-        for row in _borough_productivity(borough_path, workability_path):
-            energy = energy_by_borough.get(row["borough_code"], {})
+        for index, (code, name, _) in enumerate(identities):
+            row = {"borough_code": code, "borough": name,
+                   "valid_pixels": int(counts[index]),
+                   "workability_fraction": float(borough_means[index])}
+            energy = energy_by_borough.get(code, {})
             borough_rows.append({
                 "scenario": scenario,
                 "temperature_c": temperature,
                 **row,
-                "energy_savings": energy.get("energy_savings"),
+                "energy_savings": float(allocated[index]),
+                "energy_savings_original_intersection": energy.get("energy_savings"),
             })
 
     if not city_rows:
@@ -203,23 +229,26 @@ def main() -> int:
         row["productivity_change_vs_baseline_pp"] = (
             row["workability_fraction"] - reference["workability_fraction"]
         ) * 100
+        row["productivity_full_domain_change_pp"] = (
+            row["workability_fraction_full_domain"] - reference["workability_fraction_full_domain"]
+        ) * 100
 
     city_path = output_dir / "citywide_energy_productivity_summary.csv"
     borough_output_path = output_dir / "borough_energy_productivity_summary.csv"
     _write_csv(city_path, city_rows)
     _write_csv(borough_output_path, borough_rows)
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "ucm_output_root": str(ucm_root),
         "borough_vector": str(borough_path),
         "methods": {
-            "energy_citywide": "sum energy_sav once across unique buildings",
+            "energy_citywide": "sum energy_sav once across unique buildings with positive London overlap; exclude outside buildings",
             "energy_borough": (
-                "InVEST avd_eng_cn intersection aggregate; compare its city sum "
-                "with the unique-building total before reporting"
+                "Building energy allocated by normalized borough intersection area; "
+                "each building total conserved. Original InVEST intersection totals retained for QA."
             ),
-            "productivity": "area-weighted mean Hothaps workability over valid 10 m cells",
+            "productivity": "London borough union, exclusive cell-centre assignment, common valid mask across all scenarios; area-weighted Hothaps mean",
         },
         "outputs": {
             "citywide": {"path": str(city_path), "sha256": _sha256(city_path)},

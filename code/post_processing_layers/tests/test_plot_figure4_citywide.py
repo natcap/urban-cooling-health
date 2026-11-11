@@ -53,12 +53,14 @@ class Figure4BuilderTest(unittest.TestCase):
                     with (health_dir / "city_totals_deterministic.csv").open("w", newline="") as table:
                         writer = csv.DictWriter(table, fieldnames=("cause", "deaths_averted"))
                         writer.writeheader()
-                        writer.writerow({"cause": "all_cause", "deaths_averted": scenario_index * 10})
+                        for cause in ("all_cause", "cardiovascular", "mental_disorder", "respiratory", "self_harm"):
+                            writer.writerow({"cause": cause, "deaths_averted": scenario_index * 10})
                     with (health_dir / "city_total_draws_by_cause.csv").open("w", newline="") as table:
-                        writer = csv.DictWriter(table, fieldnames=("draw", "all_cause"))
+                        causes = ("all_cause", "cardiovascular", "mental_disorder", "respiratory", "self_harm")
+                        writer = csv.DictWriter(table, fieldnames=("draw", *causes))
                         writer.writeheader()
-                        for draw in range(20):
-                            writer.writerow({"draw": draw, "all_cause": -(scenario_index * 10 + draw / 10)})
+                        for draw in range(2000):
+                            writer.writerow({"draw": draw, **{c: -(scenario_index * 10 + draw / 1000) for c in causes}})
 
             for path, rows in ((city_path, city_rows), (borough_path, borough_rows)):
                 with path.open("w", newline="") as table:
@@ -73,29 +75,34 @@ class Figure4BuilderTest(unittest.TestCase):
                     "--borough-summary", str(borough_path),
                     "--health-root", str(health_root),
                     "--output-dir", str(output_dir),
+                    "--cause-specific", "true",
                 ],
                 check=False, capture_output=True, text=True,
             )
             self.assertEqual(0, result.returncode, result.stderr)
             for name in (
-                "figure4_citywide_cobenefits.png",
-                "figure4_citywide_cobenefits.pdf",
-                "figure4_citywide_cobenefits.svg",
-                "figure4_citywide_cobenefits_data.csv",
-                "figure4_citywide_cobenefits_manifest.json",
-                "figure4_borough_sensitivity.png",
-                "figure4_borough_sensitivity_data.csv",
-                "extended_data_citywide_vs_borough.png",
-                "extended_data_citywide_vs_borough_data.csv",
+                "figure4_citywide_cobenefits_20261110_v2.png",
+                "figure4_citywide_cobenefits_20261110_v2_data.csv",
+                "figure4_citywide_cobenefits_20261110_v2_manifest.json",
+                "figure4_borough_sensitivity_20261110_v2.png",
+                "figure4_borough_sensitivity_20261110_v2_data.csv",
+                "extended_data_citywide_vs_borough_20261110_v2.png",
+                "extended_data_citywide_vs_borough_20261110_v2_data.csv",
             ):
                 self.assertTrue((output_dir / name).is_file(), name)
 
-            # The manuscript figure directly labels each estimand with its
-            # documented panel-specific precision.
-            svg = (output_dir / "figure4_citywide_cobenefits.svg").read_text()
-            self.assertIn("+1.0", svg)
-            self.assertIn("+0.10", svg)
-            self.assertIn("+90", svg)
+            # PNG-only policy: do not recreate retired vector exports.
+            cause_stem = "extended_data_fig1_mortality_by_cause_20261110_v1"
+            self.assertTrue((output_dir / (cause_stem + ".png")).exists())
+            self.assertTrue((output_dir / (cause_stem + "_manifest.json")).exists())
+            with (output_dir / (cause_stem + "_data.csv")).open() as f:
+                rows = list(csv.DictReader(f))
+            self.assertEqual(len(rows), 45)
+            self.assertTrue(all(int(r["draws"]) == 2000 for r in rows))
+            self.assertFalse(list(output_dir.glob("*.pdf")))
+            self.assertFalse(list(output_dir.glob("*.svg")))
+            png = (output_dir / "figure4_citywide_cobenefits_20261110_v2.png").read_bytes()
+            self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
 
 
 if __name__ == "__main__":

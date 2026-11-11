@@ -5,6 +5,9 @@ The output is a workability fraction from 0.1 to 1.0. Multiply a scenario
 difference by 100 to report a percentage-point productivity change. This
 script replaces the old machine-specific loop and deliberately does not use
 InVEST's threshold-based ``heavy_work_loss_percent`` raster.
+
+This modifies the study's work-capacity component through post-processing,
+not InVEST source edits. Cooling, temperature, WBGT and energy are unchanged.
 """
 
 from __future__ import annotations
@@ -98,11 +101,15 @@ def main() -> int:
     if args.overwrite and args.resume:
         parser.error("Use either --overwrite or --resume, not both")
 
+    # Modified work-capacity component, implemented outside InVEST source code:
+    # continuous Hothaps replaces the built-in threshold work-loss indicator
+    # for this study. Cooling, temperature, WBGT and energy remain unchanged;
+    # improved predictive accuracy for London workers has not been established.
     input_root = args.ucm_output_root.expanduser().resolve()
     output_root = (
         args.output_root.expanduser().resolve()
         if args.output_root
-        else input_root / "hothaps_work_intensity"
+        else input_root / "derived_heavy_work_capacity"
     )
     if args.alpha1 <= 0 or args.alpha2 <= 0:
         parser.error("alpha1 and alpha2 must be positive")

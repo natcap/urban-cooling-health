@@ -21,14 +21,14 @@ source(here("code", "post_processing_layers", "figure4_panel_helpers.R"))
 data_root <- figure4_data_root()
 health_root <- file.path(
   data_root, "2_postprocess_intermediate", "UCM_official_runs",
-  "health_v3_revised_equal_area_population_weighted_2021_2026-09-10"
+  "production/equal_area_2026-09/02_health_population2021"
 )
 valuation_root <- file.path(
   data_root, "2_postprocess_intermediate", "UCM_official_runs",
-  "revised_equal_area_invest3202_2026-09-11_valuations"
+  "production/equal_area_2026-09/03_energy_work_capacity"
 )
 output_dir <- figure4_output_dir(
-  file.path(valuation_root, "summary", "figure4", "source_panels")
+  file.path(valuation_root, "summary")
 )
 temperature_c <- 25
 stopifnot(dir.exists(health_root))
@@ -103,6 +103,16 @@ The plotted quantity is a citywide total using 2021 population and registered
 mortality. Error bars are 95% intervals from paired exposure-response draws.
 
 ## Archived manuscript-era workflow
+
+### Extended Data Fig. 1 (current production)
+
+The archived cause-specific plot below is not the current manuscript output.
+Use `code/post_processing_layers/plot_figure4_citywide.R` with
+`--cause-specific true` and the same reviewed Figure 4 inputs. It writes
+`extended_data_fig1_mortality_by_cause_20261110_v1.png` plus source CSV and
+manifest in the selected summary folder, using all nine scenarios, deterministic
+points and 95% exposure–response intervals. See the
+[audit and legend](../../docs/manuscript/figure4_5_audit.md#extended-data-figure-1--verified-update).
 
 The code below is retained for tracing the older folder-discovery and scenario
 recoding approach. It is not executed when this notebook is knit.

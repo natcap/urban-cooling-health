@@ -23,11 +23,11 @@ source(here("code", "post_processing_layers", "figure4_panel_helpers.R"))
 data_root <- figure4_data_root()
 valuation_root <- file.path(
   data_root, "2_postprocess_intermediate", "UCM_official_runs",
-  "revised_equal_area_invest3202_2026-09-11_valuations"
+  "production/equal_area_2026-09/03_energy_work_capacity"
 )
 health_root <- file.path(
   data_root, "2_postprocess_intermediate", "UCM_official_runs",
-  "health_v3_revised_equal_area_population_weighted_2021_2026-09-10"
+  "production/equal_area_2026-09/02_health_population2021"
 )
 borough_summary <- file.path(
   valuation_root, "summary", "borough_energy_productivity_summary.csv"
@@ -36,7 +36,7 @@ borough_vector <- file.path(
   data_root, "1_preprocess", "UrbanCoolingModel", "OfficialWorkingInputs",
   "AOIs", "London_Borough_aoi.shp"
 )
-output_dir <- figure4_output_dir(file.path(valuation_root, "summary", "figure5"))
+output_dir <- figure4_output_dir(file.path(valuation_root, "summary"))
 map_builder <- here(
   "code", "post_processing_layers", "plot_figure5_borough_cobenefits.R"
 )

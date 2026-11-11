@@ -177,11 +177,13 @@ def main() -> int:
         rows.append({
             "scenario": scenario,
             "original_energy_savings": old_energy,
-            "revised_energy_savings": float(new["energy_savings_unique_buildings"]),
+            # Keep the historical comparison on its original full-layer domain;
+            # corrected London-boundary estimates belong to Figures 4–5.
+            "revised_energy_savings": float(new.get("energy_savings_full_building_layer", new["energy_savings_unique_buildings"])),
             "original_buildings_with_energy": old_valid,
             "original_buildings_missing_energy": old_missing,
             "original_workability_fraction": old_workability,
-            "revised_workability_fraction": float(new["workability_fraction"]),
+            "revised_workability_fraction": float(new.get("workability_fraction_full_domain", new["workability_fraction"])),
             "original_valid_productivity_pixels": old_pixels,
             "original_productivity_gain_vs_baseline_pp": old_gain_pp,
             "original_common_productivity_pixels": old_common_pixels,

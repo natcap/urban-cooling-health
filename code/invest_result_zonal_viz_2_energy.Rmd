@@ -22,13 +22,13 @@ source(here::here("code", "post_processing_layers", "figure4_panel_helpers.R"))
 data_root <- ucm_config$paths$data_root
 valuation_root <- file.path(
   data_root, "2_postprocess_intermediate", "UCM_official_runs",
-  "revised_equal_area_invest3202_2026-09-11_valuations"
+  "production/equal_area_2026-09/03_energy_work_capacity"
 )
 summary_path <- file.path(
   valuation_root, "summary", "citywide_energy_productivity_summary.csv"
 )
 output_dir <- figure4_output_dir(
-  file.path(valuation_root, "summary", "figure4", "source_panels")
+  file.path(valuation_root, "summary")
 )
 temperature_c <- 25
 stopifnot(file.exists(summary_path))

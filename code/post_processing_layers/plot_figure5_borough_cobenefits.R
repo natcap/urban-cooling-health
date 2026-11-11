@@ -18,6 +18,8 @@ script_argument <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = T
 if (!length(script_argument)) stop("Cannot resolve the Figure 5 script path", call. = FALSE)
 script_dir <- dirname(normalizePath(sub("^--file=", "", script_argument[[1]])))
 source(file.path(script_dir, "figure4_panel_helpers.R"))
+palette_env <- new.env()
+sys.source(file.path(script_dir, "..", "func_colors.R"), envir = palette_env)
 
 parse_args <- function(values) {
   result <- list(temperature = 25)
@@ -82,8 +84,7 @@ borough_change <- summary_data %>%
     borough, borough_code, scenario,
     energy_change_million_gbp = (energy_savings - baseline_energy) / 1e6,
     productivity_change_pp =
-      round(workability_fraction * 100, 2) -
-      round(baseline_workability * 100, 2)
+      (workability_fraction - baseline_workability) * 100
   )
 if (nrow(borough_change) != 33 * length(scenario_order)) {
   stop("Energy/productivity input must contain 33 boroughs for all nine scenarios", call. = FALSE)
@@ -147,119 +148,110 @@ write.csv(
       scenario_label = gsub("\\n", " ", as.character(scenario)),
       metric, value, unit
     ),
-  file.path(output_dir, "figure5_borough_cobenefits_data.csv"),
+  file.path(output_dir, "figure5_borough_cobenefits_20261110_v3_data.csv"),
   row.names = FALSE
 )
 
 map_sf <- boroughs %>%
   left_join(map_data, by = c("borough", "borough_code"))
 
-make_map_row <- function(metric_name, scenario_ids, legend_title, show_legend) {
-  # Use the same symmetric range for both scenario groups. This preserves
-  # direct colour comparability and makes zero the neutral midpoint.
-  metric_limit <- max(abs(filter(map_sf, metric == metric_name)$value), na.rm = TRUE)
-  plot_data <- filter(
-    map_sf, metric == metric_name, scenario_id %in% scenario_ids
-  ) %>%
-    mutate(scenario = droplevels(scenario))
-
-  ggplot(plot_data) +
-    geom_sf(aes(fill = value), colour = "white", linewidth = 0.12) +
+# One shared scale per outcome across all nine scenarios. A symmetric
+# pseudo-log (asinh) colour transform preserves zero/sign and reveals modest
+# greening differences without clipping the extreme AllBuilt counterfactual.
+# Legends remain in original units; explicitly describe the transform in legend.
+make_map_row <- function(metric_name, legend_title, letter) {
+  plot_data <- filter(map_sf, metric == metric_name) %>%
+    mutate(scenario = factor(scenario_id, levels = scenario_order,
+      labels = c("AllBuilt", "TreeRisk", "TreeOpp", "Green10", "Target10",
+                 "Green20", "Target20", "Green30", "Target30")))
+  limit <- max(abs(plot_data$value), na.rm = TRUE)
+  sigma <- limit / 20
+  breaks <- c(-limit, -limit / 5, 0, limit / 5, limit)
+  p <- ggplot(plot_data) +
+    geom_sf(aes(fill = value), colour = "white", linewidth = 0.10) +
     facet_wrap(~scenario, nrow = 1) +
     scale_fill_gradient2(
-      low = "#B2182B", mid = "#F7F7F7", high = "#2166AC",
-      midpoint = 0, limits = c(-metric_limit, metric_limit),
+      low = "#B35806", mid = "#FAFAFA", high = "#2166AC",
+      midpoint = 0, limits = c(-limit, limit),
+      trans = scales::pseudo_log_trans(sigma = sigma, base = 10),
+      breaks = breaks, labels = scales::label_number(accuracy = ifelse(limit < 10, 0.1, 1)),
       name = legend_title,
-      guide = guide_colourbar(
-        title.position = "top", title.hjust = 0.5,
-        barheight = grid::unit(0.68, "in"),
-        barwidth = grid::unit(0.16, "in")
-      )
+      guide = guide_colourbar(title.position = "top", title.hjust = 0,
+        barheight = grid::unit(0.65, "in"), barwidth = grid::unit(0.14, "in"))
     ) +
-    coord_sf(datum = NA) +
-    labs(title = metric_name) +
-    theme_void(base_size = 10) +
+    coord_sf(datum = NA, expand = FALSE) +
+    labs(title = paste(letter, " ", metric_name)) +
+    theme_void(base_size = 11, base_family = "sans") +
     theme(
-      plot.title = element_text(face = "bold", size = 10, margin = margin(b = 3)),
-      strip.text = element_text(face = "bold", size = 10),
-      strip.background = element_rect(fill = "#F1F1F1", colour = NA),
-      legend.position = if (show_legend) "right" else "none",
-      legend.title = element_text(size = 9),
-      legend.text = element_text(size = 9),
-      plot.margin = margin(2, 2, 2, 2)
+      plot.title = element_text(face = "bold", size = 13, hjust = 0,
+                                margin = margin(b = 5)),
+      strip.text = element_text(face = "bold", colour = "black", size = 10,
+                                margin = margin(t = 5, b = 5)),
+      strip.background = element_blank(),
+      legend.position = "right", legend.title = element_text(size = 10),
+      legend.text = element_text(size = 10),
+      panel.spacing.x = grid::unit(0.08, "in"),
+      plot.margin = margin(3, 3, 3, 3)
     )
+  # Colour only scenario text; map fill retains its quantitative meaning.
+  g <- ggplotGrob(p)
+  strips <- which(grepl("^strip-t", g$layout$name))
+  strips <- strips[order(g$layout$l[strips])]
+  for (i in seq_along(strips)) {
+    colour <- palette_env$scenario_colors[[scenario_order[[i]]]]
+    # Preserve hue, darkening only as needed for legibility on white (4.5:1).
+    # This text-only adjustment does not change the shared scenario fill palette.
+    rgb <- grDevices::col2rgb(colour) / 255
+    contrast <- function(x) {
+      linear <- ifelse(x <= .04045, x / 12.92, ((x + .055) / 1.055)^2.4)
+      1.05 / (sum(linear * c(.2126, .7152, .0722)) + .05)
+    }
+    while (contrast(rgb) < 4.5) rgb <- rgb * .97
+    ink <- grDevices::rgb(rgb[1], rgb[2], rgb[3])
+    recolour <- function(grob) {
+      if (inherits(grob, "rect")) { grob$gp$fill <- NA; grob$gp$col <- NA }
+      if (inherits(grob, "text")) grob$gp$col <- ink
+      if (!is.null(grob$children)) grob$children <- do.call(grid::gList, lapply(grob$children, recolour))
+      if (!is.null(grob$grobs)) grob$grobs <- lapply(grob$grobs, recolour)
+      grob
+    }
+    g$grobs[[strips[[i]]]] <- recolour(g$grobs[[strips[[i]]]])
+  }
+  g
 }
 
-metric_specs <- list(
-  c("Avoided energy cost", "£m/month"),
-  c("Heavy-work capacity gain", "Percentage\npoints"),
-  c("Heat-related deaths averted", "Annual\ndeaths")
+# Grob layout needs a device; a null device avoids creating stray Rplots.pdf.
+grDevices::pdf(file = NULL)
+map_rows <- list(
+  make_map_row("Avoided energy cost", "£m/month", "a"),
+  make_map_row("Heavy-work capacity gain", "Percentage\npoints", "b"),
+  make_map_row("Heat-related deaths averted", "Annual\ndeaths", "c")
 )
-
-make_group_heading <- function(label) {
-  ggplot() +
-    annotate("text", x = 0, y = 0.5, label = label, hjust = 0,
-             fontface = "bold", size = 3.9) +
-    xlim(0, 1) + ylim(0, 1) +
-    theme_void() +
-    theme(plot.margin = margin(0, 2, 0, 2))
-}
-
-counterfactual_rows <- wrap_plots(lapply(metric_specs, function(spec) {
-  make_map_row(spec[[1]], counterfactual_scenarios, spec[[2]], FALSE)
+# Equal legend columns keep scenario maps vertically aligned across outcomes.
+common_widths <- do.call(grid::unit.pmax, lapply(map_rows, function(g) g$widths))
+combined_plot <- wrap_plots(lapply(map_rows, function(g) {
+  g$widths <- common_widths
+  wrap_elements(full = g)
 }), ncol = 1)
-counterfactual_block <-
-  make_group_heading("a  Original counterfactuals") /
-  counterfactual_rows +
-  plot_layout(heights = c(0.12, 3))
 
-canopy_rows <- wrap_plots(lapply(metric_specs, function(spec) {
-  make_map_row(spec[[1]], canopy_scenarios, spec[[2]], TRUE)
-}), ncol = 1)
-canopy_block <-
-  make_group_heading("b  Canopy-addition scenarios") /
-  canopy_rows +
-  plot_layout(heights = c(0.12, 3))
-
-caption_text <- paste(strwrap(paste(
-  "Each map shows a borough-specific change; colours are comparable across",
-  "all nine scenarios within an outcome row. Red indicates a loss relative",
-  "to baseline, white indicates zero change and blue indicates a gain.",
-  "Health maps are deterministic spatial allocations and do not show",
-  "borough-level uncertainty."
-), width = 180), collapse = "\n")
-
-combined_plot <- (counterfactual_block | canopy_block) +
-  plot_layout(widths = c(3.2, 6.8)) +
-  plot_annotation(
-    title = "Borough-level co-benefits of alternative land-use scenarios",
-    subtitle = paste0(
-      "Scenario-minus-baseline changes under ", temperature_label,
-      "°C mid-century climate conditions"
-    ),
-    caption = caption_text,
-    theme = theme(
-      plot.title = element_text(face = "bold", size = 13),
-      plot.subtitle = element_text(size = 10),
-      plot.caption = element_text(hjust = 0, size = 9.5, colour = "#4A4A4A")
-    )
-  )
-
-for (extension in c("png", "pdf", "svg")) {
+for (extension in c("png")) {
   ggsave(
-    file.path(output_dir, paste0("figure5_borough_cobenefits.", extension)),
-    combined_plot, width = 13.2, height = 8.6, units = "in", dpi = 400,
+    file.path(output_dir, paste0("figure5_borough_cobenefits_20261110_v3.", extension)),
+    combined_plot, width = 13.2, height = 5.8, units = "in", dpi = 400,
     bg = "white", limitsize = FALSE
   )
 }
 
+grDevices::dev.off()
 artifact_names <- c(
-  "figure5_borough_cobenefits_data.csv",
-  "figure5_borough_cobenefits.png",
-  "figure5_borough_cobenefits.pdf",
-  "figure5_borough_cobenefits.svg"
+  "figure5_borough_cobenefits_20261110_v3_data.csv",
+  "figure5_borough_cobenefits_20261110_v3.png"
 )
 manifest <- list(
+  generator = normalizePath(file.path(script_dir, "plot_figure5_borough_cobenefits.R")),
+  generator_sha256 = digest::digest(file = file.path(script_dir, "plot_figure5_borough_cobenefits.R"), algo = "sha256"),
+  palette_source = normalizePath(file.path(script_dir, "..", "func_colors.R")),
+  figure_version = "20261110_v3",
   schema_version = 2,
   created_utc = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
   temperature_c = temperature,
@@ -270,7 +262,7 @@ manifest <- list(
     original_counterfactuals = counterfactual_scenarios,
     canopy_addition = canopy_scenarios
   ),
-  colour_scale = "Shared symmetric diverging scale within each outcome; midpoint is zero",
+  colour_scale = "Shared symmetric pseudo-log (asinh) diverging scale per outcome; sigma=max(abs(value))/20, midpoint zero; colourbar labels in original units",
   inputs = list(
     borough_summary = list(
       path = borough_summary_path,
@@ -289,7 +281,7 @@ manifest <- list(
 )
 write_json(
   manifest,
-  file.path(output_dir, "figure5_borough_cobenefits_manifest.json"),
+  file.path(output_dir, "figure5_borough_cobenefits_20261110_v3_manifest.json"),
   pretty = TRUE, auto_unbox = TRUE
 )
 message("Created borough co-benefit maps in ", output_dir)

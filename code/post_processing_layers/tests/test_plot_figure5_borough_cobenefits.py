@@ -82,7 +82,7 @@ class Figure5BuilderTest(unittest.TestCase):
             )
             self.assertEqual(0, result.returncode, result.stderr)
 
-            with (output_dir / "figure5_borough_cobenefits_data.csv").open() as table:
+            with (output_dir / "figure5_borough_cobenefits_20261110_v3_data.csv").open() as table:
                 mapped = list(csv.DictReader(table))
             self.assertEqual(set(SCENARIOS), {row["scenario"] for row in mapped})
             self.assertEqual(33 * 9 * 3, len(mapped))
