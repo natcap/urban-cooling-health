@@ -1,6 +1,6 @@
 # Project TODO and reproduction roadmap
 
-Last reviewed: 5 November 2026 (dual-allocation Figure 6 candidates and Figure 7 consistency)
+Last reviewed: 10 November 2026 (selected manuscript figures and copy-ready text)
 
 This document is the live task list. The long numbered sections below also
 preserve the September model-rebuild audit; checked boxes there are completed
@@ -13,7 +13,64 @@ and source attribution (commit `a39a1f6`).
 
 ## Next actions — current status
 
+### Remaining priorities after Figures 4–5 completion
+
+This short list takes precedence over older unchecked audit items below;
+completed author edits need verification, not automatic rewriting.
+
+**Priority 1 — manuscript/submission gates**
+
+1. Reconcile the latest main manuscript and Supplement against final source
+   tables and selected figures. Start with Figure 3 temperature extrema and
+   Abstract numbers; verify Figure 2 baseline framing, Figures 6–7 units,
+   Target/older-population trade-offs and final supplementary cross-references.
+   Record exact CSV rows and distinguish author-confirmed edits from checked text.
+2. Finish the figure/input provenance and access inventory using existing
+   manifests: exact snapshots, attribution, licence/access class and remaining
+   MIDAS source-file matches. Resolve public machine-readable derivative
+   permissions separately from already-reviewed rendered figure permissions.
+   Collaborator Target opportunity records remain explicitly on hold.
+3. Before submission, check reference validity and claim support, consistent
+   Methods definitions/uncertainty descriptions, required data acknowledgements
+   and final journal artwork requirements. Do not reopen the author's Priority 3
+   Figure 6 uncertainty review as an immediate modelling task.
+
+**Priority 2 — reproducibility/maintenance**
+
+1. Pin the production R environment and document platform requirements.
+2. Close remaining active-script path/config gaps and authoritative entry points;
+   test a clean configured dry run without changing historical collaborator code.
+3. Add restricted-data-free CI for syntax, links and existing synthetic tests,
+   then consolidate the remaining figure-to-script/input index and access guidance.
+
+**Recommended next:** read-only final manuscript/Supplement reconciliation,
+starting with Figure 3 and the Abstract. Figures 4–5 and Extended Data Fig. 1
+are complete by author confirmation; no new UCM/health run is warranted.
+Citywide-versus-borough sensitivity and borough boxplots remain Priority 3.
+
 ### Do next (scientific and manuscript gates)
+
+**Author update, 10 November:** health Methods comparator/units and GCM-count
+corrections reported done (await next Word verification); Discussion revision
+on hold; Figure 2 sample-size review set aside. Figures 4–5 review and Word
+integration are now author-confirmed complete; see the
+[updated audit/status](docs/manuscript/figure4_5_audit.md). No figure rerun or
+Word edit is authorized by this checklist update. Figure 6 uncertainty remains P3.
+
+**Figure 4–5 implementation completed, 10 November:** corrected London capacity
+mask, conserved borough energy shares, PNG layout updates and supplementary
+aggregation table. Author reports review and Word updates complete; these
+latest Word edits have not been independently rechecked. No UCM/health rerun
+is needed. Prior summaries are archived;
+old full-domain work-capacity numbers must not be inserted into the manuscript.
+
+**Figure 5 selection:** author approved v3 (bold coloured labels, no boxes).
+Completed items and optional Priority 3 comparisons are listed
+once in the [prioritized review checklist](docs/manuscript/figure4_5_audit.md#next-author-review--figures-45).
+Extended Data Fig. 1 has been updated and checked against Figure 4; the author
+reports its replacement done. Both the citywide-versus-borough sensitivity
+figure and borough boxplots are retained for **Priority 3**, with final inclusion
+undecided. Explicit push approval remains pending.
 
 1. [x] **Repair Figure 2 temperature inputs.** Recovered the original LSOA
    zonal CSVs under `data/02_preprocess/`, rebuilt the cache using the original
@@ -26,11 +83,10 @@ and source attribution (commit `a39a1f6`).
    as Figures 6 and 7 already did. See the [comparison](docs/manuscript/SVI_SPATIAL_RESULTS.md).
    Scenario/year selection, strict source/model/coverage checks and a dedicated
    Figure 6 diagnostic seed have now been added.
-2. [ ] **Approve the Figure 6 allocation choice and draft text.** Both
-   intercept-inclusive, per-million candidate PNGs and separate legends/Results
-   are ready in the [review pack](docs/manuscript/FIGURE6_REVIEW_DRAFTS.md).
-   Population-allocation spatial sensitivity is complete; do not transfer its
-   findings to the area-allocation candidate. Follow the checklist below.
+2. [ ] **Approve and insert the consolidated Figure 6–7 text.** Main Figure 6
+   uses population allocation; main Figure 7 and the supplementary overlays/maps
+   are inserted. Review the [single text source](docs/manuscript/FIGURES6_7_MANUSCRIPT_TEXT.md).
+   Figure 6 uncertainty-wording review is **Priority 3**, not the immediate task.
 3. [ ] **Reconcile manuscript claims to saved evidence** (author + analysis).
    Create a claim-to-CSV table for every Abstract, Results and figure-legend
    number: exact source row, unit, scenario/version, deterministic point vs
@@ -39,11 +95,11 @@ and source attribution (commit `a39a1f6`).
    Use `docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md` and the current Figure
    4–7 source tables as the review pack. Explicitly retain fixed 2021
    population/mortality with mid-century temperatures.
-4. [ ] **Decide final figure order and age-related interpretation** (author).
-   Review the Figure 7 age-75+ trade-off, whether Figure 5 moves to Extended
-   Data, and whether Figure 6 remains a main figure after spatial validation.
-   See `docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md`. Do not renumber figures
-   or revise the Word file before that decision.
+4. [x] **Confirm replacement of old Extended Data Fig. 3** (author).
+   Approved: Target overlay replaces old Extended Data Fig. 3; Markdown/HTML
+   citations are updated. Author will update Word and remove the former S6-2
+   duplicate from the Supplement. Main Figure 6 is retained. Figure 7's
+   relocation beside Target Results and cross-reference corrections are reported done.
 
 ### Reproducibility and release gates
 
@@ -137,7 +193,10 @@ edits or model reruns are implied by checking these items.
   including the intercept and recalculated bands; preserve earlier figures.
   Save allocation-specific diagnostics and proposed legends/Results in the
   [review pack](docs/manuscript/FIGURE6_REVIEW_DRAFTS.md).
-- [ ] Choose the main/SM allocation versions and approve their draft text.
+- [x] Select population-allocation Green30 as main Figure 6; insert the two
+  overlays (Green: S6-1; Target: now Extended Data Fig. 3) and the map-only
+  all-five-indicator figure as S7. Word renumbering remains author-managed.
+- [ ] Approve the consolidated draft text (linked above).
 - [ ] **On hold (author request):** spatially adjusted area-allocation models.
   Focus now on the two unadjusted candidates; revisit if area allocation is
   selected for the main analysis, alongside consistency across Figures 4 and 7.
@@ -146,18 +205,18 @@ edits or model reruns are implied by checking these items.
   Check P10 circles/P90 triangles and report rates per **million residents**.
   These are centred smooth contributions, not absolute deaths averted at
   either percentile; a negative contribution does not mean negative total benefit.
-- [ ] Recommended presentation: main Figure 6 describes the citywide
+- [ ] **Priority 3 — optional spatial-sensitivity presentation:** main Figure 6 describes the citywide
   vulnerability–benefit pattern; Extended Data shows spatial sensitivity at
   k = 50, 100 and 200. State the attenuation and the unstable/near-zero
   under-five association after adjustment. Do not select k by significance
   or treat k = 100 as uniquely correct.
-- [ ] Approve the drafted legends and Results paragraphs, which distinguish
+- [ ] **Priority 3 — Figure 6 uncertainty qualification:** review wording that distinguishes
   full main-figure predictions from centered spatial-sensitivity contributions.
   Explain that substantial residual spatial dependence remains: adjusted
   associations are sensitivity results, not causal effects or fully corrected
   inferential tests. Conditional GAM intervals are not propagated health-model
   uncertainty. Review age-indicator k diagnostics before finalizing bands.
-- [ ] Decide whether Figure 6 stays in the main text. A Target30 curve
+- [x] Retain Figure 6 in the main text. A Target30 curve
   sensitivity is optional additional analysis, not a completed result or an
   automatic requirement for the current Green30-focused figure.
 
@@ -213,6 +272,8 @@ these documentation and display decisions.
 - **P0 — historical critical path:** model-build gates; most are now complete.
 - **P1 — submission/release:** scientific reporting and access decisions.
 - **P2 — maintenance:** portability, automation and onboarding.
+- **P3 — deferred author review:** Figure 6 uncertainty qualification; retain
+  existing caveats, revisit before submission, with no new analysis implied.
 
 ## Historical model-rebuild ledger and remaining technical tasks
 
@@ -478,7 +539,7 @@ scenario rasters and must not be combined with the revised health results.
   once across unique buildings and quantifies any borough-intersection
   duplication.
 - [x] Complete all seven 25°C valuation runs in the versioned
-  `revised_equal_area_invest3202_2026-09-11_valuations` output folder.
+  `production/equal_area_2026-09/03_energy_work_capacity` output folder.
 - [x] Generate seven Hothaps rasters and reconcile citywide/borough summaries.
   All 2,223,481 buildings have energy values; borough intersection duplication
   is quantified in the saved summary.
@@ -500,12 +561,10 @@ scenario rasters and must not be combined with the revised health results.
   energy/productivity summaries with independent, clearly labelled scales.
 - [x] Document the recommended Figure 4 estimands, pros/cons, currency basis
   and copy-ready Figure 4, Figure 5, Extended Data and Methods text in
-  `code/post_processing_layers/FIGURE4_METHODS.md`.
-- [ ] Replace the Figure 4 image and legend in the supplied manuscript document
-  and update the associated Results text after the claim-to-CSV reconciliation
-  and figure-order decision. Insert or relocate Figure 5 and the Extended Data
-  figure/captions consistently with that decision. Do not assume the revised
-  source figures have already been inserted into the Word file.
+  `docs/manuscript/figure4_methods.md`.
+- [x] Author reports Figure 4 v2, Figure 5 v3, their legends/Results and
+  updated Extended Data Fig. 1 inserted; associated Word integration completed.
+  Independent final Word-to-source reconciliation remains a separate gate.
 
 **Done when:** the baseline and all nine manuscript scenarios have matching
 energy, WBGT and Hothaps

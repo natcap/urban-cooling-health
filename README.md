@@ -36,6 +36,32 @@ filename. Large source/model data are kept outside this repository.
 
 ## Where to start
 
+### Run-version clarification — 10 November 2026
+
+The [run-version and decision index](docs/methods/RUN_VERSION_INDEX.md) distinguishes
+historical trials from the current temperature, health and valuation packages.
+`derived_heavy_work_capacity` is derived WBGT post-processing within the valuation
+package, not another UCM run. Each external run folder now has a concise
+`README_RUN.md`. Real folders are now grouped under `production/equal_area_2026-09/`
+and `archive/`; old names remain compatibility links. Scientific outputs are
+unchanged, and active script/configuration paths have been updated. Figures 4–5 will be
+reviewed together after source-package confirmation. The saved
+[audit and draft Abstract/Figure 4 text](docs/manuscript/figure4_5_audit.md)
+records the numerical corrections and current author decisions.
+
+Stages 01–03 are **one revised version**, not competing versions: matched-canopy
+temperature scenarios feed population-allocated health estimates, alongside
+energy/WBGT and a modified work-capacity component using Hothaps. This separate
+post-processing leaves InVEST's cooling, WBGT and energy calculations unchanged.
+Figure 4–5 PNGs and their CSV/JSON
+sources now share the valuation `summary/` folder; PDF/SVG exports are retired
+to a recoverable archive. The run index defines the terms, dates and rationale.
+
+Figures 4–5 now use the corrected London-only capacity boundary and conserved
+borough energy accounting. The pooled summary includes the equal-borough
+sensitivity and a comparison table; see the audit above before transferring
+numbers into Word. UCM temperature and health-model outputs are unchanged.
+
 | You want to… | Open this guide | External project data? |
 |---|---|---:|
 | Reproduce the current Figure 7 from tracked derived inputs | [Figure 7 reproduction](REPRODUCIBILITY.md) | No |
@@ -74,7 +100,7 @@ output files, a non-destructive test run and the final review checklist.
   provenance and the equal-budget validation.
 - Figure 4 combines citywide energy, area-weighted modelled heavy-work
   capacity and population-allocated mortality estimates. The
-  [Figure 4 methods](code/post_processing_layers/FIGURE4_METHODS.md) define
+  [Figure 4 methods](docs/manuscript/figure4_methods.md) define
   these estimands and the borough sensitivity.
 - Figure 6 is exploratory until its spatial-inference review is complete.
   Figure 7 is the current paired equity workflow. See the

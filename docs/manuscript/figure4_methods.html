@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Figures 4–5 methods</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; }
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.at { color: #7d9029; }
+code span.bn { color: #40a070; }
+code span.bu { color: #008000; }
+code span.cf { color: #007020; font-weight: bold; }
+code span.ch { color: #4070a0; }
+code span.cn { color: #880000; }
+code span.co { color: #60a0b0; font-style: italic; }
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.do { color: #ba2121; font-style: italic; }
+code span.dt { color: #902000; }
+code span.dv { color: #40a070; }
+code span.er { color: #ff0000; font-weight: bold; }
+code span.ex { }
+code span.fl { color: #40a070; }
+code span.fu { color: #06287e; }
+code span.im { color: #008000; font-weight: bold; }
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.kw { color: #007020; font-weight: bold; }
+code span.op { color: #666666; }
+code span.ot { color: #007020; }
+code span.pp { color: #bc7a00; }
+code span.sc { color: #4070a0; }
+code span.ss { color: #bb6688; }
+code span.st { color: #4070a0; }
+code span.va { color: #19177c; }
+code span.vs { color: #4070a0; }
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
+</style>
+  <style type="text/css">html {color-scheme:light; background:#fff;}
+body {background:#fff; color:#202020; font-family:Arial,sans-serif; line-height:1.55; max-width:960px; margin:40px auto; padding:0 28px;}
+h1,h2,h3 {color:#172c3a; line-height:1.25;}
+h2 {margin-top:2em; border-bottom:1px solid #ddd; padding-bottom:.3em;}
+a {color:#175c91;} table {border-collapse:collapse; font-size:.94em;} td,th {border:1px solid #ddd; padding:8px; text-align:left;}
+code {font-size:.9em; overflow-wrap:anywhere;} blockquote {margin-left:0; padding-left:16px; border-left:3px solid #ddd;}
+@media print {body {margin:0; max-width:none;} nav {display:none;}}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Figures 4–5 methods</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#figure-4-aggregation-and-uncertainty-decision" id="toc-figure-4-aggregation-and-uncertainty-decision">Figure 4
+aggregation and uncertainty decision</a>
+<ul>
+<li><a href="#decision" id="toc-decision">Decision</a></li>
+<li><a href="#borough-sensitivity" id="toc-borough-sensitivity">Borough
+sensitivity</a></li>
+<li><a href="#important-productivity-limitation" id="toc-important-productivity-limitation">Important productivity
+limitation</a></li>
+<li><a href="#error-bar-rule" id="toc-error-bar-rule">Error-bar
+rule</a></li>
+<li><a href="#manuscript-text" id="toc-manuscript-text">Manuscript
+text</a></li>
+<li><a href="#recommended-nine-scenario-layout" id="toc-recommended-nine-scenario-layout">Recommended nine-scenario
+layout</a></li>
+<li><a href="#copy-ready-methods-text" id="toc-copy-ready-methods-text">Copy-ready Methods text</a>
+<ul>
+<li><a href="#artwork-policy" id="toc-artwork-policy">Artwork
+policy</a></li>
+</ul></li>
+<li><a href="#reproducible-outputs" id="toc-reproducible-outputs">Reproducible outputs</a>
+<ul>
+<li><a href="#document-maintenance" id="toc-document-maintenance">Document maintenance</a></li>
+<li><a href="#current-review-artwork-20261110_v2" id="toc-current-review-artwork-20261110_v2">Current review artwork:
+<code>20261110_v2</code></a></li>
+</ul></li>
+<li><a href="#figure-typography-and-direct-labels" id="toc-figure-typography-and-direct-labels">Figure typography and
+direct labels</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="figure-4-aggregation-and-uncertainty-decision">Figure 4
+aggregation and uncertainty decision</h1>
+<p><a href="figure4_methods.html">Copy-friendly HTML</a> · <a href="figure4_5_audit.md">Review text</a> · <a href="figure4_methods.md">Methods and script index</a></p>
+<h2 id="decision">Decision</h2>
+<p>Figure 4 is described as a comparison of <strong>citywide co-benefits
+across London</strong>. Its primary results therefore use a London-wide
+estimand rather than an unweighted mean of 33 borough changes.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Outcome</th>
+<th>Primary Figure 4 estimand</th>
+<th>Unit</th>
+<th>Uncertainty shown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Energy</td>
+<td>Scenario-minus-baseline avoided cost summed once across unique
+building records</td>
+<td>£ million/month, using late-2025 input-price assumptions</td>
+<td>None; deterministic model output</td>
+</tr>
+<tr>
+<td>Heavy-work capacity</td>
+<td>Scenario-minus-baseline continuous Hothaps workability, averaged
+over common valid 10 m cell centres inside the London borough union</td>
+<td>Percentage points</td>
+<td>None; deterministic model output</td>
+</tr>
+<tr>
+<td>Health</td>
+<td>Total heat-related deaths averted using population-weighted
+allocation of 2021 registered mortality</td>
+<td>Annual deaths</td>
+<td>95% interval from paired exposure-response draws</td>
+</tr>
+</tbody>
+</table>
+<p>The three panels do not need the same mathematical weight because
+their quantities are different. They do need a consistent geographic
+interpretation: each primary estimate represents an aggregate or
+area-wide London outcome.</p>
+<h2 id="borough-sensitivity">Borough sensitivity</h2>
+<p><strong>Boundary/accounting correction, 10 November 2026.</strong>
+All scenarios now use the same London cell-centre mask (15,733,956
+cells), excluding the surrounding model domain. Borough capacity means
+use that same exclusive grid; weighting them by cell count reproduces
+the London mean. Differences are calculated before rounding. Energy
+includes buildings with positive London overlap, excludes wholly outside
+buildings, and allocates cross-borough building totals by normalized
+intersection area. Borough sums therefore reproduce the unique-building
+London total. A boundary-crossing building’s full energy estimate is
+retained and divided among its London intersections; this is an explicit
+allocation convention, not a new building-energy simulation. Original
+full-domain/intersection figures remain QA fields, not current
+manuscript estimates.</p>
+<p>The earlier manuscript scripts subtract the matched baseline within
+each borough and then average the 33 borough changes without weights.
+This remains useful because it:</p>
+<ul>
+<li>matches the borough maps;</li>
+<li>gives each borough equal influence; and</li>
+<li>helps reveal whether the citywide conclusion is dominated by larger
+or more building-dense boroughs.</li>
+</ul>
+<p>It is not a London total and is not weighted by land area,
+population, buildings or workers. It should be labelled
+<strong>unweighted mean across 33 boroughs</strong> and reported as a
+sensitivity or distributional result. The production script exports
+borough boxplots rather than calling borough spread a model confidence
+interval.</p>
+<p>For the revised scenarios, the citywide and equal-weight borough
+approaches agree on the qualitative conclusion: Target exceeds Green at
+the 10%, 20% and 30% tiers for avoided energy cost and heavy-work
+capacity. Their magnitudes should not be interchanged because the
+estimands differ.</p>
+<h2 id="important-productivity-limitation">Important productivity
+limitation</h2>
+<p>The study uses a modified work-capacity component: a continuous
+Hothaps function of InVEST-derived WBGT replaces the built-in
+threshold-based work-loss indicator. This modification is implemented in
+separate post-processing; InVEST’s cooling, temperature, WBGT and energy
+calculations remain unchanged. It is not a demonstrated improvement in
+predictive accuracy for London workers.</p>
+<p>The citywide productivity panel is weighted by valid modeled
+land-area pixels, not by workers or workplaces. It is therefore a
+modeled heavy-work capacity index rather than a direct estimate of
+London-wide economic productivity. A future worker-weighted sensitivity
+would require a defensible workplace or worker-location raster. Until
+such data are reviewed, do not describe the current value as
+worker-weighted.</p>
+<h2 id="error-bar-rule">Error-bar rule</h2>
+<p>The older zonal plotting function computes a standard error from
+variation among borough values. That interval estimates uncertainty
+around an average borough under strong independence assumptions; it is
+not parameter or model uncertainty around a citywide total.
+Consequently:</p>
+<ul>
+<li>retain the paired exposure-response interval for health;</li>
+<li>omit uncertainty bars for deterministic energy and productivity
+results; and</li>
+<li>show borough variation with distributions, such as boxplots,
+explicitly labelled as spatial variation rather than confidence
+intervals.</li>
+</ul>
+<h2 id="manuscript-text">Manuscript text</h2>
+<p>Use the <a href="figure4_5_audit.md">review document</a> for the
+current legends and Results. This document owns methodological
+decisions, reproducibility and the figure-to-script index.</p>
+<h2 id="recommended-nine-scenario-layout">Recommended nine-scenario
+layout</h2>
+<p>Use the same order in all three panels:</p>
+<p><code>AllBuilt, TreeRisk, TreeOpp | Green10, Target10, Green20, Target20, Green30, Target30</code>.</p>
+<p>The first block retains the three original manuscript
+counterfactuals, without a vertical separator. Target-versus-Green
+differences are adjacent within each matched canopy budget and the 10%
+to 30% progression is preserved. Use all nine canonical scenario colours
+from <code>code/func_colors.R</code>, including distinct shades for each
+Green and Target tier. A horizontal zero line is required because
+AllBuilt and TreeRisk can produce negative co-benefits. Do not connect
+bars with lines, which could imply a continuous trajectory between
+categorical scenarios.</p>
+<p>The legacy AllBuilt, TreeRisk and TreeOpp results were generated with
+InVEST 3.14.1. They must not be combined with the revised InVEST 3.20.2
+Green/Target results. The production workflow reruns their original LULC
+rasters with the same 3.20.2 model settings, inputs and post-processing
+used for the other six.</p>
+<p>The three established source notebooks now create the individual
+panels:</p>
+<ul>
+<li><code>code/invest_result_zonal_viz_2_energy.Rmd</code> — Figure
+4a;</li>
+<li><code>code/invest_result_zonal_viz_3_pd_NEW.Rmd</code> — Figure 4b;
+and</li>
+<li><code>code/health_assessment/health-modeling-output-plot-city.Rmd</code>
+— Figure 4c.</li>
+</ul>
+<p>They share scenario ordering, labels and styling through
+<code>figure4_panel_helpers.R</code>.
+<code>plot_figure4_citywide.R</code> assembles the final three-panel
+figure and records a single provenance manifest.</p>
+<h2 id="copy-ready-methods-text">Copy-ready Methods text</h2>
+<blockquote>
+<p>We quantified land-use co-benefits relative to the baseline land-use
+configuration under the same mid-century climate condition. Figure 4
+reports London-wide estimands selected for each outcome. Avoided monthly
+energy cost was summed once across unique building records. Heavy-work
+capacity was calculated with the continuous Hothaps relationship and
+summarized as the area-weighted mean change across common valid 10 m
+cell centres inside the London borough union; this is a modeled capacity
+index and is not weighted by worker location.</p>
+<p>Gridded excess deaths, estimated using population-weighted allocation
+of deaths registered in 2021 and fixed 2021 population, were summed to
+obtain borough- and city-level totals for each cause and scenario.
+Equity analyses expressed deaths averted per million residents using the
+same 2021 population denominator.</p>
+</blockquote>
+<p>Equal-weight borough summaries and boxplots have been generated and
+retained for optional Priority 3 review, not confirmed for the final
+submission. Their methods remain documented above; no claim of their
+inclusion is made in the copy-ready Methods text.</p>
+<h3 id="artwork-policy">Artwork policy</h3>
+<p>Main Figures 4–5 omit overall titles and captions; explanatory
+material belongs in their legends. Figure 4 has no redundant scenario
+colour key. Figure 5 uses single-line scenario labels, aligned
+letter/service row headings and a compact three-row layout. Sans-serif
+text, high-contrast labels and an orange–blue palette follow <a href="https://research-figure-guide.nature.com/figures/preparing-figures-our-specifications/">Nature’s
+figure specifications</a> and <a href="https://research-figure-guide.nature.com/figures/building-and-exporting-figure-panels/">panel-sizing
+guidance</a> (checked 10 November 2026). PNGs are author-review exports
+as requested; Nature’s editable-artwork requirement remains a
+final-submission task, not a claim that PNG alone satisfies final
+artwork requirements.</p>
+<h2 id="reproducible-outputs">Reproducible outputs</h2>
+<h3 id="document-maintenance">Document maintenance</h3>
+<p>These lowercase Markdown files are authoritative.
+<code>figure4_5_audit.md</code> owns copy-ready text and the audit; this
+file owns methods and the script index. The former
+<code>code/post_processing_layers/FIGURE4_METHODS.md</code> is a
+symlink, not a duplicate. On case-insensitive macOS, the old uppercase
+audit path resolves to the lowercase file directly; no self-referencing
+alias is needed.</p>
+<p>Regenerate the white-background HTML copies from the repository
+root:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pandoc</span> docs/manuscript/figure4_5_audit.md <span class="at">--standalone</span> <span class="at">--embed-resources</span> <span class="at">--toc</span> <span class="at">--css</span> docs/manuscript/figure_review.css <span class="at">--metadata</span> title=<span class="st">&quot;Figures 4–5 review&quot;</span> <span class="at">-o</span> docs/manuscript/figure4_5_audit.html</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pandoc</span> docs/manuscript/figure4_methods.md <span class="at">--standalone</span> <span class="at">--embed-resources</span> <span class="at">--toc</span> <span class="at">--css</span> docs/manuscript/figure_review.css <span class="at">--metadata</span> title=<span class="st">&quot;Figures 4–5 methods&quot;</span> <span class="at">-o</span> docs/manuscript/figure4_methods.html</span></code></pre></div>
+<p>Use lowercase names for new project files. Unrelated existing files
+are not renamed by this focused reorganization because script and data
+references need their own migration check.</p>
+<h3 id="current-review-artwork-20261110_v2">Current review artwork:
+<code>20261110_v2</code></h3>
+<p>Scripts keep their original names. New PNGs, source CSVs and
+manifests carry <code>_20261110_v2</code>; the preceding unsuffixed
+files are retained for comparison. The suffix denotes styling only:
+estimates and uncertainty are unchanged.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>PNG stem (append <code>_20261110_v2.png</code>)</th>
+<th>Generating script</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>figure4_citywide_cobenefits</code></td>
+<td><a href="../../code/post_processing_layers/plot_figure4_citywide.R">plot_figure4_citywide.R</a></td>
+</tr>
+<tr>
+<td><code>figure4_borough_sensitivity</code></td>
+<td><a href="../../code/post_processing_layers/plot_figure4_citywide.R">plot_figure4_citywide.R</a></td>
+</tr>
+<tr>
+<td><code>extended_data_citywide_vs_borough</code></td>
+<td><a href="../../code/post_processing_layers/plot_figure4_citywide.R">plot_figure4_citywide.R</a></td>
+</tr>
+<tr>
+<td><code>figure5_borough_cobenefits</code></td>
+<td><a href="../../code/post_processing_layers/plot_figure5_borough_cobenefits.R">plot_figure5_borough_cobenefits.R</a></td>
+</tr>
+</tbody>
+</table>
+<p>Extended Data Fig. 1 is generated by
+<code>plot_figure4_citywide.R</code> with the additional option
+<code>--cause-specific true</code>. Its separate stem is
+<code>extended_data_fig1_mortality_by_cause_20261110_v1</code> (PNG, CSV
+and manifest). It requires all five mortality categories and 2,000
+finite draws per scenario; the all-cause points and intervals must equal
+Figure 4 exactly. The old embedded Word image is preserved as
+<code>extended_data_fig1_previous_manuscript_0806.png</code>. The <a href="figure4_5_audit.md#extended-data-figure-1--verified-update">audit
+and copy-ready legend</a> are maintained in the manuscript review
+document, not duplicated here.</p>
+<p>Both builders read <a href="../../code/func_colors.R">func_colors.R</a>. Figure 5 v3
+(<code>figure5_borough_cobenefits_20261110_v3.png</code>) replaces the
+v2 filled banners with bold coloured text on white, without boxes. Pale
+scenario colours are darkened only for text to reach at least 4.5:1
+contrast on white; the canonical fill palette is unchanged. The v2
+figure remains available for comparison. Map colours still encode
+benefit magnitude. All four plots omit overall titles, subtitles,
+captions and redundant scenario keys, retaining panel headings and
+units. Figure 4 labels are regular-weight grey, and the vertical
+separator is removed. Manifests record the generator path/checksum and
+palette source.</p>
+<p>The borough boxplot legend should state: boxes show the interquartile
+range, centre lines the median, whiskers extend to the most extreme
+values within 1.5 IQR of the box, and points denote outliers across 33
+equally weighted boroughs. This is spatial variation, not model
+uncertainty.</p>
+<p>Run <code>plot_figure4_citywide.R</code> after the citywide valuation
+summary and reviewed health scenario set are complete. The output stems
+below receive the version suffix described above (before
+<code>_data</code>/<code>_manifest</code> for companion files):</p>
+<ul>
+<li><code>figure4_citywide_cobenefits.png</code>;</li>
+<li><code>figure4_citywide_cobenefits_data.csv</code>;</li>
+<li><code>figure4_citywide_cobenefits_manifest.json</code>; and</li>
+<li>when borough input is supplied,
+<code>figure4_borough_sensitivity.png</code>, its source CSV, and
+<code>extended_data_citywide_vs_borough.png</code> with its source
+CSV.</li>
+</ul>
+<p>The manifest records the input paths, energy-summary checksum,
+temperature, price-basis label, estimands and uncertainty treatment.</p>
+<h2 id="figure-typography-and-direct-labels">Figure typography and
+direct labels</h2>
+<p>Figure 4 uses regular-weight grey signed value labels following the
+convention established by <code>func_plot_change_point()</code>.
+Precision is matched to the estimand: one decimal place for energy, two
+for productivity and whole deaths for health. Health labels sit beyond
+the corresponding 95% interval rather than on the bar end. The plotting
+code uses an 11-point base font and produces PNG output for review. PNG
+is raster artwork; check legibility at its intended final size. Before
+submission, verify that the effective text remains within the 5–7 point
+range in the <a href="https://research-figure-guide.nature.com/figures/building-and-exporting-figure-panels/">Nature
+research figure guide</a> at the final typeset width and that no labels
+overlap after any publisher-side resizing.</p>
+</body>
+</html>

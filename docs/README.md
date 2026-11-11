@@ -37,7 +37,7 @@ procedures are not repeated here.
 - [Future work-capacity method](methods/FUTURE_WORK_CAPACITY_METHOD.md): staged
   construction-sector pilot using workplace employment, hourly heat exposure
   and capacity-weighted worker-hours. This is a proposal, not a current result.
-- [Figure 4 methods](../code/post_processing_layers/FIGURE4_METHODS.md):
+- [Figure 4 methods](manuscript/figure4_methods.md):
   current citywide estimands and the borough sensitivity comparison.
 - [Health data and method decisions](../code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md):
   mortality source, population allocation and model assumptions.

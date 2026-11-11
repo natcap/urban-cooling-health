@@ -1,5 +1,9 @@
 # London manuscript revision brief
 
+**Current audit:** [10 November Abstract and Figures 4–5 review](figure4_5_audit.md).
+Use it for completed author changes, pending priorities and copy-ready draft text;
+the older manuscript-status statements below are historical, not current checks.
+
 Original review: 13 October 2026. Status pointers updated: 4 November 2026.
 Discussion window for the scientific recap: 13 September–13 October 2026.
 
@@ -44,12 +48,12 @@ illustrated spatial-report PNGs are now explicitly versioned with attribution.
 ## Materials to open first
 
 The external files in items 2, 3 and 7 are under
-`$URBAN_COOLING_DATA_ROOT/2_postprocess_intermediate/UCM_official_runs/revised_equal_area_invest3202_2026-09-11_valuations/`.
+`$URBAN_COOLING_DATA_ROOT/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/`.
 `URBAN_COOLING_DATA_ROOT` denotes the Wellcome Trust Project Data folder.
 
 1. The last supplied manuscript is `London urban cooling-ms-0806.docx` in the author's OneDrive submission folder. Its file modification date is September 16; this recap does not re-audit its current text. Treat the September language findings as a checklist to verify, since you may already have corrected them.
-2. Open `summary/figure4/figure4_citywide_cobenefits.png`, its source table `summary/figure4/figure4_citywide_cobenefits_data.csv`, and [aggregation and caption guidance](../../code/post_processing_layers/FIGURE4_METHODS.md).
-3. Open `summary/figure5/figure5_borough_cobenefits.png` and `summary/figure4/extended_data_citywide_vs_borough.png`.
+2. Open `summary_citywide_cobenefits.png`, its source table `summary_citywide_cobenefits_data.csv`, and [aggregation and caption guidance](figure4_methods.md).
+3. Open `summary_borough_cobenefits.png` and `summary/extended_data_citywide_vs_borough.png`.
 4. [Figure 6 candidate review pack](FIGURE6_REVIEW_DRAFTS.md): current PNGs, legends, Results and links to allocation-specific reporting. Use this pack rather than older centred-curve exports for the main figure decision.
 5. [Figure 7 maps](../../figures/figure7/png/fig7_ab_upgraded.png), [paired comparison panels](../../figures/figure7/png/fig7_cd_upgraded.png), and [headline results](../../figures/figure7/csv/fig7_quantitative_headline_results.csv). These provide the central distributional result.
 6. [Figure 2 tree-cover statistics](../../figures/figure2_statistical_reporting/figure2_TCC_kruskal_wallis.csv) and [revised notebook](../../code/equity-temp-tcc.Rmd). Temperature results have been recovered; review the regenerated panels.

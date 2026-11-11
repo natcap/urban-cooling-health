@@ -1,4 +1,10 @@
-# Figure 6 candidates and manuscript text
+# Figure 6 technical review and alternative candidates
+
+Selected manuscript prose is maintained only in
+[Figures 6–7 manuscript text](FIGURES6_7_MANUSCRIPT_TEXT.md).
+The author has inserted the population-allocation Green30 main figure and
+the Green/Target overlays. The Target overlay is now designated Extended Data
+Fig. 3 (formerly S6-2); Word updates are author-managed. Alternative candidates below are retained for reference.
 
 Prepared 5 November 2026. Drafts for author review; the Word manuscript has not
 been edited. The original allocation candidates use the same revised Green30 cooling inputs,
@@ -20,7 +26,7 @@ not promises that those files are available on GitHub.
 
 [Open the separate 600-dpi PNG](../../figures/figure6/manuscript/equity_health_All_cause_gam_Green30_Target30_per_million_population_full_prediction.png).
 This population-allocation candidate adds a direct strategy comparison without
-replacing either original Green30 allocation candidate. Supplementary S1 and S2
+replacing either original Green30 allocation candidate. Supplementary Fig. S6-1 and Extended Data Fig. 3
 below retain the three intensities within each family. Figure 7's current
 redistribution results are in the [Figure 7 review](FIGURE7_REVIEW.md#proposed-results-paragraph).
 
@@ -59,55 +65,11 @@ numerical results are involved.
 
 ### Proposed legend
 
-**Fig. 6 | Neighborhood vulnerability and modelled health benefits under Green30.**
-Green30 represents a 30% relative increase in tree-canopy cover and is shown as
-an illustrative general-greening scenario; Green10/20/30 and Target10/20/30
-comparisons are provided in Supplementary Figs. S1 and S2, respectively. Curves show
-separate univariable generalized additive model (GAM) predictions of all-cause
-heat-related deaths averted per million residents across 4,835 London Lower
-Layer Super Output Areas (LSOAs). Benefits are estimated relative to baseline
-land use under identical mid-century climate conditions, holding 2021 population
-and registered mortality fixed. Borough mortality is allocated to pixels in
-proportion to population. Vulnerability metrics, including the four-dimension
-Social Vulnerability Index (SVI; Methods), are standardized z-scores; vertical
-dotted lines mark the citywide mean. Blue lines show full predictions, including
-the intercept, from robust scaled-t GAMs fitted by restricted maximum likelihood.
-Shaded bands indicate pointwise 95% model-conditional confidence intervals.
-Grey densities show predictor distributions, rescaled independently of mortality
-units; arrows indicate lower to higher vulnerability. All valid LSOAs enter the
-models; curves display each predictor’s 1st–99th percentiles. These are
-unadjusted citywide associations, and intervals exclude spatial dependence and
-uncertainty in upstream model inputs.
+See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#figure-6-legend).
 
 ### Proposed Results
 
-#### General greening yields uneven neighbourhood health benefits
-
-Generalized additive models (GAMs) showed similar, non-linear patterns of
-modelled health benefits across Green10, Green20 and Green30, with Green30
-shown as an illustrative scenario (Fig. 6; Supplementary Fig. S1). Benefits
-were lower at high than at low income deprivation and ethnic-minority
-population share. Under Green30, predicted deaths averted per million residents
-were respectively 8.8 and 16.5 lower at the 90th than the 10th percentile.
-Income-deprivation curves declined before partially recovering, whereas
-ethnic-minority-share curves peaked below the citywide mean and then declined.
-Higher overall SVI and under-five population share also corresponded to lower
-benefits in all three Green scenarios.
-
-By contrast, neighborhoods with higher proportions of residents aged ≥75
-received greater modelled per-resident benefits under the Green scenarios.
-Curves generally rose before levelling off or declining modestly; under
-Green30, the 90th–10th percentile difference was +5.7 deaths averted per million.
-These citywide associations describe neighbourhood-level benefit distributions,
-not spatially adjusted or causal effects of vulnerability.
-
-*Continue with [Targeting redistributes benefits across vulnerability dimensions](FIGURE7_REVIEW.md#proposed-results-paragraph).
-The Target scenario comparisons and Figure 7 redistribution findings are kept
-there rather than repeated in this Green section.*
-
-Population-allocation spatial sensitivity is documented separately in the
-[spatial report](SVI_SPATIAL_RESULTS.md); its results do not apply to area allocation.
-The age variables describe neighbourhood composition, not age-specific deaths.
+See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#results).
 
 ## Six-scenario comparison and supplementary figures
 
@@ -136,60 +98,25 @@ but develops an upper-range downturn under Target20/30, while the age-75+
 curve broadly declines. Matching contrast signs alone should not be described
 as identical or uniformly monotonic curves.
 
-### Supplementary Fig. S1 proposed legend
+### Supplementary Fig. S6-1 legend
 
-**Supplementary Fig. S1 | Neighborhood vulnerability and modelled health
-benefits across general-greening scenarios.** Panels show, from left to right,
-the proportions aged <5 and ≥75 and ethnic-minority population share (top row),
-and income deprivation and the four-dimension Social Vulnerability Index
-(SVI; bottom row). Light-to-dark green dotted, dashed and solid lines represent
-Green10, Green20 and Green30, respectively. Curves are full fitted predictions,
-including the intercept, of all-cause heat-related deaths averted per million residents
-from separate univariable robust scaled-t GAMs fitted by REML to the same
-4,835 London LSOAs. Each scenario is compared with baseline land use under
-identical mid-century climate conditions, with 2021 population and registered
-mortality fixed and borough deaths allocated in proportion to population.
-Predictors are standardized z-scores; vertical dotted lines mark their
-citywide means and arrows indicate lower to higher vulnerability. Shaded
-bands are pointwise 95% model-conditional confidence intervals. All valid LSOAs
-enter the fits; displayed curves span P1–P99. Y-axis limits differ between
-vulnerability indicators; the three scenarios share an axis within each panel.
-Grey densities below zero show observed predictor distributions, rescaled
-independently of mortality units. Associations are unadjusted for location;
-intervals exclude spatial dependence and upstream input uncertainty.
+See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#supplementary-figure-s6-1-legend).
 
 ![Overlaid Green scenario comparison](../../figures/figure6/scenario_comparison/figure6_supplement_green_overlay.png)
 
 Regenerate only this figure, preserving other figures:
 `Rscript code/compare_figure6_scenarios.R --overlay-only`.
 
-### Supplementary Fig. S2 proposed legend
+### Extended Data Fig. 3 legend
 
-**Supplementary Fig. S2 | Neighborhood vulnerability and modelled health
-benefits across targeted-greening scenarios.** Panels show, from left to right,
-the proportions aged <5 and ≥75 and ethnic-minority population share (top row),
-and income deprivation and the four-dimension Social Vulnerability Index
-(SVI; bottom row). Light-to-dark purple dotted, dashed and solid lines represent
-Target10, Target20 and Target30, respectively. Curves show full fitted predictions,
-including the intercept, of all-cause heat-related deaths averted per million residents
-from separate univariable robust scaled-t GAMs fitted by REML to the same
-4,835 London LSOAs. Population allocation, 2021 population and mortality,
-climate conditions and model settings match Supplementary Fig. S1. Each
-scenario is compared with baseline land use. Predictors are standardized
-z-scores; vertical dotted lines mark citywide means and arrows indicate lower
-to higher vulnerability. Shaded bands are pointwise 95% model-conditional
-confidence intervals. All valid LSOAs enter the fits; curves display P1–P99.
-Y-axis limits differ between vulnerability indicators; the three scenarios share
-an axis within each panel. Grey densities below zero show observed predictor
-distributions, rescaled independently of mortality units. Associations are unadjusted
-for location; intervals exclude spatial dependence and upstream input uncertainty.
+See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#extended-data-figure-3-legend).
 
 ![Overlaid Target scenario comparison](../../figures/figure6/scenario_comparison/figure6_supplement_target_overlay.png)
 
 Regenerate only this version, preserving Green and main figures:
 `Rscript code/compare_figure6_scenarios.R --target-overlay-only`.
 
-S1/S2 are provisional manuscript numbers and now refer to the overlays above.
+Approved numbering is Supplementary Fig. S6-1 and Extended Data Fig. 3 for the Green and Target overlays, respectively; do not duplicate the Target overlay as S6-2.
 The earlier 15-panel grids remain available for inspection, but are not the
 proposed supplementary versions. No figure files were changed by this text
 revision. Compare absolute values using axis labels rather than visual heights

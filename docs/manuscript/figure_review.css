@@ -1,0 +1,7 @@
+html {color-scheme:light; background:#fff;}
+body {background:#fff; color:#202020; font-family:Arial,sans-serif; line-height:1.55; max-width:960px; margin:40px auto; padding:0 28px;}
+h1,h2,h3 {color:#172c3a; line-height:1.25;}
+h2 {margin-top:2em; border-bottom:1px solid #ddd; padding-bottom:.3em;}
+a {color:#175c91;} table {border-collapse:collapse; font-size:.94em;} td,th {border:1px solid #ddd; padding:8px; text-align:left;}
+code {font-size:.9em; overflow-wrap:anywhere;} blockquote {margin-left:0; padding-left:16px; border-left:3px solid #ddd;}
+@media print {body {margin:0; max-width:none;} nav {display:none;}}
