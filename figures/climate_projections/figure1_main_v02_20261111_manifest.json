@@ -1,0 +1,35 @@
+{
+  "inputs": [
+    {
+      "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/climate/worldclim_v21_historical/comparison/figure1_baseline_comparison_20261111_v1_baselines.csv",
+      "sha256": "6953f4fbfa1dbd3199ad995b855a808faef3541168a1076cc2c5c7894e9e6ef0"
+    },
+    {
+      "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/climate/worldclim_v21_historical/comparison/figure1_baseline_comparison_20261111_v1_by_model.csv",
+      "sha256": "079b1f7b0ace1c3553c2e21186474c1fa3d57845036730f98cf6c1adca7d6996"
+    },
+    {
+      "path": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/climate/worldclim_v21_historical/comparison/figure1_baseline_comparison_20261111_v1_summary.csv",
+      "sha256": "3eb9016c9fd4faba2f15d370e7ea9466f5b2e66fe12f4370c4e19d9c5fcda0cc"
+    }
+  ],
+  "boundary": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.shp",
+  "borough_count": 33,
+  "models": ["ACCESS-CM2", "IPSL-CM6A-LR", "MRI-ESM2-0"],
+  "main_reference": "CHELSA July 2021",
+  "main_maps": "SSP370, 2050 and 2070",
+  "supplement_reference": "CHELSA July 2021; SSP585 maps; existing WorldClim-matched SM retained separately",
+  "map_breaks": [2.3519, 2.9722, 3.2368, 3.4625, 3.7673, 4.0769, 4.3073, 4.5583, 5.027, 5.4223, 5.8278],
+  "aggregation": "Equal GCM mean within borough, equal borough weight for displayed means",
+  "script": "code/post_processing_layers/plot_figure1.R",
+  "outputs": [
+    {
+      "path": "/Users/yingjiel/Documents/projects/urban-cooling-health/figures/climate_projections/figure1_main_v02_20261111.png",
+      "sha256": "9b7535ffe7fdd14bf48a6b55aef4022487bac70491f0ff028d095d53e19c4259"
+    },
+    {
+      "path": "/Users/yingjiel/Documents/projects/urban-cooling-health/figures/climate_projections/figure1_sm_ssp585_v01_20261111.png",
+      "sha256": "f5c6330167e12ee511410d2903d99ed9db087e7943ee793cc43134a98ec6a60e"
+    }
+  ]
+}

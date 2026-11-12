@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Figure 3: causes of the cooling-ranking reversal</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; }
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.at { color: #7d9029; }
+code span.bn { color: #40a070; }
+code span.bu { color: #008000; }
+code span.cf { color: #007020; font-weight: bold; }
+code span.ch { color: #4070a0; }
+code span.cn { color: #880000; }
+code span.co { color: #60a0b0; font-style: italic; }
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.do { color: #ba2121; font-style: italic; }
+code span.dt { color: #902000; }
+code span.dv { color: #40a070; }
+code span.er { color: #ff0000; font-weight: bold; }
+code span.ex { }
+code span.fl { color: #40a070; }
+code span.fu { color: #06287e; }
+code span.im { color: #008000; font-weight: bold; }
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.kw { color: #007020; font-weight: bold; }
+code span.op { color: #666666; }
+code span.ot { color: #007020; }
+code span.pp { color: #bc7a00; }
+code span.sc { color: #4070a0; }
+code span.ss { color: #bb6688; }
+code span.st { color: #4070a0; }
+code span.va { color: #19177c; }
+code span.vs { color: #4070a0; }
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
+</style>
+  <style type="text/css">html {color-scheme:light; background:#fff;}
+body {background:#fff; color:#202020; font-family:Arial,sans-serif; line-height:1.55; max-width:960px; margin:40px auto; padding:0 28px;}
+h1,h2,h3 {color:#172c3a; line-height:1.25;}
+h2 {margin-top:2em; border-bottom:1px solid #ddd; padding-bottom:.3em;}
+a {color:#175c91;} table {border-collapse:collapse; font-size:.94em;} td,th {border:1px solid #ddd; padding:8px; text-align:left;}
+code {font-size:.9em; overflow-wrap:anywhere;} blockquote {margin-left:0; padding-left:16px; border-left:3px solid #ddd;}
+@media print {body {margin:0; max-width:none;} nav {display:none;}}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Figure 3: causes of the cooling-ranking reversal</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#why-the-greentarget-cooling-ranking-changed" id="toc-why-the-greentarget-cooling-ranking-changed">Why the
+Green–Target cooling ranking changed</a>
+<ul>
+<li><a href="#finding-in-brief" id="toc-finding-in-brief">Finding in
+brief</a></li>
+<li><a href="#isolating-green30-a-controlled-sequence" id="toc-isolating-green30-a-controlled-sequence">1. Isolating Green30: a
+controlled sequence</a></li>
+<li><a href="#specific-canopy-changes-verified-from-rasters" id="toc-specific-canopy-changes-verified-from-rasters">2. Specific
+canopy changes, verified from rasters</a></li>
+<li><a href="#model-version-and-grid-effects-what-is-and-is-not-established" id="toc-model-version-and-grid-effects-what-is-and-is-not-established">3.
+Model-version and grid effects: what is and is not established</a></li>
+<li><a href="#meaning-for-the-manuscript-and-next-decision" id="toc-meaning-for-the-manuscript-and-next-decision">4. Meaning for the
+manuscript and next decision</a></li>
+<li><a href="#reproduction-files-and-checks" id="toc-reproduction-files-and-checks">Reproduction, files and
+checks</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="why-the-greentarget-cooling-ranking-changed">Why the
+Green–Target cooling ranking changed</h1>
+<p>11 November 2026 · <a href="figure3_ranking_input_audit.html">HTML</a> · <a href="figure3_climate_uhi_audit.md">Figure 3 review and figures</a></p>
+<h2 id="finding-in-brief">Finding in brief</h2>
+<p><strong>The Green30 reversal is not explained simply by moving canopy
+or upgrading InVEST. A controlled, already-existing NoData-only test is
+the largest isolated driver of the Green30 cooling reduction.</strong>
+Revised canopy placement partly offsets that reduction, while the
+revised Target design adds eligible canopy and increases Target cooling.
+The precise decomposition is verified for the 30% tier; equivalent
+NoData-only controls for 10% and 20% were not found or run.</p>
+<p>This is a read-only analysis of existing model outputs and current
+input files. No model reruns, Word changes or pushes were performed.
+Numbers below use one common London footprint, not the population-valid
+mask used in older diagnostic reports. Confidence: <strong>share with
+the stated attribution limits</strong>.</p>
+<h2 id="isolating-green30-a-controlled-sequence">1. Isolating Green30: a
+controlled sequence</h2>
+<p>All rows use the same 15,733,893 London cells and 33 boroughs;
+cooling is shown as a positive reduction in temperature. The audit mask
+excludes 63 cells that are present in the production Figure 3 mask so
+every historical/diagnostic raster has identical support. No resampling
+was needed.</p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr>
+<th>Green30 input/run</th>
+<th style="text-align: right;">Mean cooling across boroughs (°C)</th>
+<th style="text-align: right;">London-area-weighted cooling (°C)</th>
+<th>What this step changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Historical Figure 3 raster</td>
+<td style="text-align: right;">0.373835</td>
+<td style="text-align: right;">0.364478</td>
+<td>Reference</td>
+</tr>
+<tr>
+<td>Same historical LULC rerun in 3.20.2</td>
+<td style="text-align: right;">0.373835</td>
+<td style="text-align: right;">0.364478</td>
+<td>Existing software/engine rerun; negligible numerical change</td>
+</tr>
+<tr>
+<td>Same valid LULC, NoData recoded 255→0, in 3.20.2</td>
+<td style="text-align: right;">0.324049</td>
+<td style="text-align: right;">0.287505</td>
+<td><strong>Only missing-value encoding</strong></td>
+</tr>
+<tr>
+<td>Revised Green30 LULC, NoData 0, in 3.20.2</td>
+<td style="text-align: right;">0.336379</td>
+<td style="text-align: right;">0.290959</td>
+<td>Revised canopy scenario at the same software/settings/encoding</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>NoData-only effect:</strong> reduces cooling by
+<strong>0.049786°C</strong> in borough means and
+<strong>0.076973°C</strong> in the London-area-weighted mean.</li>
+<li><strong>Subsequent canopy-scenario effect:</strong> restores
+<strong>0.012330°C</strong> and <strong>0.003454°C</strong>,
+respectively. This includes changed planting positions, class
+composition and removal of woodland-to-100 relabelling; those individual
+contributions were not separately modelled.</li>
+<li><strong>Net Green30 reduction:</strong> 0.037456°C across borough
+means and 0.073519°C area-weighted. A single percentage attribution
+would mislead because the canopy change offsets part of the NoData
+effect.</li>
+</ul>
+<p>The NoData-only step leaves the valid land-cover classes <strong>and
+their spatial mask identical</strong>, verified directly. It holds
+software versions, all non-LULC arguments and ancillary input checksums
+constant. This is a numerical missing-data/convolution sensitivity, not
+a physical reduction in tree canopy. Its exact internal numerical
+pathway is not fully diagnosed here. It is <strong>not</strong> the same
+as merely excluding 63 cells during summary calculation: the output
+temperatures differ on the very same valid London cells.</p>
+<p>For comparison, historical Target30 cooling is 0.366814°C across
+boroughs (0.310221°C area-weighted). Even holding that Target result
+unchanged, the NoData-harmonized historical Green30 falls below it. Thus
+the existing controlled test is sufficient to reverse the displayed 30%
+ranking before the new canopy scenario is introduced. This does not
+establish an exact version-only effect for historical Target30, for
+which an unchanged-input control was not available.</p>
+<p>Expressed directly as <strong>Target30 cooling minus Green30
+cooling</strong>, the borough ranking shifts from −0.007022°C (Green
+advantage) to +0.041586°C (Target advantage). The 0.048608°C shift
+decomposes along this sequence into about <strong>+0.049786°C from Green
+NoData harmonization</strong>, <strong>−0.012330°C from the subsequent
+Green canopy redesign</strong>, and <strong>+0.011152°C from the
+combined Target revision</strong>, with a negligible
+historical-versus-rerun Green residual. This is a sequential
+decomposition, not a factorial estimate of independent effects or
+interactions.</p>
+<h2 id="specific-canopy-changes-verified-from-rasters">2. Specific
+canopy changes, verified from rasters</h2>
+<p>An eligible addition is a baseline code <strong>4, 20 or 21 →
+100</strong>. These figures cover the full supplied scenario grid, not
+only the London summary mask.</p>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tier</th>
+<th style="text-align: right;">Old Green eligible cells</th>
+<th style="text-align: right;">Revised Green and Target cells
+(each)</th>
+<th style="text-align: right;">Old Target eligible cells</th>
+<th style="text-align: right;">Extra eligible Target cells</th>
+<th style="text-align: right;">Old Green locations replaced</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td style="text-align: right;">307,768</td>
+<td style="text-align: right;">307,768</td>
+<td style="text-align: right;">273,242</td>
+<td style="text-align: right;">34,526</td>
+<td style="text-align: right;">61,870</td>
+</tr>
+<tr>
+<td>20</td>
+<td style="text-align: right;">595,084</td>
+<td style="text-align: right;">595,084</td>
+<td style="text-align: right;">535,737</td>
+<td style="text-align: right;">59,347</td>
+<td style="text-align: right;">92,396</td>
+</tr>
+<tr>
+<td>30</td>
+<td style="text-align: right;">894,249</td>
+<td style="text-align: right;">894,249</td>
+<td style="text-align: right;">858,121</td>
+<td style="text-align: right;">36,128</td>
+<td style="text-align: right;">156,345</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Green:</strong> eligible canopy quantity is unchanged, but
+placement is not. The revised generator uses focal codes
+<code>{1,2,100}</code> instead of <code>{1,2,4,20,21}</code>, restricts
+conversions to <code>{4,20,21}</code>, and builds nested increments.
+Historical Green also changed 12,232 / 24,916 / 35,751 woodland cells to
+code 100; those changes are removed. They were not newly added canopy,
+but were not necessarily thermally neutral: the biophysical table
+assigns woodland Kc=0.7 and code100 Kc=0.8. Revised Green30 shifts
+eligible additions from grassland toward suburban and urban classes
+(full transition counts in the audit CSV).</p>
+<p><strong>Target:</strong> every historically eligible added cell is
+retained; additional eligible cells fill the shortfall to each Green
+budget. Revised scenarios also exclude 3,188 / 7,248 / 11,323 old
+conversions from ineligible classes. Selection uses deterministic
+<code>(rank, FID)</code> ordering and a 5 m radius with pixel-centre
+inclusion. The eligible area increments are 3.4526, 5.9347 and 3.6128
+km². The old Green–Target comparison therefore did <strong>not</strong>
+match eligible added area.</p>
+<p>Revised Target additions are 71.3%, 69.1% and 67.3% Urban (code20),
+versus 23.6%, 25.0% and 27.1% for Green. Converting low-shade, low-Kc
+urban surfaces to tree cover can yield more additional cooling than
+replacing already-green land. This is a mechanistic explanation
+consistent with the input table, <strong>not a separately identified
+causal contribution</strong>. Candidate-domain and source-class
+differences mean the benefit cannot be attributed solely to the
+social-vulnerability ranking. Full scenario rules remain in the <a href="../../code/lc_scenarios/README.md">scenario README</a>, not
+duplicated here.</p>
+<h2 id="model-version-and-grid-effects-what-is-and-is-not-established">3.
+Model-version and grid effects: what is and is not established</h2>
+<ul>
+<li><strong>Grid geometry:</strong> all 17 temperature rasters checked
+share the same 5,840×4,509 grid, 10 m cells, origin (503560, 200940),
+and projected CRS. The ranking reversal remains on an identical London
+mask. A change of output grid origin or aggregation footprint is not
+needed to produce it.</li>
+<li><strong>Historical Green30/baseline versus existing 3.20.2
+reruns:</strong> paired cooling differs by about 10⁻⁸°C in these
+summaries, effectively zero. A script header saying “generated by
+3.14.1” does not identify the runtime that produced the archived Figure
+3 raster; do not label this a verified 3.14.1→3.20.2 experiment.</li>
+<li><strong>The earlier +0.438°C diagnostic is a different
+comparison:</strong> it tested an intermediate Target30-v4 input across
+model formulas/grids. It concerns absolute Target temperature, not the
+final old-versus-revised paired Green–Target cooling contrast. Its
++0.501°C park-formula and −0.063°C alignment contributions must
+<strong>not</strong> be imported into this decomposition. See the <a href="../../code/Urban_Cooling_Modeling_Runs/INVEST_VERSION_COMPARISON.md">version
+investigation</a>.</li>
+<li><strong>Target:</strong> the old-to-new changes combine revised
+area/eligibility/placement with any unverified historical runtime
+effects. Without a same-input Target rerun, a numerical percentage
+assigned to model version would be speculative. Historical Target
+filenames follow the confirmed manuscript aliases, but an immutable
+original-run input checksum/runtime record was not established here;
+current-file transition counts are not proof of every historical run
+snapshot.</li>
+<li><strong>10/20 tiers:</strong> both old Green inputs use NoData255
+and revised inputs use NoData0. Their temperature shifts are consistent
+with the 30% diagnosis, but its numerical attribution cannot be
+transferred to them without controls.</li>
+</ul>
+<h2 id="meaning-for-the-manuscript-and-next-decision">4. Meaning for the
+manuscript and next decision</h2>
+<p>Use the internally consistent revised outputs. Describe Target
+benefits as results of the <strong>revised matched-area allocation
+design</strong>, not proof that vulnerability ranking alone improves
+cooling. Keep the prescribed-climate caveat from the Figure 3 review.
+The old comparison is useful provenance, not an alternative set of
+numbers to combine with revised health outcomes.</p>
+<p>For strict attribution at every tier, the smallest next experiment is
+to rerun historical Green10/20 with only NoData changed, plus historical
+Target10/20/30 unchanged in 3.20.2. To separate individual canopy-rule
+effects further would require additional counterfactual LULC runs.
+<strong>None were launched in this audit.</strong> The NoData
+sensitivity also warrants a focused model-input handling test before
+claiming absolute numerical robustness; it should not be hidden as a
+cosmetic file-format change.</p>
+<h2 id="reproduction-files-and-checks">Reproduction, files and
+checks</h2>
+<p>Generating analysis script: <a href="../../code/post_processing_layers/audit_figure3_ranking_inputs.py">audit_figure3_ranking_inputs.py</a>.
+It reads existing legacy, diagnostic and production rasters, checks grid
+equality and manifest/input checksums, recomputes same-mask temperature
+means, and independently counts canopy transitions/overlap. It generates
+no figures.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span><span class="va">$URBAN_COOLING_PYTHON</span><span class="st">&quot;</span> code/post_processing_layers/audit_figure3_ranking_inputs.py <span class="st">&quot;</span><span class="va">$URBAN_COOLING_DATA_ROOT</span><span class="st">&quot;</span> <span class="at">--output-dir</span> <span class="st">&quot;</span><span class="va">$URBAN_COOLING_DATA_ROOT</span><span class="st">/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary&quot;</span></span></code></pre></div>
+<p>Outputs:
+<code>figure3_ranking_input_audit_20261111_temperatures.csv</code>,
+<code>_canopy.csv</code> and <code>_manifest.json</code>, pooled in the
+production valuation summary folder. The manifest records exact source
+paths and checksums. Existing controlled runs were generated using <a href="../../code/Urban_Cooling_Modeling_Runs/execute_invest_urban_cooling_model_health_scenarios.py">execute_invest_urban_cooling_model_health_scenarios.py</a>
+and the NoData input was prepared by <a href="../../code/Urban_Cooling_Modeling_Runs/prepare_green30_nodata_harmonized.py">prepare_green30_nodata_harmonized.py</a>.
+For the figure-generating scripts and versioned PNGs, use the <a href="figure3_climate_uhi_audit.md#original-workflow-reproduction-and-controlled-comparison-11-november">Figure
+3 script table</a>.</p>
+<p>HTML:
+<code>pandoc docs/manuscript/figure3_ranking_input_audit.md --standalone --embed-resources --toc --css docs/manuscript/figure_review.css -o docs/manuscript/figure3_ranking_input_audit.html</code>.</p>
+</body>
+</html>

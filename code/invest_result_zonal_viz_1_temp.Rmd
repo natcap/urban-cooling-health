@@ -1,7 +1,7 @@
 ---
-title: "Untitled"
+title: "Figure 3 — matched-condition temperature changes"
 output: html_document
-date: "2025-09-16"
+date: "2026-11-11"
 ---
 
 ```{r setup}
@@ -12,6 +12,44 @@ source(here::here("code", "ucm_analysis_setup.R"))
 ucm_config <- ucm_analysis_setup(export_legacy_names = TRUE)
 ```
 
+
+## Current Figure 3: prescribed conditions and nine land-use contrasts
+
+Panel a preserves the original stem/point layout and year labels. The legend
+defines their assumed temperature/UHI settings; these are not direct Figure 1
+climate projections. Panel b
+holds these parameters at 25°C/5°C and gives each of 33 boroughs equal weight.
+The supplement shows borough variation, not model uncertainty. Conditions
+22/5 and baseline 22/2 are linear reconstructions from existing revised runs;
+the summary script validates translation against actual 28/5 outputs first.
+See the [audit, legend and Results](../docs/manuscript/figure3_climate_uhi_audit.md).
+
+```{r figure3-production, fig.width=7.2, fig.height=3.6}
+production_root <- file.path(ucm_config$paths$data_root,
+  "2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09")
+summary_dir <- file.path(production_root, "03_energy_work_capacity", "summary")
+# Use the project's GDAL-enabled Python environment; never rerun UCM here.
+python <- Sys.getenv("URBAN_COOLING_PYTHON", unset = "python")
+status <- system2(python, c(
+  shQuote(here::here("code", "post_processing_layers", "summarize_figure3_prescribed.py")),
+  "--production-root", shQuote(production_root),
+  "--borough-vector", shQuote(file.path(dir.aoi, "London_Borough_aoi.shp")),
+  "--output-dir", shQuote(summary_dir)))
+if (status != 0) stop("Figure 3 summary failed. Set URBAN_COOLING_PYTHON to the project's InVEST Python executable.")
+source(here::here("code", "post_processing_layers", "plot_figure3_temperature.R"))
+figure3 <- build_figure3_borough_reporting(summary_dir, here::here("code"))
+figure3
+```
+
+## Historical analysis — retained for comparison only
+
+The old year labels map prescribed parameter combinations to dates, rather than
+deriving them from Figure 1's climate ensemble. Keep this code for provenance;
+do not execute it when knitting the revised manuscript figure.
+
+```{r disable-historical-analysis, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
 
 ## Data
 

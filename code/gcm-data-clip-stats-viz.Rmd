@@ -4,6 +4,27 @@ output: html_document
 date: "2025-09-16"
 ---
 
+## Current Figure 1 production
+
+The borough reporting path uses the validated historical-reference comparison,
+keeps CHELSA July 2021 as the main subtraction reference, and exports matching
+WorldClim historical differences separately. Earlier plot code remains below
+for provenance; it is not executed for this production figure. LSOA cache
+generation for Figure 2 continues through its original path unchanged.
+
+```{r figure1-production}
+if (Sys.getenv("FIGURE2_CLIMATE_SPATIAL_UNIT", unset="borough") == "borough") {
+  data_root <- Sys.getenv("URBAN_COOLING_DATA_ROOT")
+  if (!nzchar(data_root)) stop("Set URBAN_COOLING_DATA_ROOT to the Wellcome Trust Project Data folder.")
+  input_root <- file.path(data_root,"1_preprocess/UrbanCoolingModel/OfficialWorkingInputs")
+  source(here::here("code","post_processing_layers","plot_figure1.R"))
+  build_figure1(file.path(input_root,"climate/worldclim_v21_historical/comparison"),
+    file.path(input_root,"AOIs/London_Borough_aoi.shp"),
+    here::here("figures","climate_projections"))
+  knitr::knit_exit()
+}
+```
+
 ```{r setup}
 
 # To clear your environment 

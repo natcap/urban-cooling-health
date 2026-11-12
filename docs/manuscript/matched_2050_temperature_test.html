@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Matched 2050 temperature test</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; }
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.at { color: #7d9029; }
+code span.bn { color: #40a070; }
+code span.bu { color: #008000; }
+code span.cf { color: #007020; font-weight: bold; }
+code span.ch { color: #4070a0; }
+code span.cn { color: #880000; }
+code span.co { color: #60a0b0; font-style: italic; }
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.do { color: #ba2121; font-style: italic; }
+code span.dt { color: #902000; }
+code span.dv { color: #40a070; }
+code span.er { color: #ff0000; font-weight: bold; }
+code span.ex { }
+code span.fl { color: #40a070; }
+code span.fu { color: #06287e; }
+code span.im { color: #008000; font-weight: bold; }
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; }
+code span.kw { color: #007020; font-weight: bold; }
+code span.op { color: #666666; }
+code span.ot { color: #007020; }
+code span.pp { color: #bc7a00; }
+code span.sc { color: #4070a0; }
+code span.ss { color: #bb6688; }
+code span.st { color: #4070a0; }
+code span.va { color: #19177c; }
+code span.vs { color: #4070a0; }
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
+</style>
+  <style type="text/css">html {color-scheme:light; background:#fff;}
+img {display:block; max-width:min(100%,680px); max-height:760px; width:auto; height:auto; object-fit:contain; margin:18px auto;}
+body {background:#fff; color:#202020; font-family:Arial,sans-serif; line-height:1.55; max-width:960px; margin:40px auto; padding:0 28px;}
+h1,h2,h3 {color:#172c3a; line-height:1.25;}
+h2 {margin-top:2em; border-bottom:1px solid #ddd; padding-bottom:.3em;}
+a {color:#175c91;} table {border-collapse:collapse; font-size:.94em;} td,th {border:1px solid #ddd; padding:8px; text-align:left;}
+code {font-size:.9em; overflow-wrap:anywhere;} blockquote {margin-left:0; padding-left:16px; border-left:3px solid #ddd;}
+@media print {body {margin:0; max-width:none;} nav {display:none;}}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Matched 2050 temperature test</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#matched-2050-temperature-sensitivity" id="toc-matched-2050-temperature-sensitivity">Matched 2050 temperature
+sensitivity</a>
+<ul>
+<li><a href="#decision-relevant-result" id="toc-decision-relevant-result">Decision-relevant result</a></li>
+<li><a href="#assumptions-and-checks" id="toc-assumptions-and-checks">Assumptions and checks</a></li>
+<li><a href="#land-use-effects-under-all-three-configurations" id="toc-land-use-effects-under-all-three-configurations">Land-use
+effects under all three configurations</a></li>
+<li><a href="#interpretation-and-next-decision" id="toc-interpretation-and-next-decision">Interpretation and next
+decision</a></li>
+<li><a href="#reproduce-and-locate-evidence" id="toc-reproduce-and-locate-evidence">Reproduce and locate
+evidence</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="matched-2050-temperature-sensitivity">Matched 2050 temperature
+sensitivity</h1>
+<p><strong>Follow-up:</strong> the observation-anchored <a href="ucm_climate_parameter_pilot.md">UCM climate-parameter pilot</a> is
+the current decision document. This mean-matching test remains a
+sensitivity, not the recommended method for physically defining
+<code>T_ref</code> and <code>UHI_max</code>.</p>
+<p>Temperature-only diagnostic, 11 November 2026. Existing production
+outputs and manuscript figures are unchanged. Health, work capacity and
+energy are on hold.</p>
+<h2 id="decision-relevant-result">Decision-relevant result</h2>
+<p>Matching Figure 1’s 2041–2060 London mean lowers absolute
+temperatures relative to the existing 25/5°C configuration, but does not
+change land-use cooling contrasts or their ranking when UHI and all
+other cooling inputs remain fixed. This is mean matching, not
+independent validation or a newly executed InVEST run.</p>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr>
+<th>Configuration</th>
+<th style="text-align: right;">Reference temperature (°C)</th>
+<th style="text-align: right;">Maximum UHI (°C)</th>
+<th style="text-align: right;">Baseline-land-use equal-borough mean
+(°C)</th>
+<th style="text-align: right;">Shift from existing run (°C)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Existing</td>
+<td style="text-align: right;">25.0000</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">28.6133</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>SSP370-matched 2050</td>
+<td style="text-align: right;">22.1052</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">25.7185</td>
+<td style="text-align: right;">−2.8948</td>
+</tr>
+<tr>
+<td>SSP585-matched 2050</td>
+<td style="text-align: right;">22.4516</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">26.0649</td>
+<td style="text-align: right;">−2.5484</td>
+</tr>
+</tbody>
+</table>
+<p>The fitted reference is an effective model parameter, not an observed
+rural temperature. Do not interpret its numerical proximity to 22°C as
+evidence that regional climate does not warm: the starting 25/5°C
+configuration was already warmer than the target London mean.</p>
+<h2 id="assumptions-and-checks">Assumptions and checks</h2>
+<ul>
+<li>Targets are the equal-weight means of 33 boroughs and three GCMs in
+Figure 1, separately for SSP370 and SSP585, for July mean daily maximum
+temperature in 2041–2060. The SSPs are not pooled.</li>
+<li>Match the baseline land-use configuration only. Apply the same shift
+to all nine alternative landscapes; independently fitting each landscape
+would erase the effects being evaluated.</li>
+<li>Retain UHI = 5°C, current land cover, ET, cooling method, mixing
+parameters, grid and London mask. The suitability of 5°C as a July
+air-UHI parameter is not established by this test.</li>
+<li>InVEST 3.20.2 uses <code>T_ref + (1 − HM) × UHI_max</code> before
+normalized mixing. A constant reference-temperature change therefore
+translates the field. This was checked against executed 25/5 and 28/5
+rasters for all ten landscapes: the largest deviation from a uniform
++3°C shift was <strong>0.000017524°C</strong> over <strong>15,733,956
+common London cells</strong>. Relevant land-cover and cooling arguments
+agree between each paired run.</li>
+<li>Calculation:
+<code>shift = Figure 1 target − existing baseline borough mean</code>;
+<code>matched T_ref = 25 + shift</code>;
+<code>matched temperature = existing temperature + shift</code>. No
+temperature rasters were overwritten or new full model runs
+undertaken.</li>
+<li>The diagnostic exports both equal-borough and area-weighted means.
+Only the first is calibrated, because it matches Figure 1’s aggregation.
+The matched area-weighted baseline means are 25.6657°C and 26.0122°C,
+respectively.</li>
+<li>Every borough’s scenario-minus-baseline difference is unchanged to
+numerical precision. Spatial gradients and within-landscape temperature
+spread are also unchanged by the translation; the Figure 1 spatial field
+is not reproduced.</li>
+</ul>
+<h2 id="land-use-effects-under-all-three-configurations">Land-use
+effects under all three configurations</h2>
+<p>Signed changes relative to baseline land use; negative values mean
+cooling.</p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 36%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Landscape</th>
+<th style="text-align: right;">Equal-borough mean change (°C)</th>
+<th style="text-align: right;">London area-weighted change (°C)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AllBuilt</td>
+<td style="text-align: right;">+1.0521</td>
+<td style="text-align: right;">+1.1088</td>
+</tr>
+<tr>
+<td>TreeRisk</td>
+<td style="text-align: right;">+0.0970</td>
+<td style="text-align: right;">+0.0764</td>
+</tr>
+<tr>
+<td>TreeOpp</td>
+<td style="text-align: right;">−0.0588</td>
+<td style="text-align: right;">−0.0624</td>
+</tr>
+<tr>
+<td>Green10</td>
+<td style="text-align: right;">−0.1202</td>
+<td style="text-align: right;">−0.1021</td>
+</tr>
+<tr>
+<td>Target10</td>
+<td style="text-align: right;">−0.1410</td>
+<td style="text-align: right;">−0.1134</td>
+</tr>
+<tr>
+<td>Green20</td>
+<td style="text-align: right;">−0.2264</td>
+<td style="text-align: right;">−0.1954</td>
+</tr>
+<tr>
+<td>Target20</td>
+<td style="text-align: right;">−0.2583</td>
+<td style="text-align: right;">−0.2153</td>
+</tr>
+<tr>
+<td>Green30</td>
+<td style="text-align: right;">−0.3364</td>
+<td style="text-align: right;">−0.2910</td>
+</tr>
+<tr>
+<td>Target30</td>
+<td style="text-align: right;">−0.3780</td>
+<td style="text-align: right;">−0.3192</td>
+</tr>
+</tbody>
+</table>
+<p>These unchanged contrasts are conditional on fixed UHI and cooling
+inputs, not proof that cooling benefits are insensitive to all climate
+assumptions. No conclusion about unchanged health or work-capacity
+benefits follows: those components can respond nonlinearly to absolute
+temperatures and were not tested.</p>
+<h2 id="interpretation-and-next-decision">Interpretation and next
+decision</h2>
+<p>The existing 25/5°C setting is a warmer thermal scenario than Figure
+1’s 2050 ensemble means. Mean matching offers a transparent sensitivity
+alternative, but neither validates the UHI magnitude nor solves the
+rural-reference, temperature-variable and spatial-resolution questions.
+Decide whether to retain 25/5°C as a warm scenario or adopt a
+climate-matched configuration only after reviewing those assumptions.
+Downstream tests remain explicitly on hold.</p>
+<h2 id="reproduce-and-locate-evidence">Reproduce and locate
+evidence</h2>
+<p>Generating script: <a href="../../code/post_processing_layers/test_matched_2050_temperature.py">test_matched_2050_temperature.py</a>.
+No figures were generated or modified by this test.</p>
+<p>Outputs under the external data root:
+<code>2_postprocess_intermediate/UCM_official_runs/diagnostics/matched_2050_temperature_20261111_v1/</code>:</p>
+<ul>
+<li><code>summary.csv</code>: 30 landscape/configuration rows, both
+aggregation methods.</li>
+<li><code>borough.csv</code>: 990 borough/landscape/configuration
+rows.</li>
+<li><code>manifest.json</code>: source hashes, calibration targets and
+translation errors.</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> run <span class="at">-n</span> urban-cooling-invest-3.20.2 python <span class="dt">\</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  code/post_processing_layers/test_matched_2050_temperature.py <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--data-root</span> <span class="st">&quot;</span><span class="va">$URBAN_COOLING_DATA_ROOT</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output-dir</span> <span class="st">&quot;</span><span class="va">$URBAN_COOLING_DATA_ROOT</span><span class="st">/2_postprocess_intermediate/UCM_official_runs/diagnostics/matched_2050_temperature_20261111_v1&quot;</span></span></code></pre></div>
+<p>The script refuses to overwrite an existing diagnostic folder. Use a
+new suffix for a repeat. Original climate and run history remain in the
+<a href="figure1_historical_reference_comparison.md">Figure 1 reference
+comparison</a> and <a href="figure3_climate_uhi_audit.md">Figure 3
+audit</a>.</p>
+</body>
+</html>
