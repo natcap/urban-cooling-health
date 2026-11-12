@@ -145,6 +145,11 @@ def _parse_overrides(values: list[str]) -> dict[str, Path]:
     return overrides
 
 
+def _suffix_number(value: float) -> str:
+    """Format numeric parameters for InVEST's restricted suffix alphabet."""
+    return f"{value:g}".replace(".", "p").replace("-", "m")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("data_root", type=Path)
@@ -291,10 +296,11 @@ def main() -> int:
                 if not args.validate_only
                 else []
             )
-            temperature_label = f"{temperature:g}"
+            temperature_label = _suffix_number(temperature)
             suffix = (
                 f"london_{scenario_name}_{temperature_label}deg_"
-                f"{args.uhi_max:g}uhi_{args.humidity:g}hum_revised_equal_area"
+                f"{_suffix_number(args.uhi_max)}uhi_"
+                f"{_suffix_number(args.humidity)}hum_revised_equal_area"
             )
             output_path = workspace / f"T_air_{suffix}.tif"
             manifest_path = workspace / f"run_manifest_{suffix}.json"
