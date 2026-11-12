@@ -2,6 +2,11 @@
 
 [Copy-friendly HTML](figure4_5_audit.html) · [Review text](figure4_5_audit.md) · [Methods and script index](figure4_methods.md)
 
+**11 November follow-up:** [Figure 3 climate/UHI audit](figure3_climate_uhi_audit.md)
+investigates the remaining temperature framing and Abstract claims. It documents
+the approved two-panel Figure 3 redesign, new temperature summaries and draft
+text. Figures 1–2 and Word have not been updated in this follow-up.
+
 Audited 10 November 2026 against the saved `London urban cooling-ms-0806.docx`
 and `London urban cooling-SM.docx` (accepted-change text), embedded Figure 4
 images and the production Figure 4 CSV. All 21 checked input/table checksums

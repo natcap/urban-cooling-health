@@ -183,7 +183,8 @@ figure_data <- figure_data %>%
 
 main_plot <- ggplot(figure_data, aes(x = scenario, y = estimate, fill = scenario_id)) +
   geom_hline(yintercept = 0, colour = "#777777", linewidth = 0.3) +
-  geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25) +
+  # Match Figure 3 bar transparency without changing estimates or intervals.
+  geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25, alpha = 0.7) +
   geom_errorbar(
     data = figure_data %>% filter(!is.na(lower95)),
     aes(ymin = lower95, ymax = upper95),
@@ -381,7 +382,8 @@ if (!is.null(args$borough_summary)) {
       filter(aggregation_comparison, estimand == estimand_name),
       aes(x = scenario, y = estimate, fill = scenario_id)
     ) +
-      geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25) +
+      # Match main Figure 4 transparency; aggregation and layout are unchanged.
+      geom_col(width = 0.72, colour = "#2B2B2B", linewidth = 0.25, alpha = 0.7) +
       scale_fill_manual(values = scenario_colours) +
       scale_y_continuous(expand = expansion(mult = c(0, 0.10))) +
       labs(title = panel_label, x = NULL,

@@ -172,6 +172,8 @@ their own migration check.
 Scripts keep their original names. New PNGs, source CSVs and manifests carry
 `_20261110_v2`; the preceding unsuffixed files are retained for comparison.
 The suffix denotes styling only: estimates and uncertainty are unchanged.
+Figure 4 and citywide-versus-borough supplementary bars use `alpha = 0.7`, matching Figure 3; this transparency update
+retains the current `20261110_v2` filename and leaves the data unchanged.
 
 | PNG stem (append `_20261110_v2.png`) | Generating script |
 |---|---|
