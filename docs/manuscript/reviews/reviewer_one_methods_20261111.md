@@ -1,0 +1,111 @@
+# Independent simulated review 2: methods, reproducibility and statistical interpretation
+
+## Scope and editorial assessment
+
+This is a separate methods review of the full accepted-change manuscript and supplement at `/tmp/london_manuscript_review_20261111.md` and `/tmp/london_supplement_review_20261111.md`, in a simulated Nature Health review, not an actual journal decision. Initial assessment preceded consultation of `docs/manuscript/figure3_climate_uhi_audit.md` and `docs/manuscript/figure4_5_audit.md`. I did not inspect another review or run any model. I reviewed text/captions, not original figure pixels, numerical source files or implementation line by line. Repository audits are attributed evidence of previous checks, not newly reproduced validation. No full external reference-validity audit was performed.
+
+**Recommendation: major revision with a methods response required before submission.** The matched-condition experiment and transparent recent aggregation corrections are valuable. However, temporal mortality exposure, baseline-risk algebra, parameter applicability and reproducibility of targeting currently limit the central health inference. Several checks below may require analysis if absent; no new runs are authorized or performed by this report.
+
+## Strengths
+
+- Fixed 2021 populations and registered mortality make the intended comparison distinct from demographic forecasting.
+- Population-conserving resampling and population-proportional death allocation are explicit; the latter correctly avoids treating each grid cell as having equal numbers of deaths.
+- Reusing coefficient draws across scenarios preserves paired uncertainty; exposure–response-only uncertainty is now honestly labeled.
+- Figure 6 acknowledges univariable ecological patterns and model-conditional pointwise intervals, and does not claim causal effects of vulnerability.
+- Paired LSOAs and fixed benefit thresholds prevent reclassification from hiding changes across strategies. Borough trade-offs and age-composition versus age-specific response are acknowledged.
+- Figure 4/5 captions explicitly distinguish energy totals, area-weighted capacity and health totals. Those are different valid estimands when consistently labeled.
+
+## Major concerns
+
+### M1. Temporal mismatch between July heat and annual deaths
+
+**Anchors:** Health outcomes, “projected excess mortality attributable to summer (July) temperature increases”; annual 2021 ONS rates; Abstract/Figure 4, “annual ... deaths averted.” **Urgency: critical.**
+
+A single July temperature contrast is applied to annual baseline deaths. No time integration, threshold, lag structure, season-specific baseline mortality or conversion from monthly mean daily maximum temperature to the source exposure metric is described. This makes the annual count ambiguous even if all spatial summations are flawless. Log-linear functions also imply risk changes across all modeled temperatures, whereas the appropriate domain and threshold depend on the source estimate. Relative strategy comparisons can remain sensitive when temperature-response functions are nonlinear or heat duration varies spatially.
+
+**Required response:** state the exact epidemiological estimand, exposure metric, applicable range, temporal window and baseline death denominator. Give a worked pixel example and aggregation equation with units. Either provide an exposure-time-consistent health calculation or explicitly justify and label a standardized warm-condition index rather than an annual forecast. A simple factor-of-12 correction is not automatically valid. If additional calculations are needed, specify them as a bounded sensitivity or revision plan, not an accomplished fix.
+
+### M2. The attributable-fraction formula does not transparently match the stated baseline
+
+**Anchor:** `RR = exp(beta × Delta T)`, `AF = (RR − 1)/RR`, `ED = AF × D0`, with D0 called baseline deaths and Delta T defined as scenario minus baseline. **Urgency: critical.**
+
+If RR denotes scenario mortality divided by baseline mortality and D0 is the baseline count, the direct scenario-minus-baseline difference would be D0(RR−1). The supplied formula D0(1−1/RR) instead uses a fraction normally tied to deaths under the higher-exposure state, or requires a differently defined risk comparison. For cooling, it is not algebraically identical to the direct baseline-to-scenario reduction. This is a definitional inconsistency to resolve, not proof that the code must be replaced without inspection. Additionally, 2021 observed deaths are used to represent baseline-land-use mortality under prescribed future conditions: that is a standardized fixed-rate counterfactual, not an estimated future baseline burden.
+
+**Required response:** explicitly name each state, denominator and sign, derive the chosen expression, and verify one warming and one cooling case. State the assumption connecting observed 2021 mortality to the matched warm-condition comparison. If the current formula is intentional, identify the counterfactual interpretation that makes it correct and align the narrative. Quantify any resulting change before retaining headline counts.
+
+### M3. Climate context, UHI forcing and calibration are not a unified validated exposure chain
+
+**Anchors:** Methods Urban Cooling Model, rural reference “22°C,” UHI “2 and 5°C”; Supplementary Tables 1/3, `22+2`, `25+5`, `28+5`; Climate scenarios, EC-Earth3-Veg; Supplementary Fig. 12, ACCESS-CM2. **Urgency: critical.**
+
+The manuscript itself reveals inconsistent GCM lists and prescribes a UHI increase without a quantified London air-temperature calibration. A multi-model mean is not in itself propagation of climate-model uncertainty; three independent centers do not demonstrate performance or adequately characterize spread. The comparison of a single 2021 CHELSA year with WorldClim future climatologies also mixes product and baseline period, so apparent warming cannot automatically be called a harmonized anomaly. No station-validation performance, held-out evaluation, or sensitivity of health conclusions to UHI/cooling distances is presented.
+
+**Audit reconciliation:** the Figure 3 audit reports ACCESS-CM2 as the actual input, documents the legacy year-label construction, and separates the new conditional 25°C/5°C assessment from Figure 1. It reports the Yale source as surface UHI and says the exact London extraction and applicability to air UHI remain unresolved. I have not independently verified those external source properties. Its completed replotting is a reporting fix, not a calibration result.
+
+**Required response:** correct the GCM names and product/period definitions; label the production experiment as conditional; report exact UHI source/statistic/extraction and defend its metric compatibility. Supply existing local validation, if any, or scope an explicit sensitivity and limit quantitative claims. Keep cross-period exposure context separate unless a genuine coupling is documented.
+
+### M4. Equal added canopy does not isolate vulnerability prioritization from other allocation changes
+
+**Anchors:** Methods, “matched on realized added-canopy area to isolate the influence of spatial allocation”; Supplementary Methods, street candidate generation, priority multiplication, “approximately” 565,000/1,129,000/1,819,000 sites. **Urgency: high.**
+
+Green preferentially expands existing canopy across selected land classes; Target uses street-derived points and a different candidate domain. Equal area supports comparison of strategies, but cannot isolate the effect of the vulnerability score alone. Ranking by the same SVI used to evaluate success also makes that endpoint design-related. The site counts do not reproduce realized area because crowns overlap and rasterization can merge candidates. Five-meter spacing and 3.5-meter road offsets are spatial heuristics, not demonstrated physical feasibility.
+
+**Required response:** report exact realized baseline/additional canopy area by scenario, overlap handling, crown radius/distribution, selection stopping rule, grid alignment, land-class transitions and exclusions. Identify UTCI dataset/date/weather/solar assumptions, coverage, provenance and validation; “1 m ... 14:00” is insufficient. Describe tie handling and the order dependence of nearest-neighbor filtering. Either interpret results as strategy-package comparisons or assess common-candidate proximity/random/heat-only/SVI-only alternatives in a bounded robustness exercise. Disclose that this is not equal-cost comparison and does not establish optimality.
+
+### M5. SVI construction and statistical analysis are incompletely specified
+
+**Anchors:** Social vulnerability, “at least one ... from each ... theme,” exclusion of social housing, and “computed SVI”; Figure 6, “four-dimension”; Supplementary Methods, “tract-level SVI percentile.” **Urgency: high.**
+
+The exact SVI formula, direction, normalization, component weights, missing-data treatment, source years and geography joins are absent. Removing social housing means the retained index does not visibly represent all four CDC themes. Four retained indicators and four themes are not synonymous. It is unclear whether targeting uses the same four-component score as evaluation, or a prior six-variable score. LSOA is the stated unit, but targeting refers to tracts. Collinearity does not by itself determine what belongs in a normative vulnerability index.
+
+GAM captions give family and fitting criterion, but the Methods omit basis, basis dimension, smoothing settings, diagnostics, concurvity considerations and the derivation/uncertainty of percentile contrasts. Dunn tests treat spatially structured LSOAs as independent; thousands of neighborhoods can produce small P values for small modeled differences. GAM bands condition on modeled outcomes and omit exposure-model error; neighboring units and shared borough mortality rates may induce substantial dependence.
+
+**Required response:** add concise SVI and descriptive-analysis subsections plus a reproducibility table. State the shared score across stages and sensitivity to weights/components. Preserve the current noncausal wording. Prioritize effect sizes and descriptive distributions over significance letters; if inferential bands/P values are central, report spatial dependence diagnostics and an appropriate spatial/block sensitivity. Report paired Target-minus-Green contrasts using paired coefficient draws; overlap of separate uncertainty intervals is not a test of their difference.
+
+### M6. Mortality effect-size applicability needs age, outcome and exposure reconciliation
+
+**Anchors:** Table 2 cardiovascular/respiratory coefficients from reference 61, whose supplied title specifies “in the Elderly”; Methods ONS “all ages and sexes.” **Urgency: high.**
+
+An elderly-specific meta-analysis appears to supply coefficients applied to all-age deaths. That could be defensible only with a demonstrated compatible subgroup estimate or an explicit approximation/sensitivity. The same concern applies to temperature metric, climate region, lag, outcome definitions and threshold compatibility across five sources/categories. The statement that estimates were selected for similarity to London is not sufficient extraction documentation.
+
+**Required response:** provide source table/page, population, exposure metric, lag/window, threshold, climatic subgroup and exact extracted estimate for each coefficient. Verify the all-cause ICD grouping and make clear that selected cause-specific results overlap with all-cause and are not additive. A London/UK-specific sensitivity would be useful if supported by appropriate data. The present flag is based on the supplied reference title, not a completed external literature audit.
+
+### M7. Energy and work-capacity calculations require parameter provenance and narrower interpretation
+
+**Anchors:** Energy saving, “12–16% more ... per degree,” Supplementary Table 4; Work productivity, WBGT logistic function; Supplementary RH, `T = (Tmax+Tmin)/2, or ... Tx`. **Urgency: high.**
+
+The energy coefficient units are kWh/m²/°C/month, but the conversion from cited percentages/sectoral data to these coefficients is not shown. Building footprints are not floor area. Industry/business and mixed-use coefficients are zero despite the narrative emphasizing offices; exclusions may materially shape totals and borough rankings. The table cites a 2018 report while the text discusses 2022 heatwave changes, making the provenance chain unclear. None of these observations alone establishes that the numerical result is wrong.
+
+The WBGT conversion is not given, including whether it represents shaded or solar-exposed work. RH calculation leaves a choice between mean temperature and Tmax rather than reporting the implemented choice; the supplemental 2070 RH differs from the production settings described by the audit. A homogeneous RH and area-weighted 400-W response do not estimate the actual London workforce burden. No basis is shown for calling the highest-intensity response “conservative.”
+
+**Required response:** provide a dimensional worked energy example, sector mapping, coefficient derivations, AC-penetration assumptions, zero-category meaning and price year; distinguish footprint from floor-area intensity. Give the exact WBGT/RH equations and implemented parameters/version, and report these as potential capacity under stipulated conditions. Retain area-weighted wording already present. Treat AC adoption and RH/UHI assumptions as limitations or targeted sensitivities, not full uncertainty covered by the mortality interval.
+
+### M8. Newly supplied internal evidence identifies a consequential missing-data sensitivity
+
+**Source boundary:** after completing the independent review above, I read `docs/manuscript/figure3_ranking_input_audit.md` at the lead reviewer's request. This is unpublished internal evidence; I did not reproduce its checks. **Urgency: high before claiming numerical robustness.**
+
+The audit reports an existing Green30 control that changes only NoData encoding (255 to 0), with identical valid land-cover classes/mask, software, ancillary checksums and other arguments. On its common London mask, area-weighted cooling changes from 0.364478°C to 0.287505°C, a 0.076973°C reduction; borough-mean cooling changes by 0.049786°C. The valid output support is held fixed, so this is not merely omission of boundary cells. The reported difference can reverse the old Green30/Target30 ranking. This makes a focused missing-data/convolution-handling investigation more urgent than generic rhetoric about a model upgrade. Its exact internal pathway remains unresolved, and controls were not reported for the 10/20 tiers or unchanged historical Target inputs.
+
+**Required response:** document the intended valid/NoData semantics, why the current encoding is appropriate, and a focused regression/edge-handling check before claiming absolute robustness. Assess the relevance to downstream health comparisons if the input sensitivity persists. Do not demand a complete factorial rerun merely to reproduce the audit's already controlled Green30 finding, and do not extrapolate its magnitude to other tiers. Keep revised results internally consistent while the numerical issue is assessed.
+
+The same audit supplies information missing from current Word: exact eligible added-cell matching, allowable transitions, deterministic rank/FID ordering, a 5 m crown radius/pixel-centre rule, and substantial Green/Target source-class differences. These are available reporting fixes, not evidence that no such controls exist in the project. It also strengthens M4: revised Target30 additions are reported as 67.3% urban versus 27.1% for Green30. That supports an allocation-package explanation but does not isolate the contribution of vulnerability weighting.
+
+## Additional reproducibility and reporting requests
+
+- **Biophysical table:** explain zero shade for deciduous/conifer woodland versus shade=1 for class 100 tree cover. If all actual canopy is recoded, document the mask and residual woodland area; otherwise this parameterization could affect baseline/scenario contrasts. Do not infer a bug solely from a table.
+- **TreeRisk:** climate suitability risk is not a probability of canopy death. Report species thresholds, missing-species handling, tree-inventory coverage and crown assumptions, and label deterministic removal as a stress-test scenario.
+- **TreeOpp:** identify the selected licensed parcel categories and exact exclusions, and distinguish available/open land from consented plantable space.
+- **Data geography:** state exact LULC/canopy/population/ONS vintages, London boundary and CRS, working resolutions (10 m versus 30 m), interpolation, nodata rules and count-conservation checks. Explain the 4,831 versus 4,835 LSOAs transparently rather than silently treating them as identical samples.
+- **Figure 3 uncertainty:** replace generic 95% “model estimates” intervals. The audit reports the old bars as borough mean ±1.96 SD/sqrt(33), not propagated model uncertainty; the ready replacement appropriately shows geographic spread.
+- **Current numerical consistency:** the Abstract already adopts 135–496 deaths, £22.4m/month and 1.42 percentage points. The Figure 4/5 text already reports health-only intervals and unequal borough gains. Remaining body-text percent signs and 6.37 versus audited 6.36 capacity points need reconciliation, not a new model run.
+- **Availability:** a GitHub link and “upon publication” outputs are not a frozen reproduction package. Supply a release/commit, environment, input manifest, licensed-data access procedure, intermediate summaries and exact commands linking manuscript figures to versioned outputs. Confirm access at submission; this review did not test the link.
+
+## What the two internal audits do and do not resolve
+
+The Figure 4/5 audit documents boundary-corrected aggregation, energy apportionment, consistent mortality summaries and versioned figure packages. Current captions/prose incorporate much of that work. The Figure 3 audit documents a replacement matched-condition plot, corrected weighted temperature summaries, and explicit shortcomings in climate/UHI interpretation; current Word text has not integrated that replacement. These are substantial reproducibility improvements. Neither audit establishes temporal validity of annual mortality, correct counterfactual denominator interpretation, local calibration, implementable site feasibility, or independent validation of equity. Those remain separate scientific questions.
+
+## Minimum response needed for a credible revision
+
+1. Resolve M1–M3 with a clearly defined health and exposure estimand before defending quantitative annual benefits.
+2. Supply exact Target/SVI implementation details and acknowledge strategy-package/design-related evaluation.
+3. Reconcile coefficient applicability and energy/WBGT parameter provenance.
+4. Integrate existing reporting corrections and release a frozen reproducible figure package, keeping statistical, numerical and empirical validation distinct.

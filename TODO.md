@@ -1,6 +1,20 @@
 # Project TODO and reproduction roadmap
 
-Last reviewed: 10 November 2026 (selected manuscript figures and copy-ready text)
+Last reviewed: 11 November 2026 (Figure 3 prescribed/borough version and Figure 1 historical-reference comparison generated; Word review pending)
+
+- [x] Download and validate matching WorldClim July 1970–2000 data; retain CHELSA July 2021 as the main reference. [Comparison and scripts](docs/manuscript/figure1_historical_reference_comparison.md).
+- [x] Generate Figure 1 v3: verified transparent histogram insets, displayed-period pooled decile breaks, consistent version filenames; SSP585 SM v02. Preserve earlier versions and matched-WorldClim SM.
+- [ ] Review the updated Figure 1 and legends, assign SM numbering and insert into Word. No Word edit or push performed.
+- [ ] Review Figure 3's new prescribed-condition/equal-borough version and proposed legend/Results. Earlier versions retained; no Word edits or push. [Current decision](docs/manuscript/figure3_climate_uhi_audit.md#current-approved-reporting-version).
+- [x] Complete the diagnostic UCM climate-parameter pilot for 2021, 2050 and 2070, including the four-station map and baseline-only temperature checks. [Pilot report](docs/manuscript/ucm_climate_parameter_pilot.md).
+- [x] Download and checksum-verify all 60 MIDAS v202607 station-year files for five provisional urban and five provisional rural stations over 2018–2023.
+- [x] Run the quality-controlled six-year station comparison, including primary daily-maximum and supplementary daytime-mean checks, plus night-time, hot-day, elevation, suspect-record and leave-one-station-out sensitivities. Daytime mean corroborates daily maximum; neither validates 5°C as a representative daytime UHI input. [Pilot report](docs/manuscript/ucm_climate_parameter_pilot.md#expanded-six-year-station-check).
+- [x] Screen the ten stations using official MIDAS source/remark metadata, temperature QC and ESA WorldCover exposure. Only St James's Park passes as urban background; Battersea is rejected and three rural-background sites pass. [Screened results](docs/manuscript/ucm_climate_parameter_pilot.md#station-history-and-exposure-screen).
+- [x] Add a bounded Crowd-Grid spatial sensitivity using 2018–2023 July daily maximum/minimum temperatures for London MSOAs and the exact MSOAs containing Wisley, Charlwood and Woburn. It supports 5°C only as an upper-tail nocturnal/stress-test value, not as representative daily-maximum UHI. [Crowd-Grid results](docs/manuscript/ucm_climate_parameter_pilot.md#crowd-grid-spatial-sensitivity).
+- [x] Run a bounded temperature-only `T_ref = 25°C` sensitivity at `UHI_max = 2, 3 and 5°C` for the baseline and nine scenarios. Rankings are identical and Green–Target directions are stable; absolute temperature effects scale with UHI. No health, energy, WBGT or work-capacity outputs were rerun. [Sensitivity results](docs/manuscript/ucm_climate_parameter_pilot.md#temperature-only-uhi-sensitivity).
+- [x] **Author decision, 11 November:** retain 25/5°C and existing production outputs, framed as a prescribed warm-condition stress-test rather than a calibrated 2050 daily-maximum estimate. Keep the 2/3/5°C temperature sensitivity as supporting evidence; no further production reruns are required by this decision.
+- [ ] Align manuscript Methods/Figure 3 wording with the [retained configuration](docs/manuscript/ucm_climate_parameter_pilot.md#retained-manuscript-configuration). Temperature-ranking stability must not be presented as validation of health/work-capacity magnitudes. Word edits remain with the author.
+- [ ] **Future model improvement, not a current manuscript blocker:** acquire additional quality-controlled urban-background stations before fitting a held-out LCZ/land-cover model. Extend the one-urban/three-rural comparison to at least ten Julys only as a temporal sensitivity. Health and work-capacity sensitivity tests remain on hold.
 
 This document is the live task list. The long numbered sections below also
 preserve the September model-rebuild audit; checked boxes there are completed
@@ -13,6 +27,21 @@ and source attribution (commit `a39a1f6`).
 
 ## Next actions — current status
 
+**Author holds, 11 November:** defer Abstract revision until all main-text
+sections are addressed. Pause further manuscript-review work and review-driven
+actions until explicitly requested. Saved reviews remain reference material,
+not an active task queue. Current work is limited to the requested Figure 1/3
+clarifications and documentation; no Word edits or push.
+
+**11 November follow-up:** two independent narrative/Methods reviews and an
+[editor-style synthesis](docs/manuscript/reviews/editor_synthesis_20261111.md)
+are complete and saved under `docs/manuscript/reviews/`.
+Their recommendations are held for later author direction. The
+[Figure 3 input audit](docs/manuscript/figure3_ranking_input_audit.md) isolates a
+Green30 NoData-only sensitivity; this is distinct from canopy-placement and
+grid effects. No new model runs are authorized by this note. Existing holds
+(including Discussion work) and Priority 3 GAM-uncertainty review remain in place.
+
 ### Remaining priorities after Figures 4–5 completion
 
 This short list takes precedence over older unchecked audit items below;
@@ -21,8 +50,9 @@ completed author edits need verification, not automatic rewriting.
 **Priority 1 — manuscript/submission gates**
 
 1. Reconcile the latest main manuscript and Supplement against final source
-   tables and selected figures. Start with Figure 3 temperature extrema and
-   Abstract numbers; verify Figure 2 baseline framing, Figures 6–7 units,
+   tables and selected figures. Review the [new two-panel Figure 3 and temperature
+   claims](docs/manuscript/figure3_climate_uhi_audit.md). Word remains author-managed;
+   Abstract revision is deferred until main sections are settled. Later verify Figure 2 baseline framing, Figures 6–7 units,
    Target/older-population trade-offs and final supplementary cross-references.
    Record exact CSV rows and distinguish author-confirmed edits from checked text.
 2. Finish the figure/input provenance and access inventory using existing
@@ -43,9 +73,10 @@ completed author edits need verification, not automatic rewriting.
 3. Add restricted-data-free CI for syntax, links and existing synthetic tests,
    then consolidate the remaining figure-to-script/input index and access guidance.
 
-**Recommended next:** read-only final manuscript/Supplement reconciliation,
-starting with Figure 3 and the Abstract. Figures 4–5 and Extended Data Fig. 1
-are complete by author confirmation; no new UCM/health run is warranted.
+**Current next decision:** review the Figure 1/3 clarifications and choose the
+climate-comparison framing before further changes. Broader reviews and Abstract
+revision are held as above. Figures 4–5 and Extended Data Fig. 1
+are complete by author confirmation; no new production or health run is warranted.
 Citywide-versus-borough sensitivity and borough boxplots remain Priority 3.
 
 ### Do next (scientific and manuscript gates)
