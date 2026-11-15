@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Energy and work-capacity candidate results</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="report-light.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Energy and work-capacity candidate results</h1>
+</header>
+<h1 id="corrected-energy-and-work-capacity-candidates">Corrected energy
+and work-capacity candidates</h1>
+<p>Execution follows the <a
+href="energy_capacity_consensus.md">three-reviewer consensus</a>. These
+are local candidate analyses, not automatic adoption of new manuscript
+results. Existing production outputs and Word documents remain
+unchanged; no push. <a
+href="energy_capacity_candidate_results.html">Copy-friendly
+HTML</a>.</p>
+<h2 id="reporting-framework">Reporting framework</h2>
+<p><strong>Period-selection decision:</strong> the <a
+href="monthly_outcome_alignment.md">July versus summer diagnostic and
+reviewer debate</a>, followed by an independent AI cross-check, supports
+JJA daily-Tmax capacity as the preferred manuscript candidate. The fixed
+25/5°C calculation is retained as a benchmark. This is a change of
+estimand, not a correction that proves the earlier estimate was
+biased.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Outcome</th>
+<th>Main candidate</th>
+<th>Separate sensitivity</th>
+<th>Do not interpret as</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Energy</td>
+<td>London-scaled pooled building allocation, corrected temperature
+contrast, conditional 30-day kWh and £</td>
+<td>Sector allocation; half versus full assumed cooling transfer</td>
+<td>Locally calibrated or forecast summer electricity savings</td>
+</tr>
+<tr>
+<td>Heavy-work capacity</td>
+<td>JJA mean daily-Tmax-based Hothaps capacity at RH45; London
+area-weighted percentage-point change</td>
+<td>Fixed 25/5°C benchmark and JJA RH35/RH55 sensitivities</td>
+<td>Average working-day capacity, worker-hours or measured
+productivity</td>
+</tr>
+<tr>
+<td>Health</td>
+<td>Existing corrected seasonal-health results, WorldClim-aligned SSP370
+2041–2060, June–August</td>
+<td>Previously documented health sensitivities</td>
+<td>Future observed mortality forecast</td>
+</tr>
+</tbody>
+</table>
+<p>Different outcome units and exposure interpretations must remain
+explicit. The panels compare land-use interventions; they are not three
+interchangeable summer totals. The capacity mask and building-energy
+support need not equal the health mask, but each outcome must use
+matched baseline/scenario support and report its coverage.</p>
+<p>Energy holds the transferred demand response, building allocation and
+tariffs fixed; it does not project future air-conditioning uptake or
+electricity prices. The full/half cooling-transfer cases are assumptions
+about applying the spatial cooling contrast, not empirically estimated
+uncertainty bounds.</p>
+<h2 id="execution-status">Execution status</h2>
+<p>All four stages are complete (13 November 2026): independently
+reviewed pilots, reporting-framework agreement, all-nine calculations,
+and new PNG figures. The existing seasonal-health outputs were joined
+without recalculation. The JJA-capacity implementation is explicit and
+selectable; the fixed-condition adapter remains the default for backward
+compatibility. Earlier figures and production outputs remain unchanged.
+Author review and adoption are still pending.</p>
+<h3 id="new-figures-and-all-nine-comparison">New figures and all-nine
+comparison</h3>
+<figure>
+<img
+src="../../figures/manuscript_current/figure_04_citywide_cobenefits_v05.png"
+alt="Figure 4 candidate v5" />
+<figcaption aria-hidden="true">Figure 4 candidate v5</figcaption>
+</figure>
+<figure>
+<img
+src="../../figures/manuscript_current/figure_05_borough_cobenefits_v06.png"
+alt="Figure 5 candidate v6" />
+<figcaption aria-hidden="true">Figure 5 candidate v6</figcaption>
+</figure>
+<figure>
+<img
+src="../../figures/manuscript_current/supp_capacity_sensitivity_v02.png"
+alt="Capacity sensitivity candidate v2" />
+<figcaption aria-hidden="true">Capacity sensitivity candidate
+v2</figcaption>
+</figure>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr>
+<th>Scenario</th>
+<th style="text-align: right;">Conditional energy savings (£m/30
+days)</th>
+<th style="text-align: right;">JJA daily-Tmax capacity change
+(percentage points; RH45)</th>
+<th style="text-align: right;">All-cause deaths averted/modelled
+summer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AllBuilt</td>
+<td style="text-align: right;">−8.920</td>
+<td style="text-align: right;">−2.337</td>
+<td style="text-align: right;">−136.85</td>
+</tr>
+<tr>
+<td>TreeRisk</td>
+<td style="text-align: right;">−0.845</td>
+<td style="text-align: right;">−0.140</td>
+<td style="text-align: right;">−11.41</td>
+</tr>
+<tr>
+<td>TreeOpp</td>
+<td style="text-align: right;">0.519</td>
+<td style="text-align: right;">0.117</td>
+<td style="text-align: right;">6.08</td>
+</tr>
+<tr>
+<td>Green10</td>
+<td style="text-align: right;">1.064</td>
+<td style="text-align: right;">0.179</td>
+<td style="text-align: right;">13.83</td>
+</tr>
+<tr>
+<td>Target10</td>
+<td style="text-align: right;">1.435</td>
+<td style="text-align: right;">0.210</td>
+<td style="text-align: right;">20.01</td>
+</tr>
+<tr>
+<td>Green20</td>
+<td style="text-align: right;">2.004</td>
+<td style="text-align: right;">0.339</td>
+<td style="text-align: right;">26.03</td>
+</tr>
+<tr>
+<td>Target20</td>
+<td style="text-align: right;">2.654</td>
+<td style="text-align: right;">0.391</td>
+<td style="text-align: right;">35.90</td>
+</tr>
+<tr>
+<td>Green30</td>
+<td style="text-align: right;">2.972</td>
+<td style="text-align: right;">0.499</td>
+<td style="text-align: right;">38.37</td>
+</tr>
+<tr>
+<td>Target30</td>
+<td style="text-align: right;">3.966</td>
+<td style="text-align: right;">0.569</td>
+<td style="text-align: right;">50.40</td>
+</tr>
+</tbody>
+</table>
+<p>Target exceeds Green at each matched canopy level for the three main
+outcomes. The matched-budget ranking also persists across all tested
+energy allocations/transfers and capacity exposure/humidity settings.
+This robustness is conditional on the tested assumptions, not empirical
+validation. Cross-budget rankings need care: corrected sector energy
+gives Green30 £2.886765m versus Target20 £2.877743m, a small £9,023
+difference; the earlier uncorrected sector reversal is not the current
+result.</p>
+<p>All-nine QA passed: 80 city energy records reconcile to 2,640 borough
+records (maximum residual below 0.000001); 50 capacity records reconcile
+to 1,650 borough records (maximum residual 3.02 × 10⁻¹⁴ percentage
+points). Building and pixel support match across scenarios within each
+outcome; baseline changes are zero; warming losses remain signed. Input
+hashes are unchanged. The adapter additionally checks identical borough
+sets and absolute-minus-baseline equality. Plot tests and rendered PNG
+inspection passed.</p>
+<h3
+id="independent-ai-cross-check-retained-conclusions-and-corrections">Independent
+AI cross-check: retained conclusions and corrections</h3>
+<p>The external review supported outcome-specific periods and JJA
+daily-Tmax capacity as the more coherent main candidate, but four
+details were corrected against the saved data and code:</p>
+<ul>
+<li>July is the closest single month for capacity in <strong>12 of
+15</strong> climate–weather members, not 10 of 15; August is closest in
+the other three. Health is split 8 of 15 for July and 7 of 15 for
+August.</li>
+<li>Capacity and health share the climate ensemble and corrected UCM
+temperature-contrast family, but not identical exposure arrays. Capacity
+uses the current-day <code>offset_c</code> field on 15,733,893 cells;
+health uses <code>lag01_offset_c</code> on 14,258,588 cells.</li>
+<li>On the exact capacity support, the fixed-condition baseline is
+4.035°C warmer on average than the daily JJA reconstruction (28.561
+versus 24.525°C), and its capacity changes are about 2.4–2.5 times
+larger for Green30 and Target30. This is a comparison of different
+estimands, not proof that one estimate is biased solely by the
+temperature difference; daily distribution and nonlinear evaluation also
+differ.</li>
+<li>RH35, RH45 and RH55 are separate sensitivity scenarios, not
+endpoints of an uncertainty interval. They must not be reported as a
+range or confidence interval.</li>
+</ul>
+<h3 id="temperature-context-for-the-jja-capacity-estimate">Temperature
+context for the JJA capacity estimate</h3>
+<figure>
+<img
+src="../../figures/manuscript_current/diagnostic_capacity_temperature_context_v01.png"
+alt="Reconstructed JJA daily maximum temperatures and the fixed 25/5°C benchmark" />
+<figcaption aria-hidden="true">Reconstructed JJA daily maximum
+temperatures and the fixed 25/5°C benchmark</figcaption>
+</figure>
+<p>Panel a is the <strong>area-weighted London mean</strong> across the
+same 15,733,893 valid cells used for the Figure 4b JJA capacity
+calculation. It therefore is the relevant exposure series for
+interpreting the reported citywide result. Thin lines are the 15
+GCM–weather-year reconstructions; the heavy line is their day-specific
+mean. The fixed 25/5°C UCM condition is represented by its matched
+London-area mean (28.561°C), rather than by a 92-day time series. The
+reconstructed JJA mean is 24.525°C.</p>
+<p>Panel b adds one illustrative local trajectory: the nearest valid
+10-m grid cell to Charing Cross (530,025 m E, 180,375 m N, British
+National Grid). Its reconstructed JJA mean is 24.998°C, compared with
+28.965°C under the fixed 25/5°C UCM condition. It is
+<strong>not</strong> used to calculate Figure 4b. The WorldClim-aligned
+reconstruction retains the UCM spatial baseline field, then adds the
+same member/day climate offset to every grid cell; hence this local
+curve shows how an urban-centre location differs in level, while its
+day-to-day variation is parallel to the citywide curve.</p>
+<p>The diagnostic is reproducible with <a
+href="../../code/post_processing_layers/plot_jja_capacity_temperature_context.py"><code>plot_jja_capacity_temperature_context.py</code></a>.
+Its CSV and manifest sit beside the PNG in the versioned
+<code>jja_daily_tmax_context_20261113_v01</code> diagnostic folder. It
+does not modify the capacity or health outputs.</p>
+<h3 id="proposed-results">Proposed Results</h3>
+<p>The final independent PI-role check reconciled all 27 Figure 4 values
+against Figure 5 (energy and health summed; capacity area-weighted).
+Maximum differences were 5.60 × 10⁻¹⁴ £ million, 1.10 × 10⁻¹² percentage
+points and 3.27 × 10⁻¹³ deaths. The borough ranges below and
+matched-scenario sensitivity rankings were independently verified.</p>
+<p>Across the six canopy-expansion scenarios, conditional electricity
+savings ranged from £1.06 million to £3.97 million per 30-day warm
+period, while mean modelled heavy-work capacity over June–August
+increased by 0.18–0.57 percentage points (Fig. 4). Estimated all-cause
+deaths averted ranged from 13.8 to 50.4 per modelled summer. Target
+scenarios delivered larger citywide benefits than their matched Green
+scenarios for all three outcomes. By contrast, AllBuilt and TreeRisk
+produced adverse changes.</p>
+<p>Borough-level benefits varied across outcomes (Fig. 5). Under
+Target30, conditional electricity savings ranged from £0.013 million to
+£0.510 million per borough, capacity gains from 0.13 to 1.37 percentage
+points, and deaths averted from 0.03 to 3.09 per modelled summer. All
+boroughs benefited under both Green30 and Target30, but larger London
+totals do not imply larger benefits in every borough.</p>
+<h3 id="review-before-adoption">Review before adoption</h3>
+<p>Confirm the explicit conditional-energy framing and the JJA
+daily-Tmax capacity interpretation; neither is a validated forecast of
+observed electricity use or working-day productivity. Review Figure 4 v5
+and Figure 5 v6, with the fixed 25/5°C result retained as a
+supplementary benchmark. Once approved, transfer the proposed text to
+Word and reconcile Abstract, Table 2 and other numerical claims with the
+adopted results. No additional model runs are required to review this
+candidate package.</p>
+<h3 id="step-1-corrected-temperature-energy-pilot">Step 1:
+corrected-temperature energy pilot</h3>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 36%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Conditional 30-day estimate</th>
+<th style="text-align: right;">Green30</th>
+<th style="text-align: right;">Target30</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pooled full-transfer candidate (£ million)</td>
+<td style="text-align: right;">2.972</td>
+<td style="text-align: right;">3.966</td>
+</tr>
+<tr>
+<td>Pooled full-transfer candidate (GWh)</td>
+<td style="text-align: right;">10.786</td>
+<td style="text-align: right;">14.456</td>
+</tr>
+<tr>
+<td>Temperature correction alone, same coefficients/support (£
+million)</td>
+<td style="text-align: right;">+0.0486</td>
+<td style="text-align: right;">+0.0579</td>
+</tr>
+<tr>
+<td>Sector-allocation sensitivity (£ million)</td>
+<td style="text-align: right;">2.887</td>
+<td style="text-align: right;">4.189</td>
+</tr>
+</tbody>
+</table>
+<p>Half-transfer changes are exactly half their full-transfer
+counterparts; they are assumed sensitivities, not confidence limits. The
+correction to temperature is much smaller than the earlier
+coefficient/allocation correction. The first pilot retains the Target30
+advantage under both allocation variants.</p>
+<p>The native polygon-based extraction reproduced the legacy baseline
+building temperatures with <strong>0°C maximum difference</strong>. Of
+2,223,411 buildings overlapping London, 2,223,405 have valid paired
+temperatures. Six buildings (167.718 m² footprint) are excluded
+identically; 330 buildings have partial NoData coverage identically
+across the three corrected rasters. Their combined <strong>whole
+footprint</strong> is 52,936.576 m², not the area of missing pixels.
+Shared valid raster support was checked, so partial coverage does not
+silently differ between scenarios. Borough energy allocations reconcile
+citywide values within 0.000001 in reported aggregate units. Input
+hashes are unchanged.</p>
+<h3 id="step-2-work-capacity-pilot">Step 2: work-capacity pilot</h3>
+<p>All values are changes in <strong>percentage points</strong>, not
+percent relative changes or working hours.</p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 36%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Capacity calculation</th>
+<th style="text-align: right;">Green30</th>
+<th style="text-align: right;">Target30</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Legacy fixed-condition replay on matched support, RH45</td>
+<td style="text-align: right;">1.1913</td>
+<td style="text-align: right;">1.4193</td>
+</tr>
+<tr>
+<td>Corrected fixed-condition candidate, RH45</td>
+<td style="text-align: right;"><strong>1.1986</strong></td>
+<td style="text-align: right;"><strong>1.4276</strong></td>
+</tr>
+<tr>
+<td>Summer mean of daily-Tmax-based capacity, assumed RH35</td>
+<td style="text-align: right;">0.3139</td>
+<td style="text-align: right;">0.3594</td>
+</tr>
+<tr>
+<td>Summer mean of daily-Tmax-based capacity, assumed RH45</td>
+<td style="text-align: right;">0.4990</td>
+<td style="text-align: right;">0.5691</td>
+</tr>
+<tr>
+<td>Summer mean of daily-Tmax-based capacity, assumed RH55</td>
+<td style="text-align: right;">0.7363</td>
+<td style="text-align: right;">0.8408</td>
+</tr>
+</tbody>
+</table>
+<p>Corrected temperature inputs change the fixed-condition estimates
+only slightly. The daily reconstruction gives materially different
+magnitudes, reflecting a different distribution of exposure as well as
+evaluation of a nonlinear response before averaging. This comparison is
+<strong>not an isolated estimate of the effect of nonlinearity</strong>,
+nor evidence that either calculation represents observed working-day
+capacity. Target30 exceeds Green30 in each tested setting; the
+difference’s magnitude depends on the assumptions.</p>
+<p>The capacity mask contains 15,733,893 valid London cells: 63 fewer
+than the previous capacity support, and 1,475,305 more than the health
+support. Each capacity comparison uses the same mask; health offsets
+retain their original centring rather than being recentered on this
+larger domain. Lookup error against direct daily calculations is at most
+1.09 × 10⁻⁹ in capacity fraction; borough-to-city reconciliation is
+below 4 × 10⁻¹⁵ percentage points. Bounds, baseline-zero, local
+cooling/warming sign and source-preservation checks passed. A separate
+replay against saved legacy capacity on the new matched support differs
+by less than 2 × 10⁻⁹ percentage points for the Green30/Target30 mean
+changes.</p>
+<h2 id="proposed-manuscript-text">Proposed manuscript text</h2>
+<h3 id="methods-energy-work-capacity-and-aggregation">Methods: energy,
+work capacity and aggregation</h3>
+<p>We estimated conditional electricity savings by scaling the national
+warm-weather demand response to London’s share of Great Britain
+electricity consumption in 2021 (0.1336). We allocated 99% of this
+sensitivity to eligible non-residential building footprints and 1% to
+residential footprints; these allocation assumptions were tested
+separately. Building-level savings were calculated from paired
+baseline–scenario temperatures, footprint area, the allocated
+coefficient and fixed input tariffs. Values represent a conditional
+30-day warm period, not observed or forecast seasonal consumption.
+Borough allocations conserve the unique-building London total. Modelled
+heavy-work capacity was calculated by applying the continuous Hothaps
+response to simplified WBGT for each reconstructed daily maximum
+temperature at 45% relative humidity, before averaging equally over 92
+June–August days and 15 climate–weather members. Capacity changes were
+weighted by grid-cell area within London and each borough. The capacity
+calculation uses current-day temperature offsets; the health analysis
+separately uses 0–1-day lagged exposure and a smaller common health
+mask. Supplementary analyses evaluated a fixed 25/5°C benchmark,
+alternative humidity assumptions, and energy-allocation and
+cooling-transfer assumptions. These sensitivities do not represent total
+uncertainty intervals.</p>
+<p>The primary energy candidate assumes full transfer of the modelled
+cooling contrast to the demand-response exposure; half transfer is a
+sensitivity. This transfer is not an empirical validation of the
+correspondence between model temperature and the source study’s
+daily-mean exposure metric.</p>
+<h3 id="figure-4-legend">Figure 4 legend</h3>
+<p><strong>Fig. 4 | Modelled co-benefits of alternative land-use
+scenarios across London.</strong> Changes relative to baseline land use
+are shown for (a) conditional avoided electricity costs over a 30-day
+warm period, (b) mean modelled heavy-work capacity over June–August and
+(c) all-cause deaths averted per modelled summer. Energy uses a
+London-scaled demand-response proxy allocated across buildings. Capacity
+is calculated from reconstructed daily maximum temperatures at 45%
+relative humidity and averaged by area over 92 days and 15
+climate–weather members. Health uses reconstructed daily summer
+temperatures under SSP370 in 2041–2060, with fixed 2021 population and
+mortality. Negative values indicate adverse changes. Health whiskers
+show sensitivity to the reported lower and upper exposure–response
+coefficients, not total model uncertainty; energy and capacity do not
+include uncertainty intervals. Scenario definitions are provided in
+Table 1.</p>
+<h3 id="figure-5-legend">Figure 5 legend</h3>
+<p><strong>Fig. 5 | Borough-level distribution of modelled land-use
+co-benefits.</strong> Maps show scenario-minus-baseline changes in (a)
+conditional electricity costs avoided per 30-day warm period, (b) mean
+modelled heavy-work capacity over June–August and (c) deaths averted per
+modelled summer. Energy totals are allocated among boroughs without
+double-counting buildings; capacity is area-weighted within each
+borough; health values are borough totals. Each outcome uses a common
+symmetric, zero-centred colour scale across scenarios, with a pseudo-log
+transformation to retain smaller changes alongside extreme values.
+Colours indicate spatial variation, not statistical significance. Model
+assumptions and outcome-specific reporting periods follow Fig. 4.</p>
+<h3 id="capacity-sensitivity-legend">Capacity sensitivity legend</h3>
+<p><strong>Supplementary figure | Sensitivity of modelled heavy-work
+capacity to exposure and humidity assumptions.</strong> Bars compare a
+fixed 25/5°C benchmark at 45% relative humidity with June–August means
+calculated from daily maximum temperatures at assumed relative
+humidities of 35%, 45% and 55%. For the daily-temperature panels,
+capacity is calculated before averaging equally over 92 days, three
+climate models and five historical weather patterns. Changes are
+area-weighted London means relative to matched baseline land use.
+Humidity settings are separate sensitivity scenarios, not confidence
+limits. The estimates do not represent average capacity across working
+hours.</p>
+<h2 id="reproducibility">Reproducibility</h2>
+<p>Outputs are separate diagnostic candidates, not new production
+aliases:</p>
+<ul>
+<li><a
+href="/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared%20drives/Wellcome%20Trust%20Project%20Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/energy_corrected_20261112_v01/allnine">Energy
+all-nine tables and manifest</a>: four allocation variants × two
+transfer settings, with the original three-scenario pilot
+preserved.</li>
+<li><a
+href="/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared%20drives/Wellcome%20Trust%20Project%20Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/capacity_corrected_20261112_v02_allnine">Capacity
+all-nine tables, rasters and manifest</a>: corrected/legacy
+fixed-condition comparisons and three daily-Tmax humidity
+sensitivities.</li>
+<li><a
+href="/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared%20drives/Wellcome%20Trust%20Project%20Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v02_jja_capacity/summary">Preferred
+JJA-capacity summary, PNGs, plot data and manifests</a>: Figure 4 v5,
+Figure 5 v6 and capacity sensitivity v2. Figure 4 v4 and Figure 5 v5 are
+retained in the same folder as the immediately preceding label
+versions.</li>
+<li><a
+href="/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared%20drives/Wellcome%20Trust%20Project%20Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v01/summary">Preserved
+fixed-condition candidate</a>: Figure 4 v3, Figure 5 v4 and capacity
+sensitivity v1. These PNG/CSV files are kept together; no PDF/SVG
+copies.</li>
+</ul>
+<p>The run-family names retain 20261112; the final figures use their
+completion date, 20261113. Only output names are versioned, not scripts.
+The energy/capacity manifests record input hashes and the figure
+manifests record plot sources. Use the command-line help for both
+runners; the summary adapter requires <code>--energy</code>,
+<code>--capacity</code>, a fresh <code>--output</code> directory and an
+explicit <code>--capacity-method</code> when selecting
+<code>daily_tmax_sensitivity</code>. Both main plot scripts use
+<code>--seasonal-health-root</code> pointing to
+<code>seasonal_health_all_scenarios_2026-11-12_v1</code>, plus a new
+<code>--figure-version</code>. The capacity sensitivity plot takes the
+capacity city CSV and a new PNG path. Do not reuse a completed candidate
+output directory/version.</p>
+<ul>
+<li><a
+href="../../code/post_processing_layers/run_corrected_energy_candidate.py">Corrected
+energy runner</a>: polygon-based building temperatures, allocation and
+paired energy accounting.</li>
+<li><a
+href="../../code/post_processing_layers/run_corrected_capacity_candidate.py">Corrected
+capacity runner</a>: fixed-condition and daily-Tmax capacity, shared
+spatial support and numerical checks.</li>
+<li><a
+href="../../code/post_processing_layers/prepare_candidate_valuation_summary.py">Summary
+adapter</a>: joins verified all-nine outputs for the existing plotting
+scripts without installing them as production.</li>
+<li><a
+href="../../code/post_processing_layers/plot_figure4_citywide.R">Figure
+4 script</a> and <a
+href="../../code/post_processing_layers/plot_figure5_borough_cobenefits.R">Figure
+5 script</a>: retain earlier workflow and add seasonal-health/versioned
+candidate options.</li>
+<li><a
+href="../../code/post_processing_layers/plot_capacity_candidate_sensitivity.R">Capacity
+sensitivity plot</a>: separate supplementary PNG, same scenario palette
+and 0.7 bar transparency.</li>
+</ul>
+<p>The <a href="energy_scaling_correction_test.md">energy correction
+explanation</a> remains authoritative for the coefficient rationale and
+worked examples; it is not duplicated here. The <a
+href="seasonal_health_rerun_comparison.md">seasonal-health report</a>
+remains authoritative for health assumptions and results.</p>
+</body>
+</html>

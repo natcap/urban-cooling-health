@@ -50,10 +50,20 @@ canopy_scenarios <- setdiff(scenario_order, counterfactual_scenarios)
 
 args <- parse_args(commandArgs(trailingOnly = TRUE))
 borough_summary_path <- required_path(args$borough_summary, "borough_summary")
-health_root <- required_path(args$health_root, "health_root", directory = TRUE)
+seasonal <- !is.null(args$seasonal_health_root)
+health_root <- required_path(if (seasonal) args$seasonal_health_root else args$health_root,
+                             "health_root", directory = TRUE)
+figure_version <- if (is.null(args$figure_version)) "20261110_v3" else args$figure_version
+if (seasonal && is.null(args$figure_version)) stop("Seasonal candidate requires a new --figure-version")
+energy_unit <- if (seasonal) "£ million/conditional 30 days per borough" else "£ million/month per borough"
+health_unit <- if (seasonal) "Deaths/modelled summer" else "Annual deaths"
 borough_vector_path <- required_path(args$borough_vector, "borough_vector")
 output_dir <- normalizePath(args$output_dir, mustWork = FALSE)
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+if (!grepl("^[A-Za-z0-9_-]+$", figure_version)) stop("Invalid figure version")
+if (seasonal && length(list.files(output_dir, pattern = paste0("^figure5_.*", figure_version)))) {
+  stop("Candidate figure version already exists; choose a new version/output directory")
+}
 temperature <- as.numeric(args$temperature)
 if (!is.finite(temperature)) stop("--temperature must be numeric", call. = FALSE)
 temperature_label <- format(temperature, scientific = FALSE, trim = TRUE)
@@ -67,6 +77,14 @@ if (nrow(boroughs) != 33 || anyDuplicated(boroughs$borough_code)) {
 summary_data <- read.csv(
   borough_summary_path, stringsAsFactors = FALSE, check.names = FALSE
 ) %>% filter(temperature_c == temperature)
+capacity_method <- if ("capacity_method" %in% names(summary_data)) unique(summary_data$capacity_method) else "corrected_fixed"
+if (length(capacity_method) != 1 || !capacity_method %in% c("corrected_fixed", "daily_tmax_sensitivity")) {
+  stop("Borough summary has an unsupported or inconsistent capacity_method", call. = FALSE)
+}
+capacity_unit <- if (seasonal && capacity_method == "daily_tmax_sensitivity") {
+  "Percentage points\n(summer daily\nmean)"
+} else if (seasonal) "Percentage points\n(fixed conditions)" else "Percentage\npoints"
+capacity_data_unit <- gsub("\n", " ", capacity_unit)
 baseline <- summary_data %>%
   filter(scenario == "baseline") %>%
   select(
@@ -93,6 +111,17 @@ if (nrow(borough_change) != 33 * length(scenario_order)) {
 # Health rasters already encode scenario-minus-baseline excess mortality.
 # Assign each 10 m cell to its borough by cell centre and sum the values; the
 # sign is reversed so positive values mean deaths averted.
+if (seasonal) {
+  hp <- required_path(file.path(health_root, "borough_results.csv"), "seasonal borough results")
+  health_change <- read.csv(hp) %>% filter(reconstruction == "worldclim_aligned",
+    ssp == "ssp370", cause == "all_cause", rr_variant == "central", scenario %in% scenario_order) %>%
+    transmute(borough_code = borough_id, scenario, deaths_averted, health_raster = hp)
+  if (nrow(health_change) != 33 * 9 || anyDuplicated(health_change[c("borough_code", "scenario")])) {
+    stop("Incomplete/duplicate seasonal borough results")
+  }
+  if (!setequal(health_change$borough_code, boroughs$borough_code) ||
+      any(!is.finite(health_change$deaths_averted))) stop("Invalid seasonal borough codes/values")
+} else {
 health_change <- lapply(scenario_order, function(scenario) {
   raster_path <- file.path(
     health_root,
@@ -115,6 +144,7 @@ health_change <- lapply(scenario_order, function(scenario) {
     health_raster = raster_path
   )
 }) %>% bind_rows()
+}
 
 map_data <- borough_change %>%
   left_join(health_change, by = c("borough_code", "scenario")) %>%
@@ -133,9 +163,9 @@ map_data <- borough_change %>%
     ),
     unit = recode(
       metric,
-      `Avoided energy cost` = "£ million/month per borough",
-      `Heavy-work capacity gain` = "Percentage points",
-      `Heat-related deaths averted` = "Annual deaths"
+      `Avoided energy cost` = energy_unit,
+      `Heavy-work capacity gain` = capacity_data_unit,
+      `Heat-related deaths averted` = health_unit
     )
   )
 
@@ -148,7 +178,7 @@ write.csv(
       scenario_label = gsub("\\n", " ", as.character(scenario)),
       metric, value, unit
     ),
-  file.path(output_dir, "figure5_borough_cobenefits_20261110_v3_data.csv"),
+  file.path(output_dir, paste0("figure5_borough_cobenefits_", figure_version, "_data.csv")),
   row.names = FALSE
 )
 
@@ -223,9 +253,9 @@ make_map_row <- function(metric_name, legend_title, letter) {
 # Grob layout needs a device; a null device avoids creating stray Rplots.pdf.
 grDevices::pdf(file = NULL)
 map_rows <- list(
-  make_map_row("Avoided energy cost", "£m/month", "a"),
-  make_map_row("Heavy-work capacity gain", "Percentage\npoints", "b"),
-  make_map_row("Heat-related deaths averted", "Annual\ndeaths", "c")
+  make_map_row("Avoided energy cost", if (seasonal) "£m/conditional\n30 days" else "£m/month", "a"),
+  make_map_row("Heavy-work capacity gain", capacity_unit, "b"),
+  make_map_row("Heat-related deaths averted", if (seasonal) "Deaths/modelled\nsummer" else "Annual\ndeaths", "c")
 )
 # Equal legend columns keep scenario maps vertically aligned across outcomes.
 common_widths <- do.call(grid::unit.pmax, lapply(map_rows, function(g) g$widths))
@@ -236,7 +266,7 @@ combined_plot <- wrap_plots(lapply(map_rows, function(g) {
 
 for (extension in c("png")) {
   ggsave(
-    file.path(output_dir, paste0("figure5_borough_cobenefits_20261110_v3.", extension)),
+    file.path(output_dir, paste0(paste0("figure5_borough_cobenefits_", figure_version, "."), extension)),
     combined_plot, width = 13.2, height = 5.8, units = "in", dpi = 400,
     bg = "white", limitsize = FALSE
   )
@@ -244,19 +274,20 @@ for (extension in c("png")) {
 
 grDevices::dev.off()
 artifact_names <- c(
-  "figure5_borough_cobenefits_20261110_v3_data.csv",
-  "figure5_borough_cobenefits_20261110_v3.png"
+  paste0("figure5_borough_cobenefits_", figure_version, "_data.csv"),
+  paste0("figure5_borough_cobenefits_", figure_version, ".png")
 )
 manifest <- list(
   generator = normalizePath(file.path(script_dir, "plot_figure5_borough_cobenefits.R")),
   generator_sha256 = digest::digest(file = file.path(script_dir, "plot_figure5_borough_cobenefits.R"), algo = "sha256"),
   palette_source = normalizePath(file.path(script_dir, "..", "func_colors.R")),
-  figure_version = "20261110_v3",
+  figure_version = figure_version,
   schema_version = 2,
   created_utc = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
   temperature_c = temperature,
   estimand = "Scenario-minus-baseline change calculated separately within each borough",
-  health_zonal_rule = "10 m raster-cell centre assigned to borough; values summed and sign reversed",
+  capacity_method = capacity_method,
+  health_zonal_rule = if (seasonal) "Precomputed primary seasonal borough totals; positive deaths averted" else "10 m raster-cell centre assigned to borough; values summed and sign reversed",
   uncertainty = "No borough confidence intervals; mapped variation is spatial heterogeneity",
   scenarios = list(
     original_counterfactuals = counterfactual_scenarios,
@@ -272,7 +303,9 @@ manifest <- list(
       path = borough_vector_path,
       sha256 = digest::digest(file = borough_vector_path, algo = "sha256")
     ),
-    health_root = health_root
+    health_root = health_root,
+    seasonal_health = if (seasonal) list(path = hp,
+      sha256 = digest::digest(file = hp, algo = "sha256")) else NULL
   ),
   outputs = setNames(lapply(artifact_names, function(name) {
     path <- file.path(output_dir, name)
@@ -281,7 +314,7 @@ manifest <- list(
 )
 write_json(
   manifest,
-  file.path(output_dir, "figure5_borough_cobenefits_20261110_v3_manifest.json"),
+  file.path(output_dir, paste0("figure5_borough_cobenefits_", figure_version, "_manifest.json")),
   pretty = TRUE, auto_unbox = TRUE
 )
 message("Created borough co-benefit maps in ", output_dir)

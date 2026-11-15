@@ -1,15 +1,18 @@
 # Figure 1: historical-reference comparison
 
-11 November 2026 · [Copy-friendly HTML](figure1_historical_reference_comparison.html)
+12 November 2026 · [Copy-friendly HTML](figure1_historical_reference_comparison.html)
 
 ## Decision and status
 
-**Current author selection: main Figure 1 v03 and SSP585 v02, automatic histogram bins.**
+**Current author selection: main Figure 1 v03 and combined SSP370–SSP585
+supplement v01, using automatic histogram bins.**
 The fixed-bin trial (main v04 / SSP585 v03) is retained for comparison but
 is not selected. The plotting script defaults have been restored accordingly.
 CHELSA July 2021
 is the only historical boxplot in the main figure. Panel a retains both SSPs;
-panel b contains only SSP370 in 2050 and 2070. SSP585 maps are supplementary.
+panel b contains only SSP370 in 2050 and 2070. A combined supplementary figure
+places SSP370 and SSP585 beside one another for direct comparison; the former
+standalone SSP585 figure is retained as a versioned comparison output.
 WorldClim historical data remain in the comparison and matched-baseline SM,
 not the main boxplot. Earlier two-reference figure v1 is preserved.
 Previous figures, Figure 2 and Word remain unchanged; nothing has been pushed.
@@ -30,9 +33,9 @@ relative to CHELSA July 2021. Colours represent deciles pooled across the two
 displayed periods and both SSPs. Insets show borough counts in five bins,
 with bin boundaries and axes determined separately for each inset.
 Differences include product and reference-period effects and should not be
-interpreted solely as warming since 2021. SSP585 maps and comparisons using
-a matching WorldClim historical baseline are provided in the Supplementary
-Information.
+interpreted solely as warming since 2021. A combined SSP370–SSP585 map figure
+and comparisons using a matching WorldClim historical baseline are provided in
+the Supplementary Information.
 
 ### Proposed Results
 
@@ -46,17 +49,20 @@ in the two periods, respectively (Fig. 1b). These cross-product comparisons
 include reference-period and product effects; comparisons using a matching
 WorldClim historical baseline are presented in the Supplementary Information.
 
-### SSP585 supplementary maps
+### Combined SSP370–SSP585 supplementary maps
 
-![SSP585 CHELSA-referenced maps](../../figures/climate_projections/figure1_sm_ssp585_v02_20261111.png)
+![Combined SSP370 and SSP585 CHELSA-referenced maps](../../figures/climate_projections/figure1_sm_ssp370_ssp585_v01_20261112.png)
 
-**Supplementary figure | SSP585 July temperature contrasts.** Borough-mean
-future WorldClim minus CHELSA July 2021 for 2041–2060 (2050) and 2061–2080
-(2070), averaged across the same three GCMs. Colours use the identical pooled
-decile thresholds as main Fig. 1b. Insets use five automatically determined
-bins per period; labels indicate counts across 33 boroughs. Bin boundaries
-and axes vary between insets. These are cross-product contrasts, not
-harmonized warming since 2021.
+**Supplementary Fig. X | Borough-level July temperature contrasts under SSP370
+and SSP585. a,b,** Borough-mean differences between WorldClim projections and
+CHELSA July 2021 under SSP370 (a) and SSP585 (b) for 2041–2060 (2050) and
+2061–2080 (2070), averaged across ACCESS-CM2, IPSL-CM6A-LR and MRI-ESM2-0.
+Colours use common decile thresholds pooled across all four maps. Insets show
+borough counts in five automatically determined bins for each pathway and
+period; labels indicate counts across 33 boroughs, and bin boundaries and axes
+vary among insets. These cross-product contrasts include differences in climate
+product and reference period and should not be interpreted solely as warming
+since 2021.
 
 ### Current production and verification
 
@@ -68,7 +74,8 @@ plotting code; the LSOA cache workflow is unchanged. The helper uses the
 validated comparison CSVs and borough boundary documented below.
 
 Outputs are versioned 450-dpi white-background PNGs. All earlier files remain.
-The new SSP585 map is shown above; the separate matched-WorldClim SM remains
+The combined SSP comparison is shown above; the standalone SSP585 map remains
+`figure1_sm_ssp585_v02_20261111.png`, and the separate matched-WorldClim SM remains
 `figure1_sm_worldclim_v02_20261111.png`.
 The source/output checksum manifest shares the main PNG stem. Checks require
 594 unique source records and 198 ensemble borough/SSP/period values, and
@@ -118,6 +125,7 @@ Files now sort by figure family, then zero-padded version, then date:
 | Family | Versions available | Current |
 |---|---|---|
 | `figure1_main_v##_20261111.png` | v01: two references; v02: opaque insets; v03: transparent automatic-bin insets; v04: unselected fixed-bin trial | v03 |
+| `figure1_sm_ssp370_ssp585_v##_20261112.png` | v01: combined four-map comparison with common decile thresholds | v01 |
 | `figure1_sm_ssp585_v##_20261111.png` | v01: opaque insets; v02: transparent automatic-bin insets; v03: unselected fixed-bin trial | v02 |
 | `figure1_sm_worldclim_v##_20261111.png` | v01, v02 retained | v02 |
 

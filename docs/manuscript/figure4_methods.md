@@ -4,6 +4,12 @@
 
 ## Decision
 
+**13 November candidate update:** the [corrected energy and capacity report](energy_capacity_candidate_results.md) is the authoritative location for the new conditional-energy/seasonal-health figure candidates, QA, legends and script links. The historical reporting specification below is retained for comparison, not as approval of its old absolute values.
+
+**12 November consistency-audit warning:** the energy coefficient workbook needs national-to-London scaling and sector-mapping checks before absolute £ estimates are approved. Existing work-capacity outputs are fixed-condition indices, not seasonal daily estimates. The table below records the previous Figure 4 reporting version; its annual-health row is superseded by the seasonal-health candidate. See the [energy/work-capacity audit and proposed updates](energy_work_seasonal_consistency_audit.md) before reusing these values.
+
+The subsequent [isolated energy correction test](energy_scaling_correction_test.md) documents the candidate scaling/allocation and remaining adoption steps. It does not replace the Figure 4 outputs described here.
+
 Figure 4 is described as a comparison of **citywide co-benefits across
 London**. Its primary results therefore use a London-wide estimand rather than
 an unweighted mean of 33 borough changes.

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Monthly outcome alignment</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="report-light.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Monthly outcome alignment</h1>
+</header>
+<h1 id="july-or-whole-summer-reporting">July or whole-summer
+reporting?</h1>
+<p>13 November 2026 · <a
+href="monthly_outcome_alignment.html">Copy-friendly HTML</a></p>
+<h2 id="recommendation">Recommendation</h2>
+<p><strong>July is a defensible single-month illustration, and the
+closest of the three tested months to the summer-average health and
+capacity benefits. It is not an unbiased substitute for summer.</strong>
+For a manuscript claiming seasonal benefits, retain June–August (JJA)
+health and use JJA daily-Tmax capacity at RH45 as the preferred capacity
+candidate; retain July and the fixed 25/5°C calculation as sensitivities
+or benchmarks. Energy remains a conditional 30-day proxy and must not be
+relabelled as a validated monthly or seasonal estimate.</p>
+<p>No main figure, Word document or production result was replaced. This
+diagnostic tests baseline, Green30 and Target30, not every land-use
+scenario. Health includes all five outcomes; the main visual comparison
+uses all-cause mortality.</p>
+<h2 id="what-the-tests-show">What the tests show</h2>
+<figure>
+<img
+src="/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared%20drives/Wellcome%20Trust%20Project%20Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/monthly_outcome_alignment_20261113_v01/monthly_outcome_alignment_20261113_v1.png"
+alt="Monthly climate, capacity and health comparison" />
+<figcaption aria-hidden="true">Monthly climate, capacity and health
+comparison</figcaption>
+</figure>
+<p><strong>Reading the figure:</strong> points/lines show means across
+three GCMs and five weather patterns. Shading and vertical ranges show
+member minima–maxima, not confidence intervals. JJA is a day-weighted
+mean, not a fourth month. Health is divided by calendar days for fair
+monthly comparison. Capacity is an average percentage-point gain, not an
+accumulating monthly total. Energy is not plotted because the current
+calculation has no month-specific exposure response.</p>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr>
+<th>Period</th>
+<th style="text-align: right;">Baseline mean daily Tmax (°C)</th>
+<th style="text-align: right;">Capacity gain, Green30 / Target30
+(pp)</th>
+<th style="text-align: right;">All-cause deaths averted, Green30 /
+Target30</th>
+<th style="text-align: right;">Deaths averted/day, Green30 /
+Target30</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>June</td>
+<td style="text-align: right;">22.53</td>
+<td style="text-align: right;">0.255 / 0.297</td>
+<td style="text-align: right;">6.68 / 8.76</td>
+<td style="text-align: right;">0.223 / 0.292</td>
+</tr>
+<tr>
+<td>July</td>
+<td style="text-align: right;">25.52</td>
+<td style="text-align: right;">0.582 / 0.668</td>
+<td style="text-align: right;">15.65 / 20.59</td>
+<td style="text-align: right;">0.505 / 0.664</td>
+</tr>
+<tr>
+<td>August</td>
+<td style="text-align: right;">25.46</td>
+<td style="text-align: right;">0.651 / 0.733</td>
+<td style="text-align: right;">16.05 / 21.05</td>
+<td style="text-align: right;">0.518 / 0.679</td>
+</tr>
+<tr>
+<td>JJA</td>
+<td style="text-align: right;">24.53</td>
+<td style="text-align: right;">0.499 / 0.569</td>
+<td style="text-align: right;">38.37 / 50.40</td>
+<td style="text-align: right;">0.417 / 0.548</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>July is the warmest <strong>mean</strong> month in this
+reconstruction, only 0.064°C warmer than August. August’s mean
+temperature is slightly closer to the JJA mean.</li>
+<li>July is closer than June or August to the <strong>pooled
+summer-average benefit</strong> for both scenarios: capacity is
+nevertheless 16.7–17.4% higher and health benefit/day 21.0–21.3% higher
+than JJA.</li>
+<li>August benefits slightly exceed July. Response nonlinearity and
+daily distributions matter; monthly mortality allocation also affects
+health. These tests do not isolate each mechanism’s contribution.</li>
+<li>July is not the closest month in every member: it is closest for
+health in 8/15 GCM–weather combinations and for capacity in 12/15 (both
+scenarios); August is closest in the remaining members. Thus the pooled
+result is not universal.</li>
+<li>Target30 exceeds Green30 in each month’s pooled estimates. This
+comparison alone does not establish stability of every scenario ranking
+or neighbourhood equity curve.</li>
+</ul>
+<p>External context is consistent with July being a hot-month choice:
+Heathrow’s 1991–2020 mean daily maxima are 21.57°C in June, 23.89°C in
+July and 23.40°C in August. These station historical normals are
+<strong>not</strong> the future citywide values above and do not
+validate the reconstruction. <a
+href="https://www.metoffice.gov.uk/research/climate/maps-and-data/location-specific-long-term-averages/gcpsveqyg">Met
+Office station normals</a>.</p>
+<h2 id="why-the-current-outcomes-are-not-already-july-estimates">Why the
+current outcomes are not already “July estimates”</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Outcome</th>
+<th>What is currently calculated</th>
+<th>What calendar alignment would require</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Energy</td>
+<td>London-scaled demand-response proxy × spatial cooling × an assumed
+30-day duration</td>
+<td>Daily-mean exposure, the source response’s threshold and
+operating-day assumptions for the selected month/season</td>
+</tr>
+<tr>
+<td>Main capacity candidate</td>
+<td>Hothaps capacity calculated from reconstructed JJA daily Tmax at
+RH45</td>
+<td>Already calendar-aligned with health at the season level; specify
+that this is daily-Tmax-based, not working-hour capacity</td>
+</tr>
+<tr>
+<td>Health</td>
+<td>Daily threshold/lag response integrated over June–August with
+monthly mortality weights</td>
+<td>Select July outcome days directly, retaining preceding-day lag
+exposure and July mortality weights; do not use JJA/3</td>
+</tr>
+</tbody>
+</table>
+<p>The selected main capacity candidate is the JJA daily-Tmax result:
+Green30/Target30 gains are 0.499/0.569 pp. The fixed-condition benchmark
+gives 1.199/1.428 pp, whereas July daily-Tmax gains are 0.582/0.668
+pp. These are distinct estimands; none should be relabelled as another
+period.</p>
+<p>The JJA reconstruction already uses month-specific WorldClim
+temperatures and daily weather anomalies. It does not repeat July
+climate. The retained cross-month assumption is the <strong>July-derived
+spatial temperature/cooling field</strong>, with unchanged UHI,
+ET0-derived cooling pattern and assumed humidity. Separate June/August
+UCM or humidity validation was not performed here. InVEST requires
+climate inputs for the period of interest; its framework does not itself
+establish a calendar-month attribution. <a
+href="https://storage.googleapis.com/releases.naturalcapitalproject.org/invest-userguide/latest/en/urban_cooling_model.html">InVEST
+documentation</a>.</p>
+<p>Energy remains the unresolved part of genuine common-period
+reporting. The previous <a
+href="energy_work_seasonal_consistency_audit.md">source/input audit</a>
+documents the daily-average weekday response above 20°C. Multiplying the
+current value by 31/30 or by three changes an assumed duration, not the
+exposure or usage model. Do not present that as a validated July/summer
+correction.</p>
+<h2 id="reviewer-debate-and-consensus">Reviewer debate and
+consensus</h2>
+<p>These are three simulated expert roles, not external
+consultations.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Position</th>
+<th>Strongest argument</th>
+<th>Limitation and resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Energy researcher: July-first</td>
+<td>Matches the original July land-surface/ET0 setup; narrower
+illustration reduces extrapolation of that cooling field across
+months</td>
+<td>July is a useful case-study scope, not evidence of actual July
+energy savings; conditional energy still requires explicit
+qualification</td>
+</tr>
+<tr>
+<td>Capacity researcher: JJA-first</td>
+<td>Uses all available reconstructed summer days and evaluates the
+nonlinear response before averaging</td>
+<td>JJA daily-Tmax capacity aligns averaging dates with health, not
+occupational working-hour exposure</td>
+</tr>
+<tr>
+<td>Senior PI synthesis</td>
+<td>Choose the reporting period from the scientific question, not
+whichever produces the largest or most convenient values</td>
+<td>Prefer JJA for seasonal claims; July is the closest single-month
+compromise for tested benefits, but retains an upward difference and
+member variability</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Consensus:</strong> keep the completed JJA health framework.
+Offer July as sensitivity or a deliberately scoped illustration. If
+common-calendar presentation is the priority, JJA-averaged daily-Tmax
+capacity is a feasible alternative main estimand, with the
+fixed-condition result moved to sensitivity <strong>only after author
+approval</strong>. This is a choice of estimand, not an automatic
+reversal of the previous fixed-condition recommendation. Neither version
+measures average working-day capacity.</p>
+<h2 id="implemented-manuscript-candidate">Implemented manuscript
+candidate</h2>
+<p>The all-nine candidate now uses JJA health and JJA daily-Tmax
+capacity at RH45, while retaining conditional 30-day energy. The fixed
+25/5°C capacity calculation and RH35/RH55 cases are separate
+sensitivities. See the <a
+href="energy_capacity_candidate_results.md">candidate results and
+manuscript text</a>. Different outcome units remain acceptable when
+explicit, but the panels must not be described as three equivalent
+summer totals.</p>
+<p>If a July case study is later preferred, July health and capacity can
+be selected directly from this diagnostic. It should be described as a
+July illustration, not total summer benefit, and energy would still
+require the qualification above.</p>
+<p>There is no need to discard the existing summer calculation or rerun
+the cooling model merely to choose between these reporting
+narratives.</p>
+<h2 id="reproducibility-and-checks">Reproducibility and checks</h2>
+<ul>
+<li><a
+href="../../code/health_assessment/check_monthly_health_alignment.py">Monthly
+health script</a>: all five central-response outcomes, exact existing
+common health mask (14,258,588 cells), same mortality/response inputs,
+0–1-day lag retained across month boundaries. June/July/August sum to
+the existing JJA estimates; maximum replay difference is below 0.00001
+deaths. Daily direct-arithmetic spot checks pass. London monthly
+cause-specific mortality is still represented using the existing England
+monthly fractions, not newly observed borough data.</li>
+<li><a
+href="../../code/post_processing_layers/run_monthly_capacity_alignment.py">Monthly
+capacity script</a>: same 15,733,893-cell capacity mask, shared offsets,
+RH45 and equal 15-member weights. JJA equals the 30/31/31-day weighted
+monthly mean and reproduces the previous daily-capacity candidate within
+5 × 10⁻¹⁵ pp. Lookup error bound is 3.57 × 10⁻⁷ pp.</li>
+<li><a
+href="../../code/post_processing_layers/plot_monthly_outcome_alignment.py">Plot
+script</a>: canonical scenario colours, separate axes/units,
+daily-normalized health, explicit member ranges and versioned PNG. This
+is a diagnostic figure, not a replacement for manuscript Figures
+4–5.</li>
+<li><a
+href="/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared%20drives/Wellcome%20Trust%20Project%20Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/monthly_outcome_alignment_20261113_v01">Diagnostic
+folder</a>: health and capacity member/summary CSVs, manifests, source
+hashes, joined comparison and PNG. Existing outputs remain unchanged; no
+push.</li>
+</ul>
+<p>Run the two analysis scripts with the configured data root and fresh
+output directories, then run the plot script on their parent diagnostic
+folder. Read each script’s <code>--help</code> for arguments. Source
+hashes are checked before/after; no month-specific recentering is
+introduced. Numerical reproducibility is verified; empirical seasonal
+cooling, work-hour exposure and energy validation remain outside this
+test.</p>
+</body>
+</html>

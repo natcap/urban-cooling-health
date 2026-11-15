@@ -47,14 +47,17 @@ build_figure1 <- function(comparison_dir, boundary, output_dir) {
   histogram_checks <- list()
   # Author-selected automatic five-bin insets restored; fixed-bin trial retained
   # as main v04 / SSP585 v03, but is no longer the production selection.
-  original_maps <- function(ssp) {
+  original_maps <- function(ssp, show_title=FALSE, show_legend=TRUE) {
     sel <- maps[maps$ssp==ssp & maps$year %in% c("2050","2070"),]
     stopifnot(nrow(sel)==66,all(table(sel$year)==33))
     p <- ggplot(sel)+geom_sf(aes(fill=bin),colour="grey40",linewidth=.3,show.legend=TRUE)+
       facet_wrap(~year,ncol=1)+scale_fill_manual(values=palette,drop=FALSE,name="ΔT (°C)")+
       guides(fill=guide_legend(reverse=TRUE))+
+      labs(title=if (show_title) ssp else NULL)+
       theme_minimal(base_size=11)+theme(panel.grid=element_blank(),axis.text=element_blank(),
-        legend.position="inside",legend.position.inside=c(.90,.53),
+        legend.position=if (show_legend) "inside" else "none",
+        legend.position.inside=c(.90,.53),
+        plot.title=element_text(face="bold",size=11,hjust=.5,margin=margin(b=2)),
         legend.key.size=grid::unit(9,"pt"),legend.title=element_text(lineheight=.9))
     histogram <- function(year) {
       data <- st_drop_geometry(sel[sel$year==year,])
@@ -95,16 +98,24 @@ build_figure1 <- function(comparison_dir, boundary, output_dir) {
   main <- cowplot::plot_grid(a,original_maps("SSP370"),nrow=1,labels=c("a","b"),
                              label_size=14,rel_widths=c(1,1.05))
   sm <- original_maps("SSP585")
+  # Put both pathways in one supplementary figure. All four maps retain the
+  # same pooled decile thresholds; only the small histogram bins vary by inset.
+  sm_combined <- cowplot::plot_grid(
+    original_maps("SSP370", show_title=TRUE, show_legend=TRUE),
+    original_maps("SSP585", show_title=TRUE, show_legend=FALSE),
+    nrow=1,labels=c("a","b"),label_size=14,rel_widths=c(1,1))
   dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
   files <- file.path(output_dir,c("figure1_main_v03_20261111.png",
-                                 "figure1_sm_ssp585_v02_20261111.png"))
+                                 "figure1_sm_ssp585_v02_20261111.png",
+                                 "figure1_sm_ssp370_ssp585_v01_20261112.png"))
   # Explicit versioned names preserve the original figure and comparison exports.
   ggsave(files[1],main,width=7.2,height=5.7,dpi=450,bg="white")
   ggsave(files[2],sm,width=3.7,height=5.7,dpi=450,bg="white")
+  ggsave(files[3],sm_combined,width=7.2,height=5.7,dpi=450,bg="white")
   manifest <- list(inputs=lapply(paths,function(p) list(path=p,sha256=digest::digest(file=p,algo="sha256"))),
     boundary=boundary,borough_count=33,models=sort(unique(d$model)),
     main_reference="CHELSA July 2021",main_maps="SSP370, 2050 and 2070",
-    supplement_reference="CHELSA July 2021; SSP585 maps; existing WorldClim-matched SM retained separately",
+    supplement_reference="CHELSA July 2021; combined SSP370/SSP585 maps; existing WorldClim-matched SM retained separately",
     map_breaks=breaks,
     map_break_population="132 borough-period-SSP values, 2050/2070, both SSPs",
     histogram_checks=histogram_checks,

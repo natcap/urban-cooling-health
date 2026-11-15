@@ -37,6 +37,7 @@ class Figure4BuilderTest(unittest.TestCase):
                     "temperature_c": 25,
                     "energy_change_vs_baseline": scenario_index * 1_000_000,
                     "productivity_change_vs_baseline_pp": scenario_index / 10,
+                    "capacity_method": "daily_tmax_sensitivity",
                 })
                 for borough_index in range(33):
                     borough_rows.append({
@@ -46,6 +47,7 @@ class Figure4BuilderTest(unittest.TestCase):
                         "borough_code": f"E{borough_index:03d}",
                         "energy_savings": 10_000_000 + scenario_index * 100_000 + borough_index,
                         "workability_fraction": 0.8 + scenario_index / 1000,
+                    "capacity_method": "daily_tmax_sensitivity",
                     })
                 if scenario != "baseline":
                     health_dir = health_root / f"{scenario}_25c"
@@ -103,6 +105,31 @@ class Figure4BuilderTest(unittest.TestCase):
             self.assertFalse(list(output_dir.glob("*.svg")))
             png = (output_dir / "figure4_citywide_cobenefits_20261110_v2.png").read_bytes()
             self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
+
+            # Candidate branch: signed RR endpoints are a range, not a CI.
+            seasonal_path = health_root / "citywide_results.csv"
+            with seasonal_path.open("w", newline="") as table:
+                writer = csv.DictWriter(table, fieldnames=("scenario", "cause", "reconstruction", "ssp", "rr_variant", "deaths_averted"))
+                writer.writeheader()
+                for scenario in SCENARIOS:
+                    for variant, value in (("rr_low", -1), ("central", -2), ("rr_high", -3)):
+                        writer.writerow(dict(scenario=scenario, cause="all_cause", reconstruction="worldclim_aligned", ssp="ssp370", rr_variant=variant, deaths_averted=value))
+            command = ["Rscript", str(SCRIPT), "--citywide-summary", str(city_path),
+                       "--borough-summary", str(borough_path), "--seasonal-health-root", str(health_root),
+                       "--output-dir", str(root / "candidate"), "--figure-version", "test_v3"]
+            result = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            with (root / "candidate/figure4_citywide_cobenefits_test_v3_data.csv").open() as f:
+                candidate = list(csv.DictReader(f))
+            health = [r for r in candidate if r["metric"].startswith("c ")]
+            self.assertEqual(len(health), 9)
+            self.assertTrue(all(float(r["lower95"]) == -3 and float(r["upper95"]) == -1 for r in health))
+            self.assertTrue(all("not 95% CI" in r["interval_type"] for r in health))
+            self.assertTrue(all(r["unit"] == "Deaths/modelled summer" for r in health))
+            capacity = [r for r in candidate if r["metric"].startswith("b ")]
+            self.assertTrue(all("summer daily mean" in r["unit"] for r in capacity))
+            # No accidental overwrite of a candidate version.
+            self.assertNotEqual(0, subprocess.run(command, capture_output=True).returncode)
 
 
 if __name__ == "__main__":

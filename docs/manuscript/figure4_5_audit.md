@@ -1,5 +1,7 @@
 # Abstract and Figures 4–5: audit and draft text
 
+**New candidate results:** use the [corrected energy and capacity report](energy_capacity_candidate_results.md) for the current candidate Figures 4–5 and proposed wording. This older audit is retained as history; do not combine its previous annual-health or energy values with the new candidate results.
+
 [Copy-friendly HTML](figure4_5_audit.html) · [Review text](figure4_5_audit.md) · [Methods and script index](figure4_methods.md)
 
 **11 November follow-up:** [Figure 3 climate/UHI audit](figure3_climate_uhi_audit.md)

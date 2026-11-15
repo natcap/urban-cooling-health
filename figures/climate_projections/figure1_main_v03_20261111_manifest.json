@@ -18,7 +18,7 @@
   "models": ["ACCESS-CM2", "IPSL-CM6A-LR", "MRI-ESM2-0"],
   "main_reference": "CHELSA July 2021",
   "main_maps": "SSP370, 2050 and 2070",
-  "supplement_reference": "CHELSA July 2021; SSP585 maps; existing WorldClim-matched SM retained separately",
+  "supplement_reference": "CHELSA July 2021; combined SSP370/SSP585 maps; existing WorldClim-matched SM retained separately",
   "map_breaks": [3.2519, 3.7821, 3.9968, 4.1441, 4.3116, 4.4771, 4.772, 5.028, 5.1838, 5.5841, 5.8278],
   "map_break_population": "132 borough-period-SSP values, 2050/2070, both SSPs",
   "histogram_checks": {
@@ -131,6 +131,7 @@
       }
     ]
   },
+  "histogram_method": "Automatic five bins per SSP/year; axes vary by inset",
   "aggregation": "Equal GCM mean within borough, equal borough weight for displayed means",
   "script": "code/post_processing_layers/plot_figure1.R",
   "outputs": [
@@ -141,6 +142,10 @@
     {
       "path": "/Users/yingjiel/Documents/projects/urban-cooling-health/figures/climate_projections/figure1_sm_ssp585_v02_20261111.png",
       "sha256": "406d3e31323ad9d4109ba3247c07be6cacae13b9170e43beb78c68d7288056cd"
+    },
+    {
+      "path": "/Users/yingjiel/Documents/projects/urban-cooling-health/figures/climate_projections/figure1_sm_ssp370_ssp585_v01_20261112.png",
+      "sha256": "e437c58c6fb617098650c6e3dc29996c00a3639c9ba44a296b9552f07e113045"
     }
   ]
 }

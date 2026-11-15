@@ -39,6 +39,7 @@ class Figure5BuilderTest(unittest.TestCase):
                         "borough_code": f"E{borough_index:03d}",
                         "energy_savings": 1_000_000 + scenario_index * 1_000,
                         "workability_fraction": 0.8 + scenario_index / 1000,
+                        "capacity_method": "daily_tmax_sensitivity",
                     })
             with borough_path.open("w", newline="") as table:
                 writer = csv.DictWriter(table, fieldnames=rows[0].keys())
@@ -86,6 +87,27 @@ class Figure5BuilderTest(unittest.TestCase):
                 mapped = list(csv.DictReader(table))
             self.assertEqual(set(SCENARIOS), {row["scenario"] for row in mapped})
             self.assertEqual(33 * 9 * 3, len(mapped))
+
+            with (health_root / "borough_results.csv").open("w", newline="") as table:
+                writer = csv.DictWriter(table, fieldnames=("scenario", "cause", "reconstruction", "ssp", "rr_variant", "borough_id", "deaths_averted"))
+                writer.writeheader()
+                for scenario in SCENARIOS:
+                    for i in range(33):
+                        writer.writerow(dict(scenario=scenario, cause="all_cause", reconstruction="worldclim_aligned", ssp="ssp370", rr_variant="central", borough_id=f"E{i:03d}", deaths_averted=-(i+1)/10))
+            command = ["Rscript", str(SCRIPT), "--borough-summary", str(borough_path),
+                       "--seasonal-health-root", str(health_root), "--borough-vector", str(vector_path),
+                       "--output-dir", str(root / "candidate"), "--figure-version", "test_v4"]
+            result = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            with (root / "candidate/figure5_borough_cobenefits_test_v4_data.csv").open() as f:
+                candidate = list(csv.DictReader(f))
+            health = [r for r in candidate if r["metric"] == "Heat-related deaths averted"]
+            self.assertEqual(len(health), 33 * 9)
+            self.assertTrue(all(float(r["value"]) < 0 for r in health))
+            self.assertTrue(all(r["unit"] == "Deaths/modelled summer" for r in health))
+            capacity = [r for r in candidate if r["metric"] == "Heavy-work capacity gain"]
+            self.assertTrue(all("summer daily mean" in r["unit"] for r in capacity))
+            self.assertNotEqual(0, subprocess.run(command, capture_output=True).returncode)
 
 
 if __name__ == "__main__":
