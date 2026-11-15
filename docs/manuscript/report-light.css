@@ -22,14 +22,20 @@ h1, h2, h3, h4 {
 }
 
 h1 {
+  font-size: 20pt !important;
   border-bottom: 2px solid #d9e1e8;
   padding-bottom: 0.35rem;
 }
 
 h2 {
-  border-bottom: 1px solid #e4e9ee;
-  padding-bottom: 0.2rem;
+  font-size: 16pt !important;
+  border-top: 1px solid #cfd8df;
+  margin-top: 2rem;
+  padding-top: 1rem;
 }
+
+h3 { font-size: 12pt !important; }
+h4 { font-size: 8pt !important; }
 
 a, a:visited {
   color: #165a8c !important;
