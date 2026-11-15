@@ -1,5 +1,7 @@
 # Figure 7: numerical and reporting review
 
+**Historical annual-health review.** Use the [canonical seasonal manuscript text](FIGURES6_7_MANUSCRIPT_TEXT.md) for current Results, legends and figures. Numerical values and deliverables below document the earlier version only.
+
 Reviewed and revised 5 November 2026. **Numerical checks pass; the requested
 display revisions are implemented. Author review remains pending.** The
 initial audit was read-only; the subsequent authorized revision regenerated
@@ -7,7 +9,7 @@ Figure 7 PNGs and reporting tables from unchanged health inputs. No Word edits,
 UCM/health-model reruns were performed during the figure revision. The reviewed
 code, figures and documentation were subsequently pushed in three topic commits.
 
-## Current deliverables
+## Historical annual deliverables
 
 Selected S7: [map-only five-indicator PNG](../../figures/figure7/png/fig7_ab_supplement_all_five.png).
 
@@ -137,7 +139,7 @@ independently establish equal realized canopy budgets. Use the existing canopy
 audit before making a matched-budget claim; equal area is not equal cost or
 equal tree numbers.
 
-## Main findings to retain
+## Historical annual findings
 
 These percentages use **high-vulnerability LSOAs as the denominator** and show
 the share receiving relatively low deaths averted per resident, under fixed

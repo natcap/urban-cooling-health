@@ -1,4 +1,4 @@
-# Abstract and Figures 4–5: audit and draft text
+# Figures 4–5: historical audit and decision record
 
 **New candidate results:** use the [corrected energy and capacity report](energy_capacity_candidate_results.md) for the current candidate Figures 4–5 and proposed wording. This older audit is retained as history; do not combine its previous annual-health or energy values with the new candidate results.
 
@@ -95,55 +95,15 @@ Previous summary outputs are preserved in
 
 ## Revised Abstract — draft for review
 
-Urban greening can reduce heat exposure, but its health benefits may be unevenly
-distributed. We combined land-use scenarios, climate projections and spatial
-models of cooling, mortality, energy costs and heavy-work capacity across London.
-Under identical mid-century climate conditions, Green and Target scenarios
-averted 135–496 modelled annual deaths, holding 2021 population and mortality
-fixed. Avoided energy costs reached £22.4 million per month, and area-weighted
-heavy-work capacity increased by up to 1.42 percentage points. Benefits under
-proximity-based greening were generally lower in neighbourhoods with greater
-income deprivation and ethnic-minority population shares. Compared with Green30,
-Target30 reduced the share of high-SVI neighbourhoods receiving relatively low
-health benefits from 45.5% to 4.5%, but increased that share in neighbourhoods
-with older populations. These findings suggest that planting location shapes
-both aggregate benefits and equity trade-offs, requiring explicit choices
-between vulnerability priorities.
-
-This draft omits the unverified temperature extrema and emphasizes the
-Green/Target comparisons. It does not imply demographic projections to 2050.
+The annual-health Abstract draft is superseded and is preserved in [Git history](https://github.com/natcap/urban-cooling-health/blob/f7a8bec/docs/manuscript/figure4_5_audit.md#revised-abstract--draft-for-review). Reconcile the Abstract only after the current main-text results are adopted; use the [current Figures 4–5 report](energy_capacity_candidate_results.md) for values and periods.
 
 ## Figure 4 Results — proposed replacement
 
-Across Green and Target scenarios, modelled annual heat-related deaths averted
-ranged from 135 to 496, with larger citywide benefits under Target at each canopy
-tier across all three outcomes (Fig. 4). Target30 averted 496 deaths (95%
-exposure–response uncertainty interval, 347–640), compared with 387 (272–500)
-under Green30. Their respective avoided energy costs were £22.4 million and
-£16.3 million per month, and area-weighted heavy-work capacity gains were 1.42
-and 1.19 percentage points. Conversely, AllBuilt resulted in 1,110 additional
-annual deaths, £49.6 million higher monthly energy costs and a 6.36-percentage-point
-capacity loss. These comparisons isolate land-use effects under identical
-mid-century climate conditions, holding 2021 population and mortality fixed.
+Superseded annual-version wording has been retired from this audit. Use the [current manuscript text](energy_capacity_candidate_results.md#proposed-results) ([HTML](energy_capacity_candidate_results.html#proposed-results)). The earlier wording is preserved in [Git history](https://github.com/natcap/urban-cooling-health/blob/f7a8bec/docs/manuscript/figure4_5_audit.md).
 
 ## Figure 4 legend — proposed replacement
 
-**Fig. 4 | Citywide co-benefits of alternative land-use scenarios under
-mid-century climate conditions.** Bars show scenario-minus-baseline changes in
-**a,** total avoided energy costs (£ million/month); **b,** London-boundary,
-area-weighted mean modelled heavy-work capacity (percentage points); and **c,**
-annual all-cause heat-related deaths averted. Nine scenarios (Table 1) are
-evaluated under identical climate conditions, holding 2021 population and
-registered mortality fixed. Colours identify scenarios; labels give estimates.
-Negative values indicate losses. Health error bars show 95% exposure–response
-uncertainty intervals; energy and work-capacity estimates are deterministic.
-Energy values represent modelled warm-month conditions, not annual savings;
-work capacity is area-weighted, not worker-weighted. See Extended Data Fig. 1
-for cause-specific mortality results.
-
-Extended Data Fig. 1 has now been regenerated from the same revised health
-outputs and checked against Figure 4 (audit below). The Word image still needs
-author replacement; the cross-reference can be retained with that replacement.
+Superseded annual-version wording has been retired from this audit. Use the [current manuscript text](energy_capacity_candidate_results.md#figure-4-citywide-co-benefits) ([HTML](energy_capacity_candidate_results.html#figure-4-citywide-co-benefits)). The earlier wording is preserved in [Git history](https://github.com/natcap/urban-cooling-health/blob/f7a8bec/docs/manuscript/figure4_5_audit.md).
 
 ## Extended Data Figure 1 — verified update
 
@@ -172,7 +132,7 @@ all-cause mortality.
   match Figure 4. Script/command details are in
   [Figure 4 Methods](figure4_methods.md#reproducible-outputs).
 
-### Revised Extended Data Figure 1 legend
+### Historical Extended Data Figure 1 legend (pre-seasonal; not submission-ready)
 
 **Extended Data Fig. 1 | Modelled heat-related deaths averted by mortality
 category under alternative land-use scenarios.** Points show annual London-wide
@@ -188,39 +148,13 @@ all-cause total.
 
 ## Figure 5 Results — proposed replacement
 
-Citywide gains masked substantial borough-level variation (Fig. 5). Under
-Target30, annual deaths averted ranged from 0.29 to 29.75 per borough, avoided
-energy costs from £0.08 million to £2.53 million per month, and heavy-work
-capacity gains from 0.30 to 3.61 percentage points. The largest gains occurred
-in different boroughs: Newham for health, Hillingdon for energy and Barking and
-Dagenham for work capacity. Although Target30 exceeded Green30 citywide for all
-three outcomes, it delivered greater health and energy benefits in 22 of 33
-boroughs for each outcome, and greater work-capacity gains in 21. Targeting
-therefore increased aggregate benefits without improving every borough's
-outcomes relative to Green30.
-
-Verification: calculated directly from the 891 rows (33 boroughs × nine
-scenarios × three outcomes) of `figure5_borough_cobenefits_20261110_v3_data.csv`
-(numerically unchanged from v2).
-The sets of 22 boroughs need not be identical across outcomes. Decimal deaths
-are modelled expectations, not observed counts. Counts compare point estimates,
-not statistically significant differences.
+Superseded annual-version wording has been retired from this audit. Use the [current manuscript text](energy_capacity_candidate_results.md#proposed-results) ([HTML](energy_capacity_candidate_results.html#proposed-results)). The earlier wording is preserved in [Git history](https://github.com/natcap/urban-cooling-health/blob/f7a8bec/docs/manuscript/figure4_5_audit.md).
 
 ## Figure 5 legend — corrected maps
 
-**Fig. 5 | Borough-scale changes in cooling-related co-benefits.** Maps show
-scenario-minus-baseline changes under identical mid-century climate conditions:
-**a,** total avoided energy costs (£ million/month); **b,** area-weighted mean
-modelled heavy-work capacity (percentage points); and **c,** annual all-cause
-heat-related deaths averted across 33 London boroughs. Population and registered
-mortality are held at 2021 levels. Cross-borough building energy is apportioned
-by intersection area, conserving the London total. Bold coloured labels identify
-scenarios using the Fig. 4 colour families, darkened where needed for legibility.
-Within each row, a shared symmetric pseudo-logarithmic
-(asinh) scale shows losses in orange, zero in white and gains in blue; colourbar
-labels retain original units. Maps depict spatial variation, not uncertainty.
+Superseded annual-version wording has been retired from this audit. Use the [current manuscript text](energy_capacity_candidate_results.md#figure-5-borough-co-benefits) ([HTML](energy_capacity_candidate_results.html#figure-5-borough-co-benefits)). The earlier wording is preserved in [Git history](https://github.com/natcap/urban-cooling-health/blob/f7a8bec/docs/manuscript/figure4_5_audit.md).
 
-## Next author review — Figures 4–5
+## Historical author review — 10 November 2026
 
 **Author-confirmed completed, 10 November 2026** (reported by the author;
 Word has not been re-audited after these updates):

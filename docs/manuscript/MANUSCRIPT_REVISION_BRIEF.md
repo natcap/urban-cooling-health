@@ -1,8 +1,11 @@
 # London manuscript revision brief
 
-**Current audit:** [10 November Abstract and Figures 4–5 review](figure4_5_audit.md).
-Use it for completed author changes, pending priorities and copy-ready draft text;
-the older manuscript-status statements below are historical, not current checks.
+**Historical revision brief.** For current manuscript wording and document ownership, start with the [revision index](index.md). This brief retains prior decisions and is not a current copy-ready source.
+
+**Historical audit:** [10 November Abstract and Figures 4–5 review](figure4_5_audit.md).
+Use the [manuscript revision index](index.md) for current copy-ready text and
+document ownership; the older manuscript-status statements below are
+historical, not current checks.
 
 Original review: 13 October 2026. Status pointers updated: 4 November 2026.
 Discussion window for the scientific recap: 13 September–13 October 2026.
@@ -13,7 +16,7 @@ It supersedes the provisional section/figure-placement recommendations below;
 this brief retains its historical scientific recap.
 
 November follow-up: see the [SVI comparison and Figure 6 spatial analysis](SVI_SPATIAL_RESULTS.md)
-for the current results; use the [Figure 2/6/7 review checklist](../../TODO.md#manuscript-review-checklist--figures-2-6-and-7)
+for the current results; use the [Figure 2/6/7 review checklist](../../TODO.md#manuscript-review-checklist-figures-2-6-and-7)
 for remaining decisions. Spatial fitting and publication of the report's 12
 illustrations are complete; manuscript insertion is not.
 Figure 2 now uses July 2021 baseline temperature by author decision; future
@@ -54,9 +57,9 @@ The external files in items 2, 3 and 7 are under
 1. The last supplied manuscript is `London urban cooling-ms-0806.docx` in the author's OneDrive submission folder. Its file modification date is September 16; this recap does not re-audit its current text. Treat the September language findings as a checklist to verify, since you may already have corrected them.
 2. Open `summary_citywide_cobenefits.png`, its source table `summary_citywide_cobenefits_data.csv`, and [aggregation and caption guidance](figure4_methods.md).
 3. Open `summary_borough_cobenefits.png` and `summary/extended_data_citywide_vs_borough.png`.
-4. [Figure 6 candidate review pack](FIGURE6_REVIEW_DRAFTS.md): current PNGs, legends, Results and links to allocation-specific reporting. Use this pack rather than older centred-curve exports for the main figure decision.
+4. [Figures 6–7 manuscript text](FIGURES6_7_MANUSCRIPT_TEXT.md): current seasonal-health Results and legends. The [Figure 6 technical review](FIGURE6_REVIEW_DRAFTS.md) retains alternative candidates and allocation-specific evidence only.
 5. [Figure 7 maps](../../figures/figure7/png/fig7_ab_upgraded.png), [paired comparison panels](../../figures/figure7/png/fig7_cd_upgraded.png), and [headline results](../../figures/figure7/csv/fig7_quantitative_headline_results.csv). These provide the central distributional result.
-6. [Figure 2 tree-cover statistics](../../figures/figure2_statistical_reporting/figure2_TCC_kruskal_wallis.csv) and [revised notebook](../../code/equity-temp-tcc.Rmd). Temperature results have been recovered; review the regenerated panels.
+6. [Figure 2 tree-cover statistics](../../figures/figure2/statistics/figure2_TCC_kruskal_wallis.csv) and [revised notebook](../../code/equity-temp-tcc.Rmd). Temperature results have been recovered; review the regenerated panels.
 7. Open `urban_cooling_original_vs_revised_interactive_comparison_report_offline.html`. This inherited September 11 report explains original/revised workflows, canopy area/pixel/tree-equivalent comparisons, and alternative aggregation methods. Its existence was checked during the October 13 review; it was not rebuilt or visually revalidated in that recap.
 
 Use [code/README.md](../../code/README.md) for canonical scripts,

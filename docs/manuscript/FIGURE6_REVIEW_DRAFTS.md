@@ -1,6 +1,6 @@
 # Figure 6 technical review and alternative candidates
 
-**Seasonal candidates, 12 November 2026:** new Green and Target overlays and their revised legends are indexed in the [seasonal-health report](seasonal_health_rerun_comparison.md#seasonal-supplementary-figures-and-legends). Annual figures and descriptions below are preserved for comparison, not silently replaced.
+**Seasonal candidates, 12 November 2026:** current Green and Target legends and Results are maintained in the [Figures 6–7 manuscript text](FIGURES6_7_MANUSCRIPT_TEXT.md). The [seasonal-health report](seasonal_health_rerun_comparison.md) retains the numerical validation and method comparison. Annual figures and descriptions below are preserved for comparison, not silently replaced.
 
 Selected manuscript prose is maintained only in
 [Figures 6–7 manuscript text](FIGURES6_7_MANUSCRIPT_TEXT.md).
@@ -32,7 +32,7 @@ replacing either original Green30 allocation candidate. Supplementary Fig. S6-1 
 below retain the three intensities within each family. Figure 7's current
 redistribution results are in the [Figure 7 review](FIGURE7_REVIEW.md#proposed-results-paragraph).
 
-### Proposed legend for the comparison candidate
+### Historical combined-panel legend (not selected for the current manuscript)
 
 **Fig. 6 | Contrasting neighborhood distributions of modelled health benefits
 under general and targeted greening.** Green solid and purple dashed curves
@@ -220,7 +220,7 @@ and all saved high-vulnerability/low-benefit counts reproduced.
 Evidence: [Figure 7 headline table](../../figures/figure7/csv/fig7_quantitative_headline_results.csv)
 and [production code](../../code/equity-health-fig7-production.Rmd).
 
-## Current figure presentation
+## Historical annual-figure presentation
 
 Both candidate PNGs retain full predictions and confidence bands, with no
 P10/P90 markers or marker legend. Numerical percentile contrasts remain in
@@ -240,8 +240,9 @@ remain in the manuscript legends above.
   input checksums, session information and candidate manifests.
 - `figures/figure6/allocation_normalization_comparison/`: controlled comparisons
   and side-by-side review images, separate from candidate figures.
-- This document owns Figure 6 legends and Green Results; the
-  [Figure 7 review](FIGURE7_REVIEW.md) owns its legend and the Target Results.
+- The [canonical manuscript draft](FIGURES6_7_MANUSCRIPT_TEXT.md) owns current
+  Figure 6–7 legends and Green/Target Results. This document and the
+  [Figure 7 review](FIGURE7_REVIEW.md) retain historical technical evidence.
   The V0–V1 record owns
   the method-change rationale; TODO owns outstanding decisions.
 

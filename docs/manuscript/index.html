@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc 3.12" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Manuscript revision package</title>
+  <title>Manuscript revision index</title>
   <style>
     /* Default styles provided by pandoc.
     ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -31,7 +31,7 @@
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">Manuscript revision package</h1>
+<h1 class="title">Manuscript revision index</h1>
 </header>
 <h1 id="manuscript-revision-index">Manuscript revision index</h1>
 <p>Use this page as the entry point for the current manuscript package.
@@ -83,10 +83,10 @@ Results, legends and methods</td>
 </tr>
 <tr>
 <td>6–7</td>
-<td><a href="seasonal_health_rerun_comparison.md">Seasonal-health
-report</a></td>
-<td>Current seasonal figures, supplementary figures, legends, Results
-and spatial qualifications</td>
+<td><a href="FIGURES6_7_MANUSCRIPT_TEXT.html">Seasonal manuscript-ready
+text</a></td>
+<td>Separate Green/Target Results, current figures and legends,
+supplementary legends and spatial qualifications</td>
 </tr>
 </tbody>
 </table>
@@ -94,10 +94,8 @@ and spatial qualifications</td>
 are copied into the single <a
 href="../../figures/manuscript_current/">current manuscript figure
 folder</a>. Its manifest records original source paths, generators,
-versions and hashes. Extended Data Fig. 1 is not yet in that folder
-because its existing image predates the seasonal-health update; its
-cause-specific seasonal version must be confirmed before final
-submission packaging.</p>
+versions and hashes. The included Extended Data Fig. 1 is a pre-seasonal
+comparison version, not a confirmed seasonal submission figure.</p>
 <h2 id="scientific-decisions-and-supporting-audits">Scientific decisions
 and supporting audits</h2>
 <ul>
@@ -115,8 +113,8 @@ remains conditional.</li>
 sensitivity</a>: descriptive versus spatially adjusted
 associations.</li>
 <li><a href="FIGURE7_REVIEW.md">Figure 7 review</a>: historical layout
-decisions and interpretation details; use the seasonal-health report for
-current numbers.</li>
+decisions and interpretation details; use the canonical Figure 6–7 draft
+for current wording.</li>
 <li><a
 href="reviews/pre_submission_action_plan_20261112.md">Pre-submission
 review synthesis</a>: consolidated reviewer concerns and their
@@ -141,5 +139,31 @@ diagnostics or earlier versions. Do not infer manuscript status from
 their modification date. In particular, uppercase Figure 6–7 review
 files preserve earlier decisions; the seasonal-health report and
 current-figure manifest identify the latest selected outputs.</p>
+<h2 id="document-ownership-and-duplicate-text-policy">Document ownership
+and duplicate-text policy</h2>
+<ul>
+<li><strong>One editable source per figure group:</strong> use the table
+above for current Results, legends and manuscript Methods. Audits and
+script guides link there instead of repeating copy-ready passages.</li>
+<li><strong>Markdown versus HTML:</strong> matching files are source and
+generated display versions, not independent drafts. Edit Markdown, then
+regenerate HTML with <code>report-light.css</code>.</li>
+<li><strong>Historical evidence:</strong> retain numerical comparisons,
+alternative figure designs and reviewer reports with explicit historical
+labels. Retired manuscript paragraphs remain in Git history rather than
+being copied into additional archives.</li>
+<li><strong>Figures 4–5:</strong> the candidate report owns wording;
+<code>figure4_methods.md</code> owns technical aggregation and script
+provenance; <code>figure4_5_audit.md</code> owns the historical
+audit.</li>
+<li><strong>Figures 6–7:</strong>
+<code>FIGURES6_7_MANUSCRIPT_TEXT.md</code> owns wording; the
+seasonal-health report owns calculations and validation; Figure 6/7
+reviews retain earlier decisions.</li>
+<li><strong>Reference updates:</strong> when retiring a passage, retain
+its section anchor as a short redirect where existing documents link to
+it. Do not edit immutable peer-review records to make them appear
+current.</li>
+</ul>
 </body>
 </html>

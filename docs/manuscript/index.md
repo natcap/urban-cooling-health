@@ -12,14 +12,12 @@ diagnostics and historical comparisons in supporting roles.
 | 2 | [Current figure package](../../figures/manuscript_current/readme.md) | Selected July 2021 baseline-temperature and corrected-SVI tree-cover figure; source script is `code/equity-temp-tcc.Rmd` |
 | 3 | [Climate/UHI audit](figure3_climate_uhi_audit.html) | Selected v03, conditional-setting interpretation, legend, Results and provenance |
 | 4–5 | [Energy and work-capacity candidate report](energy_capacity_candidate_results.html) | Current Figure 4 v05/Figure 5 v06 candidates, JJA capacity decision, Results, legends and methods |
-| 6–7 | [Seasonal-health report](seasonal_health_rerun_comparison.md) | Current seasonal figures, supplementary figures, legends, Results and spatial qualifications |
+| 6–7 | [Seasonal manuscript-ready text](FIGURES6_7_MANUSCRIPT_TEXT.html) | Separate Green/Target Results, current figures and legends, supplementary legends and spatial qualifications |
 
 All currently selected PNGs and confirmed supplementary candidates are copied
 into the single [current manuscript figure folder](../../figures/manuscript_current/).
 Its manifest records original source paths, generators, versions and hashes.
-Extended Data Fig. 1 is not yet in that folder because its existing image
-predates the seasonal-health update; its cause-specific seasonal version must
-be confirmed before final submission packaging.
+The included Extended Data Fig. 1 is a pre-seasonal comparison version, not a confirmed seasonal submission figure.
 
 ## Scientific decisions and supporting audits
 
@@ -34,7 +32,7 @@ be confirmed before final submission packaging.
 - [Figure 6 spatial sensitivity](SVI_SPATIAL_RESULTS_offline.html): descriptive
   versus spatially adjusted associations.
 - [Figure 7 review](FIGURE7_REVIEW.md): historical layout decisions and
-  interpretation details; use the seasonal-health report for current numbers.
+  interpretation details; use the canonical Figure 6–7 draft for current wording.
 - [Pre-submission review synthesis](reviews/pre_submission_action_plan_20261112.md):
   consolidated reviewer concerns and their disposition.
 
@@ -56,3 +54,12 @@ earlier versions. Do not infer manuscript status from their modification date.
 In particular, uppercase Figure 6–7 review files preserve earlier decisions;
 the seasonal-health report and current-figure manifest identify the latest
 selected outputs.
+
+## Document ownership and duplicate-text policy
+
+- **One editable source per figure group:** use the table above for current Results, legends and manuscript Methods. Audits and script guides link there instead of repeating copy-ready passages.
+- **Markdown versus HTML:** matching files are source and generated display versions, not independent drafts. Edit Markdown, then regenerate HTML with `report-light.css`.
+- **Historical evidence:** retain numerical comparisons, alternative figure designs and reviewer reports with explicit historical labels. Retired manuscript paragraphs remain in Git history rather than being copied into additional archives.
+- **Figures 4–5:** the candidate report owns wording; `figure4_methods.md` owns technical aggregation and script provenance; `figure4_5_audit.md` owns the historical audit.
+- **Figures 6–7:** `FIGURES6_7_MANUSCRIPT_TEXT.md` owns wording; the seasonal-health report owns calculations and validation; Figure 6/7 reviews retain earlier decisions.
+- **Reference updates:** when retiring a passage, retain its section anchor as a short redirect where existing documents link to it. Do not edit immutable peer-review records to make them appear current.

@@ -87,7 +87,7 @@ uncertainty around a citywide total. Consequently:
 
 ## Manuscript text
 
-Use the [review document](figure4_5_audit.md) for the current legends and Results.
+Use the [current candidate report](energy_capacity_candidate_results.md#proposed-manuscript-text) for manuscript Methods, legends and Results.
 This document owns methodological decisions, reproducibility and the figure-to-script index.
 
 ## Recommended nine-scenario layout
@@ -121,24 +121,9 @@ three-panel figure and records a single provenance manifest.
 
 ## Copy-ready Methods text
 
-> We quantified land-use co-benefits relative to the baseline land-use
-> configuration under the same mid-century climate condition. Figure 4 reports
-> London-wide estimands selected for each outcome. Avoided monthly energy cost
-> was summed once across unique building records. Heavy-work capacity was
-> calculated with the continuous Hothaps relationship and summarized as the
-> area-weighted mean change across common valid 10 m cell centres inside the
-> London borough union; this is a
-> modeled capacity index and is not weighted by worker location.
->
-> Gridded excess deaths, estimated using population-weighted allocation of deaths
-> registered in 2021 and fixed 2021 population, were summed to obtain borough-
-> and city-level totals for each cause and scenario. Equity analyses expressed
-> deaths averted per million residents using the same 2021 population denominator.
+Use [Energy savings and work-capacity Methods](energy_capacity_candidate_results.md#methods-energy-savings). This guide retains technical aggregation and script provenance, not a second editable manuscript paragraph. Earlier Methods wording is available in Git history.
 
-Equal-weight borough summaries and boxplots have been generated and retained
-for optional Priority 3 review, not confirmed for the final submission. Their
-methods remain documented above; no claim of their inclusion is made in the
-copy-ready Methods text.
+Equal-weight borough summaries and boxplots remain optional Priority 3 material, not confirmed for submission.
 
 ### Artwork policy
 
@@ -156,8 +141,9 @@ PNG alone satisfies final artwork requirements.
 
 ### Document maintenance
 
-These lowercase Markdown files are authoritative. `figure4_5_audit.md` owns
-copy-ready text and the audit; this file owns methods and the script index.
+`energy_capacity_candidate_results.md` owns current manuscript wording;
+`figure4_5_audit.md` owns historical audit evidence. This file owns technical
+aggregation decisions and the script index.
 The former `code/post_processing_layers/FIGURE4_METHODS.md` is a symlink, not
 a duplicate. On case-insensitive macOS, the old uppercase audit path resolves
 to the lowercase file directly; no self-referencing alias is needed.
@@ -194,7 +180,7 @@ option `--cause-specific true`. Its separate stem is
 It requires all five mortality categories and 2,000 finite draws per scenario;
 the all-cause points and intervals must equal Figure 4 exactly. The old embedded
 Word image is preserved as `extended_data_fig1_previous_manuscript_0806.png`.
-The [audit and copy-ready legend](figure4_5_audit.md#extended-data-figure-1--verified-update)
+The [historical audit](figure4_5_audit.md#extended-data-figure-1-verified-update)
 are maintained in the manuscript review document, not duplicated here.
 
 Both builders read [func_colors.R](../../code/func_colors.R). Figure 5 v3

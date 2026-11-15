@@ -359,7 +359,7 @@ Previous manuscript panels are retained there as
 
 [Open the new Figure 3 PNG](</Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary/figure3_alternative_area_weighted_v01_20261111.png>).
 
-### Proposed Figure 3 legend
+### Archived alternative Figure 3 legend
 
 **Fig. 3 | Modelled temperature effects of alternative land-use scenarios across
 London.** Changes are relative to baseline land use under identical prescribed
