@@ -22,13 +22,16 @@ urban-cooling-health/
 ├── TODO.md                   Open scientific and release gates
 ├── docs/
 │   ├── README.md             Documentation index
+│   ├── manuscript/index.md   Current figure text and decision index
 │   └── WORKFLOW.md           Ordered source-to-figure workflow
 ├── code/
 │   └── README.md             Production scripts and historical analyses
 ├── data/
 │   ├── README.md             Local data roles and handling
 │   └── derived/              Selected tracked Figure 7 inputs
-└── figures/                  Current Figure 7 outputs and historical evidence
+└── figures/
+    ├── manuscript_current/   Selected Figures 1–7 and supplements in one folder
+    └── ...                   Generation outputs, diagnostics and historical evidence
 ```
 
 Start with the links below rather than inferring which script to run from a
@@ -67,8 +70,10 @@ numbers into Word. UCM temperature and health-model outputs are unchanged.
 | Reproduce the current Figure 7 from tracked derived inputs | [Figure 7 reproduction](REPRODUCIBILITY.md) | No |
 | Rebuild scenarios, model results and figures in order | [Full workflow map](docs/WORKFLOW.md) | Yes |
 | Find the current production scripts | [Code/figure index](code/README.md) | Depends on stage |
+| Find the latest manuscript figures and copy-ready text | [Current figure folder](figures/manuscript_current/) and [manuscript index](docs/manuscript/index.md) | No |
 | Understand local raw, processed and derived data | [Data directory guide](data/README.md) | No |
 | Review scientific decisions, open tasks and manuscript status | [Documentation index](docs/README.md) and [TODO](TODO.md) | No |
+| Verify selected figures or prepare a full rebuild | [Reproducibility guide](docs/reproducibility.md) | Figure verification: yes; full rebuild: yes |
 | Check whether data or figures can be shared | [Licence and redistribution review](DATA_LICENCE_AND_REDISTRIBUTION.md) | No |
 
 The repository tracks the small derived inputs required for the current
@@ -102,10 +107,11 @@ output files, a non-destructive test run and the final review checklist.
   capacity and population-allocated mortality estimates. The
   [Figure 4 methods](docs/manuscript/figure4_methods.md) define
   these estimands and the borough sensitivity.
-- Figure 6 is exploratory until its spatial-inference review is complete.
-  Figure 7 is the current paired equity workflow. See the
-  [Figures 6–7 review](code/health_assessment/FIGURES6_7_REVIEW.md) and
-  [manuscript brief](docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md).
+- Figures 6–7 use the current seasonal-health candidates. Figure 6 remains a
+  descriptive ecological analysis with a separate spatial sensitivity; Figure
+  7 uses paired LSOAs and fixed Green30 benefit thresholds. See the
+  [seasonal-health report](docs/manuscript/seasonal_health_rerun_comparison.md)
+  and [current manuscript index](docs/manuscript/index.md).
 - Some historical notebooks and Windows launchers retain machine-specific
   paths. Start new production runs from the [workflow guide](code/workflows/README.md)
   and its versioned configuration, not from an archived launcher.

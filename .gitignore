@@ -5,12 +5,36 @@ data/*
 docs/*
 # Keep project guidance versioned while leaving local imports and aliases out.
 !docs/README.md
+!docs/reproducibility.md
 !docs/WORKFLOW.md
 !docs/methods/
 docs/methods/*
 !docs/methods/FUTURE_WORK_CAPACITY_METHOD.md
 !docs/manuscript/
 docs/manuscript/*
+!docs/manuscript/index.md
+!docs/manuscript/index.html
+!docs/manuscript/report-light.css
+!docs/manuscript/energy_capacity_candidate_results.md
+!docs/manuscript/energy_capacity_candidate_results.html
+!docs/manuscript/seasonal_health_rerun_comparison.md
+!docs/manuscript/energy_capacity_consensus.md
+!docs/manuscript/energy_scaling_correction_test.md
+!docs/manuscript/energy_work_seasonal_consistency_audit.md
+!docs/manuscript/monthly_outcome_alignment.md
+!docs/manuscript/monthly_outcome_alignment.html
+!docs/manuscript/health_calculation_nodata_audit.md
+!docs/manuscript/daily_mean_canopy_validation.md
+!docs/manuscript/cause_specific_response_literature.md
+!docs/manuscript/climate_coverage_consistency_audit.md
+!docs/manuscript/corrected_temperature_family.md
+!docs/manuscript/nine_scenario_health_readiness.md
+!docs/manuscript/ons_seasonal_deaths_request.md
+!docs/manuscript/spatial_reconstructed_health_comparison.md
+!docs/manuscript/temperature_reconstruction_comparison.md
+!docs/manuscript/uhi_threshold_scale_health_sensitivity.md
+!docs/manuscript/reviews/
+!docs/manuscript/reviews/**
 !docs/manuscript/MANUSCRIPT_REVISION_BRIEF.md
 !docs/manuscript/SVI_SPATIAL_RESULTS.md
 !docs/manuscript/FIGURE6_REVIEW_DRAFTS.md
@@ -19,6 +43,10 @@ docs/manuscript/*
 
 # Ignore all figures
 figures/*
+# Versioned, reviewed manuscript copies only; raw rasters and unrestricted
+# generation outputs remain ignored.
+!figures/manuscript_current/
+!figures/manuscript_current/**
 # Released SVI report illustrations only; numerical exports remain local.
 !figures/svi_spatial_report/
 figures/svi_spatial_report/*

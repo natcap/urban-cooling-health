@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Manuscript revision package</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="report-light.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Manuscript revision package</h1>
+</header>
+<h1 id="manuscript-revision-index">Manuscript revision index</h1>
+<p>Use this page as the entry point for the current manuscript package.
+It links to one authoritative document for each figure group and keeps
+audits, diagnostics and historical comparisons in supporting roles.</p>
+<h2 id="current-figures-and-copy-ready-text">Current figures and
+copy-ready text</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Figures</th>
+<th>Open first</th>
+<th>What it contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a
+href="figure1_historical_reference_comparison.html">Historical-reference
+and Figure 1 report</a></td>
+<td>Selected main/supplementary versions, legend, Results and
+climate-reference decisions</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="../../figures/manuscript_current/readme.md">Current figure
+package</a></td>
+<td>Selected July 2021 baseline-temperature and corrected-SVI tree-cover
+figure; source script is <code>code/equity-temp-tcc.Rmd</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="figure3_climate_uhi_audit.html">Climate/UHI audit</a></td>
+<td>Selected v03, conditional-setting interpretation, legend, Results
+and provenance</td>
+</tr>
+<tr>
+<td>4–5</td>
+<td><a href="energy_capacity_candidate_results.html">Energy and
+work-capacity candidate report</a></td>
+<td>Current Figure 4 v05/Figure 5 v06 candidates, JJA capacity decision,
+Results, legends and methods</td>
+</tr>
+<tr>
+<td>6–7</td>
+<td><a href="seasonal_health_rerun_comparison.md">Seasonal-health
+report</a></td>
+<td>Current seasonal figures, supplementary figures, legends, Results
+and spatial qualifications</td>
+</tr>
+</tbody>
+</table>
+<p>All currently selected PNGs and confirmed supplementary candidates
+are copied into the single <a
+href="../../figures/manuscript_current/">current manuscript figure
+folder</a>. Its manifest records original source paths, generators,
+versions and hashes. Extended Data Fig. 1 is not yet in that folder
+because its existing image predates the seasonal-health update; its
+cause-specific seasonal version must be confirmed before final
+submission packaging.</p>
+<h2 id="scientific-decisions-and-supporting-audits">Scientific decisions
+and supporting audits</h2>
+<ul>
+<li><a href="../../TODO.md">Current priority list</a>: outstanding
+author decisions and release gates.</li>
+<li><a href="health_calculation_nodata_audit.md">Health calculation and
+NoData audit</a>: health formula and missing-data diagnosis.</li>
+<li><a href="seasonal_health_rerun_comparison.md">Corrected
+seasonal-health comparison</a>: authoritative health estimates and
+equity findings.</li>
+<li><a href="monthly_outcome_alignment.html">Monthly outcome
+alignment</a>: why JJA health and capacity were selected and why energy
+remains conditional.</li>
+<li><a href="SVI_SPATIAL_RESULTS_offline.html">Figure 6 spatial
+sensitivity</a>: descriptive versus spatially adjusted
+associations.</li>
+<li><a href="FIGURE7_REVIEW.md">Figure 7 review</a>: historical layout
+decisions and interpretation details; use the seasonal-health report for
+current numbers.</li>
+<li><a
+href="reviews/pre_submission_action_plan_20261112.md">Pre-submission
+review synthesis</a>: consolidated reviewer concerns and their
+disposition.</li>
+</ul>
+<h2 id="methods-and-reproducibility">Methods and reproducibility</h2>
+<ul>
+<li><a href="../methods/RUN_VERSION_INDEX.md">Run-version index</a>:
+production, health and valuation run relationships.</li>
+<li><a href="figure4_methods.html">Figure 4–5 methods</a>:
+figure-to-script and aggregation reference; current candidate values are
+in the candidate report above.</li>
+<li><a href="../../REPRODUCIBILITY.md">Figure 7 standalone
+reproduction</a>: tracked-input workflow for the established Figure 7
+pipeline.</li>
+<li><a href="../../code/README.md">Code and figure index</a>: generators
+for every main figure.</li>
+</ul>
+<h2 id="historical-material">Historical material</h2>
+<p>Files not listed as current above remain analytical evidence,
+diagnostics or earlier versions. Do not infer manuscript status from
+their modification date. In particular, uppercase Figure 6–7 review
+files preserve earlier decisions; the seasonal-health report and
+current-figure manifest identify the latest selected outputs.</p>
+</body>
+</html>

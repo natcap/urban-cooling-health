@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-11-15T02:59:52.115385+00:00",
+  "generator": "code/workflows/build_current_figure_package.py",
+  "generator_commit": "8e69306b3d9de2bade0e60c193fd8ce1a36df64c",
+  "configuration": {
+    "path": "code/workflows/configs/manuscript_figure_package_2026-11-13.csv",
+    "sha256": "074d0526f92541f72ec5d7ca0c5f809369feecf50404be9a675a2c1684984abd"
+  },
+  "assets": [
+    {
+      "asset": "figure_01_climate_context_v03.png",
+      "role": "Main Figure 1",
+      "status": "selected",
+      "source": "${PROJECT_ROOT}/figures/climate_projections/figure1_main_v03_20261111.png",
+      "generator": "code/post_processing_layers/plot_figure1.R",
+      "source_sha256": "0cdcdbf8b0d86275f24a19748af9906cb52c3545dfea3072d3eb251259e4e5bc",
+      "curated_sha256": "0cdcdbf8b0d86275f24a19748af9906cb52c3545dfea3072d3eb251259e4e5bc"
+    },
+    {
+      "asset": "figure_02_baseline_temperature_tree_cover.png",
+      "role": "Main Figure 2",
+      "status": "selected",
+      "source": "${PROJECT_ROOT}/figures/figure2/manuscript/figure2_baseline_temperature_tree_cover.png",
+      "generator": "code/equity-temp-tcc.Rmd",
+      "source_sha256": "3722d8700e1136c59a3712c095add50251da6efeccb85e376f2897dd8a2b1e72",
+      "curated_sha256": "3722d8700e1136c59a3712c095add50251da6efeccb85e376f2897dd8a2b1e72"
+    },
+    {
+      "asset": "figure_03_conditional_cooling_v03.png",
+      "role": "Main Figure 3",
+      "status": "selected",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary/figure3_main_v03_20261111.png",
+      "generator": "code/post_processing_layers/plot_figure3_temperature.R",
+      "source_sha256": "131c4754d751c0538f58152324c0ae5fac2b035d8d072ed83d641f0c06fd3337",
+      "curated_sha256": "131c4754d751c0538f58152324c0ae5fac2b035d8d072ed83d641f0c06fd3337"
+    },
+    {
+      "asset": "figure_04_citywide_cobenefits_v05.png",
+      "role": "Main Figure 4",
+      "status": "current candidate; author adoption pending",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v02_jja_capacity/summary/figure4_citywide_cobenefits_20261113_v5.png",
+      "generator": "code/post_processing_layers/plot_figure4_citywide.R",
+      "source_sha256": "fd0abe9c6547954e2a89f124a7d70f1e4eca6139a20a52dd44980bb863af6e37",
+      "curated_sha256": "fd0abe9c6547954e2a89f124a7d70f1e4eca6139a20a52dd44980bb863af6e37"
+    },
+    {
+      "asset": "figure_05_borough_cobenefits_v06.png",
+      "role": "Main Figure 5",
+      "status": "current candidate; author adoption pending",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v02_jja_capacity/summary/figure5_borough_cobenefits_20261113_v6.png",
+      "generator": "code/post_processing_layers/plot_figure5_borough_cobenefits.R",
+      "source_sha256": "086cd21f278e17bb19444fc22001fa5364af3412d222a26ec11bbef886dbbf91",
+      "curated_sha256": "086cd21f278e17bb19444fc22001fa5364af3412d222a26ec11bbef886dbbf91"
+    },
+    {
+      "asset": "figure_06_green30_health_equity_seasonal_v02.png",
+      "role": "Main Figure 6",
+      "status": "selected seasonal candidate",
+      "source": "${PROJECT_ROOT}/figures/figure6/manuscript/equity_health_All_cause_gam_Green30_20261112_10_per_million_population_full_prediction_seasonal_v2.png",
+      "generator": "code/health_assessment/plot_seasonal_manuscript_figures.R",
+      "source_sha256": "009f9baf9392a4d3d55b9552fd70ccb24f7a973ef39164f877a8da486c641c7b",
+      "curated_sha256": "009f9baf9392a4d3d55b9552fd70ccb24f7a973ef39164f877a8da486c641c7b"
+    },
+    {
+      "asset": "figure_07_green30_target30_equity_seasonal_v05.png",
+      "role": "Main Figure 7",
+      "status": "selected seasonal candidate",
+      "source": "${PROJECT_ROOT}/figures/figure7/png/fig7_main_mapled_SVI_20261112_seasonal_v5.png",
+      "generator": "code/health_assessment/plot_seasonal_manuscript_figures.R",
+      "source_sha256": "67e4c1e8ce701bc6e2fd285f4fae5966c6c05204ee78e1f63d605324b1f9c929",
+      "curated_sha256": "67e4c1e8ce701bc6e2fd285f4fae5966c6c05204ee78e1f63d605324b1f9c929"
+    },
+    {
+      "asset": "figure_04_citywide_cobenefits_v04.png",
+      "role": "Figure 4 comparison version",
+      "status": "previous JJA-capacity label version",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v02_jja_capacity/summary/figure4_citywide_cobenefits_20261113_v4.png",
+      "generator": "code/post_processing_layers/plot_figure4_citywide.R",
+      "source_sha256": "f2a09af6e6eaabe38d825b8999edfbc6c37d0bd995b05a56bbd9048523cd58f4",
+      "curated_sha256": "f2a09af6e6eaabe38d825b8999edfbc6c37d0bd995b05a56bbd9048523cd58f4"
+    },
+    {
+      "asset": "figure_05_borough_cobenefits_v05.png",
+      "role": "Figure 5 comparison version",
+      "status": "previous JJA-capacity label version",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v02_jja_capacity/summary/figure5_borough_cobenefits_20261113_v5.png",
+      "generator": "code/post_processing_layers/plot_figure5_borough_cobenefits.R",
+      "source_sha256": "2e61e923fee7bbfefad8f4a247c3ed70e86ceeeac7af85b1528ba276409af35a",
+      "curated_sha256": "2e61e923fee7bbfefad8f4a247c3ed70e86ceeeac7af85b1528ba276409af35a"
+    },
+    {
+      "asset": "figure_04_citywide_cobenefits_v03.png",
+      "role": "Figure 4 comparison version",
+      "status": "superseded fixed-condition capacity candidate",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v01/summary/figure4_citywide_cobenefits_20261113_v3.png",
+      "generator": "code/post_processing_layers/plot_figure4_citywide.R",
+      "source_sha256": "907d9c60bdbbaabb0c96e65332a8d2a4c94fcd5aaad1faf67da6cff1c8ab3449",
+      "curated_sha256": "907d9c60bdbbaabb0c96e65332a8d2a4c94fcd5aaad1faf67da6cff1c8ab3449"
+    },
+    {
+      "asset": "figure_05_borough_cobenefits_v04.png",
+      "role": "Figure 5 comparison version",
+      "status": "superseded fixed-condition capacity candidate",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v01/summary/figure5_borough_cobenefits_20261113_v4.png",
+      "generator": "code/post_processing_layers/plot_figure5_borough_cobenefits.R",
+      "source_sha256": "907ec5d2dde725ad7e5ab52053882bf88a204980748e1dca29c007a1fb3799b8",
+      "curated_sha256": "907ec5d2dde725ad7e5ab52053882bf88a204980748e1dca29c007a1fb3799b8"
+    },
+    {
+      "asset": "figure_06_green30_health_equity_annual_v01.png",
+      "role": "Figure 6 comparison version",
+      "status": "superseded annual-health candidate",
+      "source": "${PROJECT_ROOT}/figures/figure6/manuscript/equity_health_All_cause_gam_Green30_20261105_10_per_million_population_full_prediction.png",
+      "generator": "code/equity-health.Rmd",
+      "source_sha256": "4e8683e2236c69368b2e15f6cdfcc5f47055c524e84fa53cc0d3771c12353689",
+      "curated_sha256": "4e8683e2236c69368b2e15f6cdfcc5f47055c524e84fa53cc0d3771c12353689"
+    },
+    {
+      "asset": "figure_07_green30_target30_equity_annual_v04.png",
+      "role": "Figure 7 comparison version",
+      "status": "superseded annual-health candidate",
+      "source": "${PROJECT_ROOT}/figures/figure7/png/fig7_main_mapled_SVI_20261105_v4.png",
+      "generator": "code/equity-health-fig7-production.Rmd",
+      "source_sha256": "4f01ef1f67cd067f4c58cc17b0373a9e36835bcaa7ad01c7dcd04d9fcca0733d",
+      "curated_sha256": "4f01ef1f67cd067f4c58cc17b0373a9e36835bcaa7ad01c7dcd04d9fcca0733d"
+    },
+    {
+      "asset": "figure_04_citywide_cobenefits_v02.png",
+      "role": "Figure 4 comparison version",
+      "status": "pre-seasonal valuation version (10 November)",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary/figure4_citywide_cobenefits_20261110_v2.png",
+      "generator": "code/post_processing_layers/plot_figure4_citywide.R",
+      "source_sha256": "09d6205d34b1fb375f4b4a3448c75affa25e732bc4a4c1353c9e4bc3d3b4b34c",
+      "curated_sha256": "09d6205d34b1fb375f4b4a3448c75affa25e732bc4a4c1353c9e4bc3d3b4b34c"
+    },
+    {
+      "asset": "figure_05_borough_cobenefits_v02.png",
+      "role": "Figure 5 comparison version",
+      "status": "pre-seasonal valuation version (10 November)",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary/figure5_borough_cobenefits_20261110_v2.png",
+      "generator": "code/post_processing_layers/plot_figure5_borough_cobenefits.R",
+      "source_sha256": "a46afe13244e55620d37246ed59de528ed1d170c86c7079473ff411777b58fb3",
+      "curated_sha256": "a46afe13244e55620d37246ed59de528ed1d170c86c7079473ff411777b58fb3"
+    },
+    {
+      "asset": "extended_data_citywide_vs_borough_v02.png",
+      "role": "Extended Data comparison version",
+      "status": "pre-seasonal citywide-versus-borough sensitivity (10 November)",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary/extended_data_citywide_vs_borough_20261110_v2.png",
+      "generator": "code/post_processing_layers/plot_figure4_citywide.R",
+      "source_sha256": "d135e63bbbc6cff260929a49c2c0cafa4e43cb80aff8fa4cec3044705d4c0a4f",
+      "curated_sha256": "d135e63bbbc6cff260929a49c2c0cafa4e43cb80aff8fa4cec3044705d4c0a4f"
+    },
+    {
+      "asset": "extended_data_figure_01_mortality_by_cause_v01.png",
+      "role": "Extended Data Figure 1 comparison version",
+      "status": "pre-seasonal cause-specific mortality figure (10 November)",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary/extended_data_fig1_mortality_by_cause_20261110_v1.png",
+      "generator": "code/post_processing_layers/plot_figure4_citywide.R",
+      "source_sha256": "1f290529dd2ba3358e6901edac99f13abe0331086e63509d8bea1a5ed1555f0e",
+      "curated_sha256": "1f290529dd2ba3358e6901edac99f13abe0331086e63509d8bea1a5ed1555f0e"
+    },
+    {
+      "asset": "supp_figure_s1_1_climate_ssp370_ssp585_v01.png",
+      "role": "Supplementary Figure S1-1",
+      "status": "selected",
+      "source": "${PROJECT_ROOT}/figures/climate_projections/figure1_sm_ssp370_ssp585_v01_20261112.png",
+      "generator": "code/post_processing_layers/plot_figure1.R",
+      "source_sha256": "e437c58c6fb617098650c6e3dc29996c00a3639c9ba44a296b9552f07e113045",
+      "curated_sha256": "e437c58c6fb617098650c6e3dc29996c00a3639c9ba44a296b9552f07e113045"
+    },
+    {
+      "asset": "supp_figure_s1_2_worldclim_matched_v02.png",
+      "role": "Supplementary Figure S1-2",
+      "status": "candidate sensitivity",
+      "source": "${PROJECT_ROOT}/figures/climate_projections/figure1_sm_worldclim_v02_20261111.png",
+      "generator": "code/post_processing_layers/plot_figure1.R",
+      "source_sha256": "c038cf517ff4508a597b63537292479cab567fbd08950d7582d394d62cc8cae2",
+      "curated_sha256": "c038cf517ff4508a597b63537292479cab567fbd08950d7582d394d62cc8cae2"
+    },
+    {
+      "asset": "supp_figure_03_borough_distribution_v02.png",
+      "role": "Figure 3 borough sensitivity",
+      "status": "candidate",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary/figure3_sm_borough_v02_20261111.png",
+      "generator": "code/post_processing_layers/plot_figure3_temperature.R",
+      "source_sha256": "a4a71993d13c350f0025543682823a3041cd029d2b7a23cb9a6947af0b831b64",
+      "curated_sha256": "a4a71993d13c350f0025543682823a3041cd029d2b7a23cb9a6947af0b831b64"
+    },
+    {
+      "asset": "supp_capacity_sensitivity_v02.png",
+      "role": "Work-capacity sensitivity",
+      "status": "candidate",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v02_jja_capacity/summary/capacity_exposure_sensitivity_20261113_v2.png",
+      "generator": "code/post_processing_layers/plot_capacity_candidate_sensitivity.R",
+      "source_sha256": "e08121a42e1aa456453919d53c277570b76f9534eacb1b3ccd3b8a75f8730c6c",
+      "curated_sha256": "e08121a42e1aa456453919d53c277570b76f9534eacb1b3ccd3b8a75f8730c6c"
+    },
+    {
+      "asset": "diagnostic_capacity_temperature_context_v01.png",
+      "role": "Work-capacity temperature context",
+      "status": "diagnostic context; not a manuscript figure",
+      "source": "${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/diagnostics/cobenefits_candidate_20261113_v02_jja_capacity/summary/jja_daily_tmax_context_20261113_v01/jja_daily_tmax_vs_fixed_25_5_20261113_v01.png",
+      "generator": "code/post_processing_layers/plot_jja_capacity_temperature_context.py",
+      "source_sha256": "3089fd19d571452ac5e54ea2c6fde5f210b53d6e0cc35d5a9e2a8774f5326d19",
+      "curated_sha256": "3089fd19d571452ac5e54ea2c6fde5f210b53d6e0cc35d5a9e2a8774f5326d19"
+    },
+    {
+      "asset": "supp_figure_s6_1_green_scenarios_seasonal_v02.png",
+      "role": "Supplementary Figure S6-1",
+      "status": "selected",
+      "source": "${PROJECT_ROOT}/figures/figure6/scenario_comparison/figure6_supplement_green_overlay_seasonal_20261112_v2.png",
+      "generator": "code/health_assessment/plot_seasonal_supplement_figures.R",
+      "source_sha256": "9b23b46b22617b25dade36244c194ac0fcc0b794595baef97c47f7d35fefe41d",
+      "curated_sha256": "9b23b46b22617b25dade36244c194ac0fcc0b794595baef97c47f7d35fefe41d"
+    },
+    {
+      "asset": "extended_data_figure_03_target_scenarios_seasonal_v02.png",
+      "role": "Extended Data Figure 3",
+      "status": "selected",
+      "source": "${PROJECT_ROOT}/figures/figure6/scenario_comparison/figure6_supplement_target_overlay_seasonal_20261112_v2.png",
+      "generator": "code/health_assessment/plot_seasonal_supplement_figures.R",
+      "source_sha256": "98b4f21b0704c0a811d4fe84feebb01772632ea7a0dac0cc31e47893ac99cd3f",
+      "curated_sha256": "98b4f21b0704c0a811d4fe84feebb01772632ea7a0dac0cc31e47893ac99cd3f"
+    },
+    {
+      "asset": "supp_figure_s7_equity_maps_seasonal_v02.png",
+      "role": "Supplementary Figure S7",
+      "status": "selected",
+      "source": "${PROJECT_ROOT}/figures/figure7/png/fig7_ab_supplement_all_five_seasonal_20261112_v2.png",
+      "generator": "code/health_assessment/plot_seasonal_supplement_figures.R",
+      "source_sha256": "622b9e5c7c69405f190636fd49c03f8730ab4becd093c02dae2f80ac04d04992",
+      "curated_sha256": "622b9e5c7c69405f190636fd49c03f8730ab4becd093c02dae2f80ac04d04992"
+    }
+  ]
+}

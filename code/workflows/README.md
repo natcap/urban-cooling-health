@@ -44,6 +44,23 @@ export URBAN_COOLING_DATA_ROOT="/path/to/Wellcome Trust Project Data"
 All configured paths are relative to that root. Local usernames and mounted
 drive paths therefore stay out of the committed configuration.
 
+## Current manuscript package
+
+The selected Figure 1–7 copies are built from
+`configs/manuscript_figure_package_2026-11-13.csv`, not edited in place. The
+separate `configs/run_registry.csv` identifies their run families, source
+outputs and generators. These commands validate hashes and paths without
+running InVEST or changing a model output:
+
+```bash
+python code/workflows/build_current_figure_package.py --verify
+python code/workflows/verify_reproducibility.py --require-data-root
+```
+
+After approving a regenerated source figure, use `--refresh` to replace only
+the corresponding curated copy. See the [reproducibility guide](../../docs/reproducibility.md)
+for environment setup, full-rebuild boundaries and release handling.
+
 ### 3. Inspect and validate
 
 ```bash
