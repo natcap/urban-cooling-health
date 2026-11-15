@@ -7,14 +7,17 @@ Earlier versions are retained for comparison, not overwritten or deleted.
 
 | Review purpose | File |
 |---|---|
-| Preferred main figure | [Map-led v4](png/fig7_main_mapled_SVI_20261105_v4.png) |
+| Preferred main figure | [Seasonal map-led v5](png/fig7_main_mapled_SVI_20261112_seasonal_v5.png) |
 | Previous map-led layouts | `fig7_main_mapled_SVI_20261105_v1.png`, `_v2.png`, `_v3.png` |
-| All-five-indicator supplement | [Combined supplement](png/fig7_complete_supplement_all_five.png); `fig7_ab_supplement_all_five.png` and `fig7_cd_supplement_all_five.png` |
+| Current all-five-indicator supplement | [Seasonal map supplement v2](png/fig7_ab_supplement_all_five_seasonal_20261112_v2.png) |
+| Previous all-five-indicator supplement | [Combined annual supplement](png/fig7_complete_supplement_all_five.png); `fig7_ab_supplement_all_five.png` and `fig7_cd_supplement_all_five.png` |
 | Earlier expanded four-indicator alternative | `fig7_complete_upgraded.png`, `fig7_ab_upgraded.png`, `fig7_cd_upgraded.png` |
 | Data and audit records | `csv/fig7_*.csv` and `fig7_session_info.txt` |
 
-Use the [Figure 7 review](../../docs/manuscript/FIGURE7_REVIEW.md) for the
-current legend, Target Results and interpretation, and the
+Use the [seasonal-health report](../../docs/manuscript/seasonal_health_rerun_comparison.md)
+for the current legend, Target Results and interpretation. The earlier
+[Figure 7 review](../../docs/manuscript/FIGURE7_REVIEW.md) preserves layout
+decisions, and the
 [production guide](../../code/health_assessment/FIGURES6_7_REVIEW.md#figure-7-review)
 for generation and validation. Do not duplicate manuscript text here.
 

@@ -1,5 +1,7 @@
 # Figure 6 technical review and alternative candidates
 
+**Seasonal candidates, 12 November 2026:** new Green and Target overlays and their revised legends are indexed in the [seasonal-health report](seasonal_health_rerun_comparison.md#seasonal-supplementary-figures-and-legends). Annual figures and descriptions below are preserved for comparison, not silently replaced.
+
 Selected manuscript prose is maintained only in
 [Figures 6–7 manuscript text](FIGURES6_7_MANUSCRIPT_TEXT.md).
 The author has inserted the population-allocation Green30 main figure and

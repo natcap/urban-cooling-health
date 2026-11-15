@@ -1,5 +1,7 @@
 # Figures 6 and 7 manuscript text
 
+**Seasonal update for review (12 November 2026):** new manuscript-layout Figures 6 and 7, seasonal legends and numerical comparisons are in the [seasonal-health report](seasonal_health_rerun_comparison.md#new-manuscript-layout-candidates-12-november-2026). The annual text below is retained for comparison and must not be paired with the new seasonal figures. Word has not been edited.
+
 This is the single editable source for the selected Results and legends; the
 HTML file of the same name is a generated, copy-ready version. Technical
 comparisons remain in [the Figure 6 review](FIGURE6_REVIEW_DRAFTS.md) and
@@ -100,6 +102,8 @@ describe neighbourhood composition, not age-specific mortality. Panels c–d
 are descriptive.
 
 ## Supplementary Figure S6-1 legend
+
+**Annual-version text retained below.** Use the [seasonal supplementary legends](seasonal_health_rerun_comparison.md#seasonal-supplementary-figures-and-legends) for the new S6-1, Extended Data Fig. 3 and S7 PNGs; do not mix reporting periods.
 
 **Supplementary Fig. S6-1 | Neighborhood vulnerability and modelled health
 benefits across general-greening scenarios.** Panels show, from left to right,
