@@ -6,6 +6,14 @@ procedures are not repeated here.
 
 ## Current work
 
+- [Current manuscript index](manuscript/index.md): selected Figures 1–7,
+  copy-ready text, authoritative reports and supporting audits. Start here for
+  manuscript revision rather than searching by file date.
+- [Current manuscript figure folder](../figures/manuscript_current/): one
+  review folder containing the selected main figures and confirmed
+  supplementary candidates, with a source/script/hash manifest.
+- [Reproducibility guide](reproducibility.md): verifies the curated manuscript
+  package separately from a full restricted-data rebuild.
 - [Project TODO](../TODO.md): live priorities at the top; the completed
   model-rebuild ledger below is retained as historical evidence, not as a
   second method guide.

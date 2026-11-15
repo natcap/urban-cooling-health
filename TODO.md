@@ -1,11 +1,24 @@
 # Project TODO and reproduction roadmap
 
-Last reviewed: 11 November 2026 (Figure 3 prescribed/borough version and Figure 1 historical-reference comparison generated; Word review pending)
+Last reviewed: 12 November 2026 (read-only audit of `London urban cooling-ms-1112.docx` and the current Supplement; no Word edits)
+
+## Current candidate-analysis sequence — 13 November
+
+This update records the latest authorized calculations, not a new Word audit, and takes precedence over older blanket holds on health/work-capacity testing below. Other manuscript holds remain unchanged.
+
+- [x] Obtain [three simulated reviewer roles' consensus](docs/manuscript/energy_capacity_consensus.md) on the energy/capacity sequence and adoption limits.
+- [x] Complete and independently check corrected-temperature energy and work-capacity pilots for baseline, Green30 and Target30.
+- [x] Retain conditional 30-day energy and seasonal health; select JJA daily-Tmax capacity at RH45 as the preferred main candidate, with fixed 25/5°C capacity and RH35/RH55 as separate sensitivities. [Results and proposed text](docs/manuscript/energy_capacity_candidate_results.md).
+- [x] Complete all-nine candidate calculations and versioned Figures 4–5; preserve existing outputs. See the [candidate report](docs/manuscript/energy_capacity_candidate_results.md) for Figure 4 v5, Figure 5 v6 and capacity sensitivity v2.
+- [ ] Author review: decide whether to adopt Figure 4 v5, Figure 5 v6 and the conditional-energy/JJA-capacity framing before revising Word. Computational QA does not establish empirical London energy calibration or working-day productivity.
+- [ ] Confirm or regenerate Extended Data Fig. 1 from the seasonal cause-specific health results. The current PNG predates the seasonal-health update and is excluded from the [current figure package](figures/manuscript_current/) to prevent annual and seasonal results from being mixed.
+
+## Previous manuscript and climate milestones
 
 - [x] Download and validate matching WorldClim July 1970–2000 data; retain CHELSA July 2021 as the main reference. [Comparison and scripts](docs/manuscript/figure1_historical_reference_comparison.md).
 - [x] Generate Figure 1 v3: verified transparent histogram insets, displayed-period pooled decile breaks, consistent version filenames; SSP585 SM v02. Preserve earlier versions and matched-WorldClim SM.
-- [ ] Review the updated Figure 1 and legends, assign SM numbering and insert into Word. No Word edit or push performed.
-- [ ] Review Figure 3's new prescribed-condition/equal-borough version and proposed legend/Results. Earlier versions retained; no Word edits or push. [Current decision](docs/manuscript/figure3_climate_uhi_audit.md#current-approved-reporting-version).
+- [x] Insert selected Figure 1 v03 and the combined SSP370–SSP585 comparison in the manuscript package (`Sup. Fig. S1-1`). Remaining: correct the main Fig. 1 legend/cross-reference and add the cross-product qualification; decide whether to insert the matching-WorldClim historical sensitivity or remove that promise from the text.
+- [x] Insert Figure 3 v03 and reconcile its headline Results and Abstract cooling value (0.38°C). Earlier versions remain preserved. Remaining: align the main Methods and Sup. Table 3 with the assumed-setting interpretation. [Current decision](docs/manuscript/figure3_climate_uhi_audit.md#current-approved-reporting-version).
 - [x] Complete the diagnostic UCM climate-parameter pilot for 2021, 2050 and 2070, including the four-station map and baseline-only temperature checks. [Pilot report](docs/manuscript/ucm_climate_parameter_pilot.md).
 - [x] Download and checksum-verify all 60 MIDAS v202607 station-year files for five provisional urban and five provisional rural stations over 2018–2023.
 - [x] Run the quality-controlled six-year station comparison, including primary daily-maximum and supplementary daytime-mean checks, plus night-time, hot-day, elevation, suspect-record and leave-one-station-out sensitivities. Daytime mean corroborates daily maximum; neither validates 5°C as a representative daytime UHI input. [Pilot report](docs/manuscript/ucm_climate_parameter_pilot.md#expanded-six-year-station-check).
@@ -13,7 +26,7 @@ Last reviewed: 11 November 2026 (Figure 3 prescribed/borough version and Figure 
 - [x] Add a bounded Crowd-Grid spatial sensitivity using 2018–2023 July daily maximum/minimum temperatures for London MSOAs and the exact MSOAs containing Wisley, Charlwood and Woburn. It supports 5°C only as an upper-tail nocturnal/stress-test value, not as representative daily-maximum UHI. [Crowd-Grid results](docs/manuscript/ucm_climate_parameter_pilot.md#crowd-grid-spatial-sensitivity).
 - [x] Run a bounded temperature-only `T_ref = 25°C` sensitivity at `UHI_max = 2, 3 and 5°C` for the baseline and nine scenarios. Rankings are identical and Green–Target directions are stable; absolute temperature effects scale with UHI. No health, energy, WBGT or work-capacity outputs were rerun. [Sensitivity results](docs/manuscript/ucm_climate_parameter_pilot.md#temperature-only-uhi-sensitivity).
 - [x] **Author decision, 11 November:** retain 25/5°C and existing production outputs, framed as a prescribed warm-condition stress-test rather than a calibrated 2050 daily-maximum estimate. Keep the 2/3/5°C temperature sensitivity as supporting evidence; no further production reruns are required by this decision.
-- [ ] Align manuscript Methods/Figure 3 wording with the [retained configuration](docs/manuscript/ucm_climate_parameter_pilot.md#retained-manuscript-configuration). Temperature-ranking stability must not be presented as validation of health/work-capacity magnitudes. Word edits remain with the author.
+- [ ] Align manuscript Methods and Sup. Table 3 with the [retained configuration](docs/manuscript/ucm_climate_parameter_pilot.md#retained-manuscript-configuration): define 22/2, 22/5, 25/5 and 28/5°C as assumed warm-climate settings rather than calibrated year-specific projections. Temperature-ranking stability must not be presented as validation of health/work-capacity magnitudes. Figure 3 itself is inserted; Word edits remain with the author.
 - [ ] **Future model improvement, not a current manuscript blocker:** acquire additional quality-controlled urban-background stations before fitting a held-out LCZ/land-cover model. Extend the one-urban/three-rural comparison to at least ten Julys only as a temporal sensitivity. Health and work-capacity sensitivity tests remain on hold.
 
 This document is the live task list. The long numbered sections below also
@@ -21,17 +34,18 @@ preserve the September model-rebuild audit; checked boxes there are completed
 historical steps, not instructions to rerun models. The current equal-area
 Figure 7 and nine-scenario Figure 4/5 outputs exist. Figure 2's temperature
 input is repaired; Figure 6's spatial sensitivity is complete but substantial
-residual dependence remains. Manuscript reconciliation is still outstanding.
+residual dependence remains. The main figures and headline values are reconciled;
+the remaining manuscript wording and Methods gates are listed below.
 The illustrated SVI/spatial report is published on GitHub with all 12 figures
 and source attribution (commit `a39a1f6`).
 
 ## Next actions — current status
 
-**Author holds, 11 November:** defer Abstract revision until all main-text
-sections are addressed. Pause further manuscript-review work and review-driven
-actions until explicitly requested. Saved reviews remain reference material,
-not an active task queue. Current work is limited to the requested Figure 1/3
-clarifications and documentation; no Word edits or push.
+**Author update, 12 November:** audit of the new `ms-1112` version was explicitly
+authorized. The Abstract now uses the reconciled Figure 3–7 headline values and
+the Figure 6 spatial/uncertainty qualification is present. Codex did not edit the
+Word files. Saved independent reviews remain reference material; only the
+specific submission gates below are active.
 
 **11 November follow-up:** two independent narrative/Methods reviews and an
 [editor-style synthesis](docs/manuscript/reviews/editor_synthesis_20261111.md)
@@ -49,18 +63,51 @@ completed author edits need verification, not automatic rewriting.
 
 **Priority 1 — manuscript/submission gates**
 
-1. Reconcile the latest main manuscript and Supplement against final source
-   tables and selected figures. Review the [new two-panel Figure 3 and temperature
-   claims](docs/manuscript/figure3_climate_uhi_audit.md). Word remains author-managed;
-   Abstract revision is deferred until main sections are settled. Later verify Figure 2 baseline framing, Figures 6–7 units,
-   Target/older-population trade-offs and final supplementary cross-references.
-   Record exact CSV rows and distinguish author-confirmed edits from checked text.
-2. Finish the figure/input provenance and access inventory using existing
+**12 November calculation audit:** [findings and feasible fixes](docs/manuscript/health_calculation_nodata_audit.md).
+Annual-death duration and reference-risk convention require resolution. The
+NoData mechanism is now traced to sentinel 0 colliding with the biophysical
+class-0 row, expanding valid intermediate masks. Diagnose/correct in separate
+test outputs before any production replacement. Age-specific modelling is not
+feasible and is excluded from the requested revision scope. Existing outputs
+remain unchanged; daily/seasonal all-age alternatives are documented.
+
+- [x] Complete isolated baseline/Green30 NoData correction and sentinel-invariance test: exact equivalence for corrected 0/255; paired Green30 cooling changes from 0.290959 to 0.298467°C area-weighted.
+- [x] Verify final ONS 2021 monthly counts for 33 boroughs: summer 11,671 / annual 56,944. Preserve as diagnostic data, not replacement production inputs.
+- [x] Verify Yang 2024 Figure 3 Oceanic subgroup 1.020 (1.014–1.026) from the author's supplied screenshot. Remaining: source temperature metric, threshold/domain and lag for seasonal application.
+- [x] Complete isolated baseline/Green30/Target30 seasonal-health pilot and annual/monthly denominator comparison; see `docs/manuscript/health_calculation_nodata_audit.md`. Conditional summer estimates are 80.08/100.49 avoided cases, not approved manuscript replacements.
+- [x] Verify and pilot London all-cause RR 1.039 (1.035–1.043), threshold 18.9°C, daily-mean metric and lags 0–2 for baseline/Green30/Target30. Full-transfer conditional estimates: 38.29/45.99 deaths averted; half-transfer: 20.51/24.97. Production remains unchanged. [Source, assumptions and comparison](docs/manuscript/health_calculation_nodata_audit.md#london-all-cause-response-pilot-12-november-completed-not-adopted).
+- [ ] Agree daily-mean cooling transfer and historical-versus-future reporting target; confirm exact lag implementation before adopting the London response. The pilot is not a calibrated 2050 prediction. Separately decide whether to obtain matching borough-month-cause data or withhold unresolved cause-specific seasonal results. Existing Nomis causes are annual; the inspected borough monthly workbook is all-cause only.
+- [x] Complete available-data daily-mean/canopy checks: 1,002 MSOAs, 551 common JJA dates in 2018–2023, metric comparison and geographic holdout. Neither transfer factor is validated. [Findings, limitations and next decision](docs/manuscript/daily_mean_canopy_validation.md). Keep health production unchanged; next address source-compatible daily extrema/lag and independent canopy-response evidence, or retain explicitly conditional health reporting.
+- [x] Investigate monthly cause data: verified ONS ad hoc 2155 (England-only monthly occurrence counts, detailed ICD codes); documented national-fraction sensitivity and borough custom-request route in the health audit. No public matching borough-month-cause file verified.
+- [x] Read Yang PDF/supplement from local Zotero: mixed temperature metrics, study-specific high-temperature definitions and maximum-risk lag selection; no single London threshold/lag. Flag pooled disease versus all-cause endpoint transfer. No upload needed.
+- [x] Run isolated national cause-specific seasonal scaling for baseline/Green30/Target30; retain existing coefficients only for diagnostic comparability, with age/endpoint limitations. Draft ONS enquiry saved, not sent. See health audit for results and reproduction.
+- [x] Complete corrected Target30 test: exact 0/255 invariance; Target30 remains cooler than Green30 (area-weighted 0.324216 vs 0.298467°C; borough means 0.381402 vs 0.341836°C). Health and all-tier conclusions remain untested; no production replacement authorized.
+
+1. **Close the remaining manuscript/Supplement inconsistencies.** The 12 November
+   audit confirmed Figures 2 and 4–7, per-million units, the Target/older-population
+   trade-off, ACCESS-CM2 and the Abstract headline numbers. Remaining edits:
+   (a) qualify Fig. 1's WorldClim-future minus CHELSA-2021 contrasts and correct
+   its supplementary cross-reference; (b) align Figure 3 Methods and Sup. Table 3
+   with assumed climate settings; (c) change “six LULC scenarios” to nine
+   counterfactual scenarios; (d) standardize Supplementary figure numbering and
+   add the low-effort spatial/descriptive qualifications noted below; (e) use
+   “July mean daily maximum temperature” consistently; and (f) qualify the final
+   Discussion claim about larger benefits in older populations as applying to
+   general greening, because the Target scenarios show the documented trade-off.
+2. **Resolve the two substantive Methods reporting gates.** Clarify the temporal
+   estimand for applying a July temperature contrast to 2021 registered mortality
+   before retaining “annual deaths averted”; document exposure metric, population,
+   lag/threshold and exact selected coefficient for each exposure–response source.
+   Add a concise Statistical analysis subsection covering Figure 2 tests and the
+   Figure 6 GAM specification, diagnostics, displayed range and conditional
+   uncertainty. These are reporting/justification gates first; do not launch a
+   blanket rerun without an author decision.
+3. Finish the figure/input provenance and access inventory using existing
    manifests: exact snapshots, attribution, licence/access class and remaining
    MIDAS source-file matches. Resolve public machine-readable derivative
    permissions separately from already-reviewed rendered figure permissions.
    Collaborator Target opportunity records remain explicitly on hold.
-3. Before submission, check reference validity and claim support, consistent
+4. Before submission, check reference validity and claim support, consistent
    Methods definitions/uncertainty descriptions, required data acknowledgements
    and final journal artwork requirements. Do not reopen the author's Priority 3
    Figure 6 uncertainty review as an immediate modelling task.
@@ -73,26 +120,29 @@ completed author edits need verification, not automatic rewriting.
 3. Add restricted-data-free CI for syntax, links and existing synthetic tests,
    then consolidate the remaining figure-to-script/input index and access guidance.
 
-**Current next decision:** review the Figure 1/3 clarifications and choose the
-climate-comparison framing before further changes. Broader reviews and Abstract
-revision are held as above. Figures 4–5 and Extended Data Fig. 1
-are complete by author confirmation; no new production or health run is warranted.
-Citywide-versus-borough sensitivity and borough boxplots remain Priority 3.
+**Recommended next:** make the remaining Figure 1/3 and scenario-count wording
+edits, then resolve the health temporal estimand and coefficient provenance before
+the final reference/claim audit. Figures 2 and 4–7, Extended Data Figs. 1 and 3,
+and the Abstract headline values are otherwise reconciled. No new production run
+is currently warranted. Citywide-versus-borough sensitivity, borough boxplots and
+expanded Figure 6 spatial presentation remain Priority 3.
 
 ### Do next (scientific and manuscript gates)
 
-**Author update, 10 November:** health Methods comparator/units and GCM-count
-corrections reported done (await next Word verification); Discussion revision
-on hold; Figure 2 sample-size review set aside. Figures 4–5 review and Word
-integration are now author-confirmed complete; see the
+**Verified in `ms-1112`, 12 November:** the health comparator/per-million units,
+three-GCM list, Figures 4–7 and their headline values are present. The remaining
+health Methods issue is the annual temporal estimand and coefficient provenance,
+not the baseline-versus-scenario comparator. Figure 2 sample-size review remains
+set aside. Figures 4–5 review and Word integration are author-confirmed complete;
+see the
 [updated audit/status](docs/manuscript/figure4_5_audit.md). No figure rerun or
 Word edit is authorized by this checklist update. Figure 6 uncertainty remains P3.
 
 **Figure 4–5 implementation completed, 10 November:** corrected London capacity
 mask, conserved borough energy shares, PNG layout updates and supplementary
 aggregation table. Author reports review and Word updates complete; these
-latest Word edits have not been independently rechecked. No UCM/health rerun
-is needed. Prior summaries are archived;
+latest Word edits were independently rechecked in `ms-1112`. No UCM/health
+rerun is needed. Prior summaries are archived;
 old full-domain work-capacity numbers must not be inserted into the manuscript.
 
 **Figure 5 selection:** author approved v3 (bold coloured labels, no boxes).
@@ -114,10 +164,14 @@ undecided. Explicit push approval remains pending.
    as Figures 6 and 7 already did. See the [comparison](docs/manuscript/SVI_SPATIAL_RESULTS.md).
    Scenario/year selection, strict source/model/coverage checks and a dedicated
    Figure 6 diagnostic seed have now been added.
-2. [ ] **Approve and insert the consolidated Figure 6–7 text.** Main Figure 6
-   uses population allocation; main Figure 7 and the supplementary overlays/maps
-   are inserted. Review the [single text source](docs/manuscript/FIGURES6_7_MANUSCRIPT_TEXT.md).
-   Figure 6 uncertainty-wording review is **Priority 3**, not the immediate task.
+2. [x] **Insert the consolidated Figure 6–7 text.** Main Figure 6 uses population
+   allocation; main Figure 7 and the supplementary overlays/maps are inserted.
+   The saved `ms-1112` legend includes the descriptive/spatial-dependence and
+   upstream-uncertainty qualification. Remaining low-effort editorial checks are
+   to add the Figure 2 spatial-dependence caveat, state that Figure 7 panels c–d
+   are descriptive, and use the same conditional-uncertainty qualification for
+   the Green/Target overlay legends. Expanded Figure 6 uncertainty presentation
+   remains **Priority 3**, not an immediate modelling task.
 3. [ ] **Reconcile manuscript claims to saved evidence** (author + analysis).
    Create a claim-to-CSV table for every Abstract, Results and figure-legend
    number: exact source row, unit, scenario/version, deterministic point vs
@@ -266,20 +320,21 @@ edits or model reruns are implied by checking these items.
 - [x] Verify shared SVI/population/health inputs and all saved class counts.
   The read-only consistency test confirms per-million rescaling changes no
   classes; revised PNGs use per-million rates and explicit entry/exit counts.
-- [ ] Review the preferred [Figure 7 v4 PNG](figures/figure7/png/fig7_main_mapled_SVI_20261105_v4.png)
+- [x] Review the preferred [Figure 7 v4 PNG](figures/figure7/png/fig7_main_mapled_SVI_20261105_v4.png)
   and [headline table](figures/figure7/csv/fig7_quantitative_headline_results.csv).
   Use the [canonical production workflow](code/health_assessment/FIGURES6_7_REVIEW.md#figure-7-review),
   not disabled legacy chunks in `equity-health.Rmd`.
 - [x] Update the proposed Figure 7 legend and separate Green/Target Results;
   see the linked review documents rather than duplicating the drafts here.
-- [ ] Approve and insert the proposed text into the manuscript. State that the same LSOAs are paired and Green30 benefit thresholds are
-  held fixed for Target30. Blue means relatively low population-normalized
-  mortality benefit in a high-vulnerability neighbourhood, not low canopy.
-  Distinguish percentages of LSOAs from population-weighted percentages.
+- [x] Approve and insert the proposed Figure 7 text into `ms-1112`. It states
+  that the same LSOAs are paired and Green30 benefit thresholds are held fixed
+  for Target30. Blue means relatively low population-normalized mortality benefit
+  in a high-vulnerability neighbourhood, not low canopy. Reported percentages
+  are percentages of LSOAs, not population-weighted percentages.
 - [x] In the expanded alternatives, replace panel d's initial-low-benefit-only presentation with remained,
   left and newly low counts across all high-vulnerability LSOAs. Export and
   visually check PNGs; retain neither-low counts in the supporting table.
-- [ ] Explicitly report the age-75+ neighbourhood trade-off alongside the
+- [x] Explicitly report the age-75+ neighbourhood trade-off alongside the
   improvements for income deprivation, ethnic-minority composition and SVI.
   Do not describe this as age-specific mortality or improvement for every
   vulnerable group. Review the realized added-canopy audit before claiming
@@ -752,7 +807,7 @@ Complete the remaining work in this order to avoid unnecessary model reruns:
 6. [x] regenerate revised Green30/Target30 LSOA zonal outputs using official `LSOA11CD` (Figure 7 now
    reads this table directly, superseding regeneration of `health_sf.rds`);
 7. [x] run `Rscript code/run-fig7.R` and visually inspect both revised output figures;
-8. reconcile the revised output CSVs with the manuscript text, caption and abstract;
+8. [x] reconcile the revised output CSVs with the manuscript text, caption and abstract;
 9. save the input manifest, run metadata and software environment with the
    publication archive.
 
