@@ -105,7 +105,7 @@ See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#results).
 
 ### Supplementary figure legend
 
-See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#supplementary-figure-s7-legend).
+See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#supplementary-figure-14-legend).
 
 For manuscript placement, see the [three-reviewer recommendations](MANUSCRIPT_ORGANIZATION_REVIEW.md).
 For execution instructions, use the [canonical workflow](../../code/health_assessment/FIGURES6_7_REVIEW.md#figure-7-review).

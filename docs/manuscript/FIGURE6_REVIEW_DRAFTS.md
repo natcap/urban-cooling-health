@@ -102,7 +102,7 @@ as identical or uniformly monotonic curves.
 
 ### Supplementary Fig. S6-1 legend
 
-See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#supplementary-figure-s6-1-legend).
+See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#extended-data-figure-3-legend).
 
 ![Overlaid Green scenario comparison](../../figures/figure6/scenario_comparison/figure6_supplement_green_overlay.png)
 
@@ -111,7 +111,7 @@ Regenerate only this figure, preserving other figures:
 
 ### Extended Data Fig. 3 legend
 
-See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#extended-data-figure-3-legend).
+See the [canonical copy-ready text](FIGURES6_7_MANUSCRIPT_TEXT.md#extended-data-figure-4-legend).
 
 ![Overlaid Target scenario comparison](../../figures/figure6/scenario_comparison/figure6_supplement_target_overlay.png)
 

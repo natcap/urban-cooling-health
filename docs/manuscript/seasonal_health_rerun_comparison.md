@@ -103,7 +103,7 @@ The current seasonal Results and legends are maintained only in the [manuscript-
 
 ### Seasonal supplementary figures and legends
 
-For the current supplementary legends, use the [canonical manuscript draft](FIGURES6_7_MANUSCRIPT_TEXT.md#supplementary-figure-s6-1-legend).
+For the current supplementary legends, use the [canonical manuscript draft](FIGURES6_7_MANUSCRIPT_TEXT.md#extended-data-figure-3-legend).
 
 All three PNGs preserve the previous style and figure dimensions, use the same seasonal run as the new main figures, and leave earlier files unchanged:
 
