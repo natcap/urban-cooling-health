@@ -1,0 +1,48 @@
+{
+  "canopy_codes": [1, 2, 100],
+  "eligible_codes": [4, 20, 21],
+  "pixel_area_m2": 100,
+  "boundary": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.shp",
+  "raster_paths": {
+    "baseline": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_correction_2026-11-12/baseline_nodata0/input.tif",
+    "green10": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/green10_nodata0/input.tif",
+    "green20": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/green20_nodata0/input.tif",
+    "green30": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_correction_2026-11-12/green30_nodata0/input.tif",
+    "target10": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/target10_nodata0/input.tif",
+    "target20": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/target20_nodata0/input.tif",
+    "target30": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_target30_2026-11-12/target30_nodata0/input.tif"
+  },
+  "arguments": {
+    "baseline": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_correction_2026-11-12/baseline_nodata0/arguments.json",
+    "green10": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/green10_nodata0/arguments.json",
+    "green20": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/green20_nodata0/arguments.json",
+    "green30": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_correction_2026-11-12/green30_nodata0/arguments.json",
+    "target10": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/target10_nodata0/arguments.json",
+    "target20": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/target20_nodata0/arguments.json",
+    "target30": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_target30_2026-11-12/target30_nodata0/arguments.json"
+  },
+  "input_md5": {
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_correction_2026-11-12/baseline_nodata0/arguments.json": "f18d9d63cdc90d5d569d39e0fe9c7fc2",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/green10_nodata0/arguments.json": "d0b1e2698241e2c67615168dfb24be6f",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/green20_nodata0/arguments.json": "30ccb2a5eb5ecf4336f6bac818190d07",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_correction_2026-11-12/green30_nodata0/arguments.json": "3df27b2cb5540045f052e9d6733b3a23",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/target10_nodata0/arguments.json": "583ca49db88064072fed35e5eac34d4d",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/target20_nodata0/arguments.json": "cd3764952572c67a951fdf6ceb658803",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_target30_2026-11-12/target30_nodata0/arguments.json": "32392d28da9500e3a7187bdcaa7679f7",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_correction_2026-11-12/baseline_nodata0/input.tif": "9838cc8b926af810da82deff36ea21a6",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/green10_nodata0/input.tif": "78e6c2af2aa9e5df712cb19a0c4c8abf",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/green20_nodata0/input.tif": "1849d47ed138b68a785687d1249637af",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_correction_2026-11-12/green30_nodata0/input.tif": "0f0788a598a643b7299fb5d241f9bb20",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/target10_nodata0/input.tif": "a261074582f8f6e397c5bf7bdb1e52f5",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/remaining_corrected_temperatures_2026-11-12_v1/target20_nodata0/input.tif": "d104ac3ce7fd5a9a75757f9d416b33bd",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/nodata_target30_2026-11-12/target30_nodata0/input.tif": "9de408299e0ff3863ed0c1166ccdba30",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.cpg": "ae3b3df9970b49b6523e608759bc957d",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.dbf": "719cad84a919620f091ae61c9bb1fe84",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.prj": "edfb79da9b8b34f9791950dc7a85f326",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.sbn": "128095523e7c0d6a1225e29d15c533db",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.sbx": "dad9e081de166850f512bb4351287742",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.shp": "9785ae48217fcdb14ca90e12bbc79a07",
+    "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/AOIs/London_Borough_aoi.shx": "b5f74cb5fbc3214f4af720931cbc14ce"
+  },
+  "checks": "Same grid and valid footprint; zero removals or ineligible additions; sources unchanged. Domain-specific pair differences reported separately, not assumed zero."
+}

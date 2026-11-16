@@ -8,6 +8,11 @@ the revised equal-realized-canopy and source-class checks.
 
 ## Current scientific definition
 
+For manuscript-ready realized increases and final canopy shares, use the
+[Table 1 audit](../../docs/manuscript/table1_scenario_canopy.md). It distinguishes
+exact full-raster Green/Target budgets from small London-boundary edge differences;
+the 10/20/30 labels are nominal, not exact realized percentage increases.
+
 The revised comparison uses one canopy-accounting definition for every Green
 and Target scenario, while retaining their different spatial designs:
 

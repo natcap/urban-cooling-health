@@ -1,0 +1,7 @@
+"domain","tier","green_added_pixels","target_added_pixels","difference_pixels","difference_pct"
+"valid_raster_footprint",10,307768,307768,0,0
+"valid_raster_footprint",20,595084,595084,0,0
+"valid_raster_footprint",30,894249,894249,0,0
+"london_boundary_pixel_centres",10,307746,307702,-44,-0.0142975050853626
+"london_boundary_pixel_centres",20,595040,594965,-75,-0.0126041946759882
+"london_boundary_pixel_centres",30,894176,894058,-118,-0.0131965071753212

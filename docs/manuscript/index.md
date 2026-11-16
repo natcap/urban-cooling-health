@@ -8,6 +8,7 @@ diagnostics and historical comparisons in supporting roles.
 
 | Figures | Open first | What it contains |
 |---|---|---|
+| Table 1 | [Scenario descriptions and realized canopy](table1_scenario_canopy.html) | Six Green/Target rows, final-raster canopy audit, nominal versus realized increases and boundary qualification |
 | 1 | [Historical-reference and Figure 1 report](figure1_historical_reference_comparison.html) | Selected main/supplementary versions, legend, Results and climate-reference decisions |
 | 2 | [Current figure package](../../figures/manuscript_current/readme.md) | Selected July 2021 baseline-temperature and corrected-SVI tree-cover figure; source script is `code/equity-temp-tcc.Rmd` |
 | 3 | [Climate/UHI audit](figure3_climate_uhi_audit.html) | Selected v03, conditional-setting interpretation, legend, Results and provenance |
