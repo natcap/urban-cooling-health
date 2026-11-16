@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_utc": "2026-11-15T02:59:52.115385+00:00",
+  "generated_utc": "2026-11-16T02:06:00.025477+00:00",
   "generator": "code/workflows/build_current_figure_package.py",
-  "generator_commit": "8e69306b3d9de2bade0e60c193fd8ce1a36df64c",
+  "generator_commit": "4df4d0ecf79690efd5c2312f6d43ae5ecdb99710",
   "configuration": {
     "path": "code/workflows/configs/manuscript_figure_package_2026-11-13.csv",
-    "sha256": "074d0526f92541f72ec5d7ca0c5f809369feecf50404be9a675a2c1684984abd"
+    "sha256": "7ccaa1d959b962062ca2fc22693e2cf9ed7e1d032970cfb05f0e94db19ebccfa"
   },
   "assets": [
     {
@@ -55,8 +55,8 @@
     },
     {
       "asset": "figure_06_green30_health_equity_seasonal_v02.png",
-      "role": "Main Figure 6",
-      "status": "selected seasonal candidate",
+      "role": "Figure 6 comparison version",
+      "status": "previous five-indicator seasonal layout",
       "source": "${PROJECT_ROOT}/figures/figure6/manuscript/equity_health_All_cause_gam_Green30_20261112_10_per_million_population_full_prediction_seasonal_v2.png",
       "generator": "code/health_assessment/plot_seasonal_manuscript_figures.R",
       "source_sha256": "009f9baf9392a4d3d55b9552fd70ccb24f7a973ef39164f877a8da486c641c7b",
@@ -64,12 +64,39 @@
     },
     {
       "asset": "figure_07_green30_target30_equity_seasonal_v05.png",
-      "role": "Main Figure 7",
-      "status": "selected seasonal candidate",
+      "role": "Figure 7 comparison version",
+      "status": "previous four-panel seasonal layout",
       "source": "${PROJECT_ROOT}/figures/figure7/png/fig7_main_mapled_SVI_20261112_seasonal_v5.png",
       "generator": "code/health_assessment/plot_seasonal_manuscript_figures.R",
       "source_sha256": "67e4c1e8ce701bc6e2fd285f4fae5966c6c05204ee78e1f63d605324b1f9c929",
       "curated_sha256": "67e4c1e8ce701bc6e2fd285f4fae5966c6c05204ee78e1f63d605324b1f9c929"
+    },
+    {
+      "asset": "figure_06_svi_green30_target30_seasonal_v03.png",
+      "role": "Main Figure 6",
+      "status": "selected two-panel SVI candidate",
+      "source": "${PROJECT_ROOT}/figures/figure6/manuscript/figure6_svi_green30_target30_seasonal_v03.png",
+      "generator": "code/health_assessment/plot_seasonal_manuscript_figures.R",
+      "source_sha256": "151982a946bde762760aeae3fc9a44e6f5563a8f702d8d1e07443edd185fbf52",
+      "curated_sha256": "151982a946bde762760aeae3fc9a44e6f5563a8f702d8d1e07443edd185fbf52"
+    },
+    {
+      "asset": "figure_07_svi_main_seasonal_v06.png",
+      "role": "Main Figure 7",
+      "status": "selected three-panel SVI candidate",
+      "source": "${PROJECT_ROOT}/figures/figure7/png/figure7_svi_main_seasonal_v06.png",
+      "generator": "code/health_assessment/plot_seasonal_manuscript_figures.R",
+      "source_sha256": "5bc78b224f90acb9aa4dc2a9bbc43eea0473cda606c02f6f3917b052135d52d0",
+      "curated_sha256": "5bc78b224f90acb9aa4dc2a9bbc43eea0473cda606c02f6f3917b052135d52d0"
+    },
+    {
+      "asset": "supp_figure_15_indicator_shares_seasonal_v01.png",
+      "role": "Supplementary Figure 15",
+      "status": "selected; former panel d",
+      "source": "${PROJECT_ROOT}/figures/figure7/png/figure7_supp_indicator_shares_seasonal_v01.png",
+      "generator": "code/health_assessment/plot_seasonal_manuscript_figures.R",
+      "source_sha256": "1ea8dd35c82a37d7c1dd1daceaba0f6c9a8ab2fc9f63f636f8f0c4b40b5e52f3",
+      "curated_sha256": "1ea8dd35c82a37d7c1dd1daceaba0f6c9a8ab2fc9f63f636f8f0c4b40b5e52f3"
     },
     {
       "asset": "figure_04_citywide_cobenefits_v04.png",
@@ -207,8 +234,8 @@
       "curated_sha256": "3089fd19d571452ac5e54ea2c6fde5f210b53d6e0cc35d5a9e2a8774f5326d19"
     },
     {
-      "asset": "supp_figure_s6_1_green_scenarios_seasonal_v02.png",
-      "role": "Supplementary Figure S6-1",
+      "asset": "extended_data_figure_03_green_scenarios_seasonal_v02.png",
+      "role": "Extended Data Figure 3",
       "status": "selected",
       "source": "${PROJECT_ROOT}/figures/figure6/scenario_comparison/figure6_supplement_green_overlay_seasonal_20261112_v2.png",
       "generator": "code/health_assessment/plot_seasonal_supplement_figures.R",
@@ -216,8 +243,8 @@
       "curated_sha256": "9b23b46b22617b25dade36244c194ac0fcc0b794595baef97c47f7d35fefe41d"
     },
     {
-      "asset": "extended_data_figure_03_target_scenarios_seasonal_v02.png",
-      "role": "Extended Data Figure 3",
+      "asset": "extended_data_figure_04_target_scenarios_seasonal_v02.png",
+      "role": "Extended Data Figure 4",
       "status": "selected",
       "source": "${PROJECT_ROOT}/figures/figure6/scenario_comparison/figure6_supplement_target_overlay_seasonal_20261112_v2.png",
       "generator": "code/health_assessment/plot_seasonal_supplement_figures.R",
@@ -225,8 +252,8 @@
       "curated_sha256": "98b4f21b0704c0a811d4fe84feebb01772632ea7a0dac0cc31e47893ac99cd3f"
     },
     {
-      "asset": "supp_figure_s7_equity_maps_seasonal_v02.png",
-      "role": "Supplementary Figure S7",
+      "asset": "supp_figure_14_equity_maps_seasonal_v02.png",
+      "role": "Supplementary Figure 14",
       "status": "selected",
       "source": "${PROJECT_ROOT}/figures/figure7/png/fig7_ab_supplement_all_five_seasonal_20261112_v2.png",
       "generator": "code/health_assessment/plot_seasonal_supplement_figures.R",

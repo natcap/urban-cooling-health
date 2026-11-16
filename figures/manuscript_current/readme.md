@@ -25,11 +25,14 @@ machine-readable derivative data.
 | Main Figure 3 | [figure_03_conditional_cooling_v03.png](figure_03_conditional_cooling_v03.png) | selected |
 | Main Figure 4 | [figure_04_citywide_cobenefits_v05.png](figure_04_citywide_cobenefits_v05.png) | current candidate; author adoption pending |
 | Main Figure 5 | [figure_05_borough_cobenefits_v06.png](figure_05_borough_cobenefits_v06.png) | current candidate; author adoption pending |
-| Main Figure 6 | [figure_06_green30_health_equity_seasonal_v02.png](figure_06_green30_health_equity_seasonal_v02.png) | selected seasonal candidate |
-| Main Figure 7 | [figure_07_green30_target30_equity_seasonal_v05.png](figure_07_green30_target30_equity_seasonal_v05.png) | selected seasonal candidate |
+| Main Figure 6 | [figure_06_svi_green30_target30_seasonal_v03.png](figure_06_svi_green30_target30_seasonal_v03.png) | selected two-panel SVI candidate |
+| Main Figure 7 | [figure_07_svi_main_seasonal_v06.png](figure_07_svi_main_seasonal_v06.png) | selected three-panel SVI candidate |
 
 ## Supplementary and sensitivity figures
 
+- **Figure 6 comparison version** — [figure_06_green30_health_equity_seasonal_v02.png](figure_06_green30_health_equity_seasonal_v02.png) (previous five-indicator seasonal layout)
+- **Figure 7 comparison version** — [figure_07_green30_target30_equity_seasonal_v05.png](figure_07_green30_target30_equity_seasonal_v05.png) (previous four-panel seasonal layout)
+- **Supplementary Figure 15** — [supp_figure_15_indicator_shares_seasonal_v01.png](supp_figure_15_indicator_shares_seasonal_v01.png) (selected; former panel d)
 - **Figure 4 comparison version** — [figure_04_citywide_cobenefits_v04.png](figure_04_citywide_cobenefits_v04.png) (previous JJA-capacity label version)
 - **Figure 5 comparison version** — [figure_05_borough_cobenefits_v05.png](figure_05_borough_cobenefits_v05.png) (previous JJA-capacity label version)
 - **Figure 4 comparison version** — [figure_04_citywide_cobenefits_v03.png](figure_04_citywide_cobenefits_v03.png) (superseded fixed-condition capacity candidate)
@@ -45,9 +48,9 @@ machine-readable derivative data.
 - **Figure 3 borough sensitivity** — [supp_figure_03_borough_distribution_v02.png](supp_figure_03_borough_distribution_v02.png) (candidate)
 - **Work-capacity sensitivity** — [supp_capacity_sensitivity_v02.png](supp_capacity_sensitivity_v02.png) (candidate)
 - **Work-capacity temperature context** — [diagnostic_capacity_temperature_context_v01.png](diagnostic_capacity_temperature_context_v01.png) (diagnostic context; not a manuscript figure)
-- **Supplementary Figure S6-1** — [supp_figure_s6_1_green_scenarios_seasonal_v02.png](supp_figure_s6_1_green_scenarios_seasonal_v02.png) (selected)
-- **Extended Data Figure 3** — [extended_data_figure_03_target_scenarios_seasonal_v02.png](extended_data_figure_03_target_scenarios_seasonal_v02.png) (selected)
-- **Supplementary Figure S7** — [supp_figure_s7_equity_maps_seasonal_v02.png](supp_figure_s7_equity_maps_seasonal_v02.png) (selected)
+- **Extended Data Figure 3** — [extended_data_figure_03_green_scenarios_seasonal_v02.png](extended_data_figure_03_green_scenarios_seasonal_v02.png) (selected)
+- **Extended Data Figure 4** — [extended_data_figure_04_target_scenarios_seasonal_v02.png](extended_data_figure_04_target_scenarios_seasonal_v02.png) (selected)
+- **Supplementary Figure 14** — [supp_figure_14_equity_maps_seasonal_v02.png](supp_figure_14_equity_maps_seasonal_v02.png) (selected)
 
 See [`docs/manuscript/index.md`](../../docs/manuscript/index.md) for the current legends,
 Results text and scientific qualifications. The included Extended Data Fig. 1 is the

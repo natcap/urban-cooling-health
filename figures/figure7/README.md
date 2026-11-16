@@ -7,9 +7,11 @@ Earlier versions are retained for comparison, not overwritten or deleted.
 
 | Review purpose | File |
 |---|---|
-| Preferred main figure | [Seasonal map-led v5](png/fig7_main_mapled_SVI_20261112_seasonal_v5.png) |
+| Preferred main figure | [Seasonal SVI v6, panels a–c](png/figure7_svi_main_seasonal_v06.png) |
+| Supplementary Fig. 15 | [Former panel d, standalone v1](../manuscript_current/supp_figure_15_indicator_shares_seasonal_v01.png) |
+| Previous four-panel seasonal figure | [Seasonal map-led v5](png/fig7_main_mapled_SVI_20261112_seasonal_v5.png) |
 | Previous map-led layouts | `fig7_main_mapled_SVI_20261105_v1.png`, `_v2.png`, `_v3.png` |
-| Current all-five-indicator supplement | [Seasonal map supplement v2](png/fig7_ab_supplement_all_five_seasonal_20261112_v2.png) |
+| Supplementary Fig. 14 | [Seasonal map supplement v2](../manuscript_current/supp_figure_14_equity_maps_seasonal_v02.png) |
 | Previous all-five-indicator supplement | [Combined annual supplement](png/fig7_complete_supplement_all_five.png); `fig7_ab_supplement_all_five.png` and `fig7_cd_supplement_all_five.png` |
 | Earlier expanded four-indicator alternative | `fig7_complete_upgraded.png`, `fig7_ab_upgraded.png`, `fig7_cd_upgraded.png` |
 | Data and audit records | `csv/fig7_*.csv` and `fig7_session_info.txt` |

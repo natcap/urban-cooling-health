@@ -160,7 +160,7 @@ def build(
 
     fields = ["asset", "role", "status", "source", "generator", "source_sha256", "curated_sha256"]
     with (output / "manifest.csv").open("w", newline="", encoding="utf-8") as target:
-        writer = csv.DictWriter(target, fieldnames=fields)
+        writer = csv.DictWriter(target, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(records)
     metadata = {
