@@ -37,6 +37,20 @@ urban-cooling-health/
 Start with the links below rather than inferring which script to run from a
 filename. Large source/model data are kept outside this repository.
 
+## Key input data
+
+| Input | What it contributes | Detailed documentation |
+|---|---|---|
+| Land cover and tree canopy | UKCEH LCM2023 land cover plus the project's 2024 canopy overlay define the baseline and planting eligibility. Codes 1–21 are land-cover classes; 100 is the project canopy class. | [Complete code–name table and scenario roles](code/lc_scenarios/README.md#complete-land-cover-code-list) |
+| Climate and weather | CHELSA July 2021 provides the recent historical reference; WorldClim projections and MIDAS station weather support reconstructed daily summer exposures. | [Temperature reconstruction and assumptions](docs/manuscript/temperature_reconstruction_comparison.md) |
+| Population and mortality | Fixed WorldPop 2021 population and ONS/Nomis borough deaths support population-based mortality allocation; seasonal estimates additionally use cause-specific monthly mortality fractions. | [Population and annual mortality selection](code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md) and [seasonal-health analysis](docs/manuscript/seasonal_health_rerun_comparison.md) |
+| Neighbourhood vulnerability | The four-dimension Social Vulnerability Index (SVI) and its component indicators support targeting and neighbourhood equity comparisons. | [SVI construction and comparison](docs/manuscript/SVI_SPATIAL_RESULTS.md) |
+| Buildings and electricity demand | Colouring Britain building footprints, demand-response assumptions and tariffs support conditional electricity-saving estimates. | [Energy inputs and allocation](docs/manuscript/energy_capacity_candidate_results.md) |
+
+For storage locations and raw-versus-derived data handling, see the
+[data directory guide](data/README.md). Use the linked stage documentation and
+run manifests for exact input versions; this overview is not a download inventory.
+
 ## Where to start
 
 ### Run-version clarification — 10 November 2026
