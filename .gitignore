@@ -7,6 +7,9 @@ docs/*
 !docs/README.md
 !docs/reproducibility.md
 !docs/WORKFLOW.md
+!docs/archive/
+docs/archive/*
+!docs/archive/todo_history_20261118.md
 !docs/methods/
 docs/methods/*
 !docs/methods/FUTURE_WORK_CAPACITY_METHOD.md
@@ -182,3 +185,7 @@ rsconnect/
 # Environmental variables
 .env
 ../slurm-*.out
+
+# Navigation is public; local Word review artifacts are not.
+!figures/README.md
+docs/manuscript/reviews/word_review_copies/

@@ -14,9 +14,9 @@ procedures are not repeated here.
   supplementary candidates, with a source/script/hash manifest.
 - [Reproducibility guide](reproducibility.md): verifies the curated manuscript
   package separately from a full restricted-data rebuild.
-- [Project TODO](../TODO.md): live priorities at the top; the completed
-  model-rebuild ledger below is retained as historical evidence, not as a
-  second method guide.
+- [Project TODO](../TODO.md): current priorities. The separate
+  [historical ledger](archive/todo_history_20261118.md) preserves earlier
+  milestones and technical tasks, not a second current task list.
 - [Full workflow map](WORKFLOW.md): ordered source-to-figure stages and links
   to the authoritative procedures.
 - [Manuscript revision brief](manuscript/MANUSCRIPT_REVISION_BRIEF.md): recent
@@ -55,3 +55,9 @@ procedures are not repeated here.
 The imported `London-MS-edit` chat context is kept locally in
 `docs/conversation-imports/`. That folder is ignored by Git; it is background
 context rather than a required reproducibility input.
+
+Local Word review copies are grouped in
+`manuscript/reviews/word_review_copies/`, with a local index and hash-verified
+move manifest. They are ignored by Git and are not the author's current Word
+sources. Canonical Markdown/HTML remains in `manuscript/`; do not copy review
+text into multiple authoritative documents.

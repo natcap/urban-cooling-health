@@ -8,8 +8,10 @@ analyses from remaining scientific and release decisions.
 
 The analysis holds **2021 population and registered mortality fixed** while
 evaluating mid-century temperature scenarios. The primary manuscript setting
-is 25°C; 28°C is a sensitivity. These are not projections of London's 2050
-population or mortality. Scenario names and display labels are defined in
+uses assumed 25/5°C reference-temperature/UHI conditions for cooling contrasts;
+seasonal health and work capacity use reconstructed daily summer exposures.
+The 28/5°C setting is an additional assumed climate comparison. These are not
+projections of London's 2050 population or mortality. Display labels are defined in
 [`code/func_colors.R`](code/func_colors.R); the current comparison includes
 baseline, AllBuilt, TreeRisk, TreeOpp, Green10/20/30 and Target10/20/30.
 
@@ -35,7 +37,8 @@ urban-cooling-health/
 ```
 
 Start with the links below rather than inferring which script to run from a
-filename. Large source/model data are kept outside this repository.
+filename. Large local data are ignored by Git; additional source/model data
+live in the external project store. Neither is included in a Git push.
 
 ## Key input data
 
