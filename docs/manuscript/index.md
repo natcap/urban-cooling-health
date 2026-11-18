@@ -22,6 +22,8 @@ The included Extended Data Fig. 1 is a pre-seasonal comparison version, not a co
 
 ## Scientific decisions and supporting audits
 
+- [Target-scenario Supplementary Methods](targeted_scenarios_methods.html): corrected site-count terminology and final canopy-budget construction; complements Table 1 without repeating its canopy-share table.
+
 - [Current priority list](../../TODO.md): outstanding author decisions and
   release gates.
 - [Health calculation and NoData audit](health_calculation_nodata_audit.md):
@@ -30,7 +32,7 @@ The included Extended Data Fig. 1 is a pre-seasonal comparison version, not a co
   authoritative health estimates and equity findings.
 - [Monthly outcome alignment](monthly_outcome_alignment.html): why JJA health
   and capacity were selected and why energy remains conditional.
-- [Figure 6 spatial sensitivity](SVI_SPATIAL_RESULTS_offline.html): descriptive
+- [Figure 6 spatial sensitivity](SVI_SPATIAL_RESULTS.md): descriptive
   versus spatially adjusted associations.
 - [Figure 7 review](FIGURE7_REVIEW.md): historical layout decisions and
   interpretation details; use the canonical Figure 6–7 draft for current wording.

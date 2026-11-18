@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Main and Supplementary Methods: targeted greening</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="report-light.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Main and Supplementary Methods: targeted greening</h1>
+</header>
+<h1 id="main-and-supplementary-methods-targeted-greening-scenarios">Main
+and Supplementary Methods: targeted greening scenarios</h1>
+<p>Reconciled on 16 November 2026 against the final Target-generation
+manifest, generator code and <a
+href="table1_scenario_canopy.md">final-raster Table 1 audit</a>. <a
+href="targeted_scenarios_methods.html">HTML copy-ready version</a>. Word
+files and model outputs remain unchanged.</p>
+<h2 id="proposed-main-text-description">Proposed main-text
+description</h2>
+<p>Place after “(6) Transformative greening (Green30)” and before
+“Modeling co-benefits”. Construction details remain in Supplementary
+Methods; realized canopy amounts remain in Table 1.</p>
+<p><strong>(7–9) Vulnerability-targeted greening (Target10, Target20 and
+Target30).</strong> We prioritized screened street-tree planting
+locations using the product of normalized afternoon Universal Thermal
+Climate Index (UTCI) and neighbourhood SVI percentile. Eligible
+non-canopy cells were converted in priority order until added-canopy
+area matched Green10, Green20 or Green30, respectively, across the full
+raster footprint. Scenario names denote nominal targets; realized canopy
+increases and small London-boundary matching differences are reported in
+Table 1. These scenarios compare the distribution of benefits under
+proximity-based and vulnerability-targeted allocation at approximately
+equal canopy amounts. Candidate screening and rasterization procedures
+are detailed in Supplementary Methods.</p>
+<h2 id="proposed-supplementary-methods-opening">Proposed Supplementary
+Methods opening</h2>
+<p>We developed three vulnerability-targeted greening scenarios
+(Target10, Target20 and Target30) that prioritize locations with jointly
+elevated heat exposure and social vulnerability. The scenario labels
+denote nominal canopy-increase targets; realized additions were matched
+to the corresponding Green scenarios across the full raster footprint,
+rather than set by a prescribed number of trees. Realized relative
+increases and final London canopy-cover shares are reported in Table
+1.</p>
+<h2 id="proposed-supplementary-methods-step-4">Proposed Supplementary
+Methods step 4</h2>
+<p><strong>4) Generation of targeted greening scenarios.</strong> The
+screened dataset contained 3,378,103 candidate planting points. We
+processed points in priority order, resolving tied ranks by ascending
+feature identifier (FID). A candidate contributed a new canopy cell only
+if the centre of its containing 10 m × 10 m cell lay strictly within 5 m
+of the point and the baseline cell represented improved grassland, urban
+or suburban land (codes 4, 20 and 21). Cells already accepted were not
+counted again, and existing canopy (codes 1, 2 and 100) was retained.
+Accepted cells were converted to canopy code 100 until the realized
+added-canopy budget of the corresponding Green scenario was reached.
+This produced nested Target10, Target20 and Target30 scenarios with
+307,768, 595,084 and 894,249 unique new canopy cells, equivalent to
+30.7768, 59.5084 and 89.4249 km² across the full raster footprint. These
+are modelled canopy-cell counts, not estimates of the number of physical
+trees required. Within the London borough boundary, Target canopy
+increases were 9.61%, 18.57% and 27.91%, respectively; added areas
+differed from their Green counterparts by less than 0.015% because of
+boundary exclusions (Table 1).</p>
+<h2 id="reconciliation-of-counts">Reconciliation of counts</h2>
+<table style="width:99%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>Quantity</th>
+<th style="text-align: right;">Target10</th>
+<th style="text-align: right;">Target20</th>
+<th style="text-align: right;">Target30</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Historical trial feature counts quoted in the Supplement</td>
+<td style="text-align: right;">565,000</td>
+<td style="text-align: right;">1,129,000</td>
+<td style="text-align: right;">1,819,000</td>
+<td>Superseded trial selections, not counts used to stop final
+generation</td>
+</tr>
+<tr>
+<td>Ranked candidate prefix through final cutoff</td>
+<td style="text-align: right;">636,851</td>
+<td style="text-align: right;">1,252,107</td>
+<td style="text-align: right;">1,890,953</td>
+<td>Zero-based sorted-record cutoff plus one; includes rejected and
+duplicate-cell candidates, not accepted sites</td>
+</tr>
+<tr>
+<td>Final accepted unique canopy cells</td>
+<td style="text-align: right;">307,768</td>
+<td style="text-align: right;">595,084</td>
+<td style="text-align: right;">894,249</td>
+<td>One retained contributing candidate per new cell in this
+implementation; the reporting unit is canopy cells</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the figures differ.</strong> Final generation skips
+candidates without an eligible new cell and counts duplicate cells only
+once. It stops at the matched raster-area budget, not at the historical
+trial point count. Processing the first 636,851 ranked records, for
+example, yields 307,768 accepted cells for Target10. Prefix sizes are
+determined by the cutoff’s position in the sorted list, not its
+<code>rank</code> value or original source-row number; ties make these
+different. Batch processing can read beyond a scenario cutoff, so these
+are prefixes through the last accepted candidate, not total
+computational records read.</p>
+<p>The old figures came from
+<code>tree_equity_scenario710v2.gpkg</code>,
+<code>tree_equity_scenario730v2.gpkg</code> and
+<code>tree_equity_scenario730v3.gpkg</code>, as recorded in the <a
+href="../../code/lc_scenarios/TARGET_OPPORTUNITY_METHOD_AUDIT.md">historical
+candidate audit</a>. Keep them as historical provenance only. The final
+manifest does not justify replacing them with new physical-tree totals.
+A 5 m candidate radius is a raster acceptance rule: the counted area is
+100 m² per accepted grid cell, not an exact circular crown area. Any
+area-to-tree-equivalent calculation would require a separately stated
+crown-size assumption and should not be called a site count.</p>
+<h2 id="scope-and-consistency-notes">Scope and consistency notes</h2>
+<ul>
+<li>Replace the Supplement’s opening claim of exact 10%, 20% and 30%
+realized increases with the proposed opening above.</li>
+<li>Replace step 4 in full, including the duplicated “using average
+crown-size assumptions” wording and the historical tree-site counts.
+Steps 1–3 are not rewritten here; their upstream point screening and
+UTCI–SVI scoring are collaborator-described methods, not independently
+recreated by this reconciliation.</li>
+<li>Do not use the source-code transition counts (e.g., 21,412 grassland
+cells in Target10) as planting-site counts.</li>
+<li>Exact budget matching refers to the full raster footprint. Use the
+linked Table 1 audit for London-boundary areas, final cover shares and
+the common denominator; do not duplicate that table here.</li>
+<li>The nominal labels can remain for continuity, but Green/Target
+descriptions and figure legends must not imply exact realized 10/20/30%
+increases or exact matching after London-boundary clipping.</li>
+</ul>
+<h2 id="evidence-and-reproducibility">Evidence and reproducibility</h2>
+<p>Final construction source, relative to
+<code>URBAN_COOLING_DATA_ROOT</code>:</p>
+<pre class="text"><code>1_preprocess/UrbanCoolingModel/OfficialWorkingInputs/LULC/lc_tree_equity_scenarios_output/revised_v2_rank_fid_equal_area_2026-09-10/target_scenario_manifest_revised.json</code></pre>
+<p>The manifest records 3,378,103 candidates, <code>(rank, FID)</code>
+ordering, 5 m radius, eligible and canopy codes, per-scenario budgets,
+cutoffs, raster hashes and nested-scenario QA. The candidate-prefix
+totals above are <code>sorted_record_index_zero_based + 1</code> for
+each scenario. Generator: <a
+href="../../code/lc_scenarios/generate_target_scenarios.py">generate_target_scenarios.py</a>,
+especially candidate filtering, unique-cell acceptance and cutoff
+recording. Final-raster verification: <a
+href="../../code/lc_scenarios/audit_table1_canopy.R">audit_table1_canopy.R</a>;
+its measured full-raster additions agree exactly with the construction
+manifest. No scenario regeneration was needed for this correction.</p>
+</body>
+</html>

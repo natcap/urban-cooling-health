@@ -108,6 +108,10 @@ The external review supported outcome-specific periods and JJA daily-Tmax capaci
 - On the exact capacity support, the fixed-condition baseline is 4.035°C warmer on average than the daily JJA reconstruction (28.561 versus 24.525°C), and its capacity changes are about 2.4–2.5 times larger for Green30 and Target30. This is a comparison of different estimands, not proof that one estimate is biased solely by the temperature difference; daily distribution and nonlinear evaluation also differ.
 - RH35, RH45 and RH55 are separate sensitivity scenarios, not endpoints of an uncertainty interval. They must not be reported as a range or confidence interval.
 
+### Humidity parameter provenance
+
+Verified 18 November 2026: [RH-estimate.Rmd](../../code/RH-estimate.Rmd) converts ERA5-Land monthly 2-m dew point to vapour pressure. Its saved London-bounding-box July summaries for 2018–2024 average 1.436755 kPa. Using the script's Magnus–Tetens saturation-pressure expression at the assumed reference temperature of 25°C gives RH = 45.3603%, supporting the selected rounded 45%. This is a reconstructed justification, not a recovered execution record of the original parameter-selection step: the optional RH calculation is commented out, and production supplies 45 directly. No verified WorldClim Tmean/Tmax calculation selects that parameter. Seasonal capacity uses reconstructed daily Tmax with RH held fixed, not daily reconstructed humidity. Source summary (local, not distributed here): `data/era5_land_climate_data/era5_outputs/ERA5Land_London_AOI_monthly_summaries.csv`. The author has incorporated the justification into Supplement S4; this audit did not rerun or change results.
+
 ### Supplementary capacity figure and legend
 
 ![Capacity sensitivity candidate v2](../../figures/manuscript_current/supp_capacity_sensitivity_v02.png)

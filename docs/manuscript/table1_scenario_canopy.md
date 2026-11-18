@@ -42,6 +42,8 @@ The boundary differences are 44, 75 and 118 cells, respectively. They do not con
 
 ## Verification and reproduction
 
+For corrected Supplementary Methods wording and the distinction between historical tree-site counts, ranked candidate prefixes and final canopy cells, see the [Target-scenario reconciliation](targeted_scenarios_methods.md).
+
 **Source trace:** corrected temperature-run `arguments.json` files identify the actual LULC inputs for baseline, Green30 and Target30 in the two NoData diagnostic folders, and Green10/20 and Target10/20 in the remaining-corrected-temperatures folder. Exact paths, argument files, boundary components and MD5 hashes are recorded in [provenance](data/table1_canopy_provenance.json).
 
 **Checks passed:** all seven rasters have identical grids and NoData footprints; EPSG:27700, 10 m cells (100 m²); zero canopy removals; zero ineligible additions; fixed denominator within each audit domain; exact Green–Target matching over the full footprint; all source hashes unchanged after counting. The complete [counts](data/table1_canopy_audit.csv) and [pair differences](data/table1_canopy_budget_checks.csv) retain unrounded values. Confidence: suitable for manuscript reporting with the stated nominal-target and boundary qualifications.

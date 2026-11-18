@@ -402,6 +402,8 @@ differ.</li>
 endpoints of an uncertainty interval. They must not be reported as a
 range or confidence interval.</li>
 </ul>
+<h3 id="humidity-parameter-provenance">Humidity parameter provenance</h3>
+<p>Verified 18 November 2026: <a href="../../code/RH-estimate.Rmd">RH-estimate.Rmd</a> converts ERA5-Land monthly 2-m dew point to vapour pressure. Its saved London-bounding-box July summaries for 2018–2024 average 1.436755 kPa. Using the script's Magnus–Tetens saturation-pressure expression at the assumed reference temperature of 25°C gives RH = 45.3603%, supporting the selected rounded 45%. This is a reconstructed justification, not a recovered execution record of the original parameter-selection step: the optional RH calculation is commented out, and production supplies 45 directly. No verified WorldClim Tmean/Tmax calculation selects that parameter. Seasonal capacity uses reconstructed daily Tmax with RH held fixed, not daily reconstructed humidity. Source summary (local, not distributed here): <code>data/era5_land_climate_data/era5_outputs/ERA5Land_London_AOI_monthly_summaries.csv</code>. The author has incorporated the justification into Supplement S4; this audit did not rerun or change results.</p>
 <h3 id="supplementary-capacity-figure-and-legend">Supplementary capacity
 figure and legend</h3>
 <figure>
