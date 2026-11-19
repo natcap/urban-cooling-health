@@ -1,12 +1,36 @@
-# Cardiovascular and respiratory temperature–mortality responses
+# Temperature–mortality responses: adopted inputs and supporting evidence
 
-Quick targeted literature search and extraction, 12 November 2026. This is a shortlist, not a systematic review. No production coefficients or outputs have been changed. Extracted estimates are **not interchangeable**: their exposure contrasts and age coverage differ.
+Updated 18 November 2026. The main Table 2 below reports the five Gasparrini coefficients adopted in the seasonal-health analysis. The earlier search and pilot record is preserved below as historical provenance, not as current implementation instructions. This is a targeted evidence compilation, not a systematic review. Supporting estimates are **not interchangeable**: exposure contrasts, outcome definitions and age coverage differ.
+
+## Corrected main Table 2 — ready for manuscript use
+
+[Download the separate Word table](table2_adopted_seasonal_health_responses.docx). Original manuscript unchanged.
+
+**Table 2 | Exposure–response coefficients used to estimate heat-related mortality.** Relative risks (RRs) describe the change in mortality per 1°C increase above the London threshold of 24.7°C in the mean of current- and previous-day maximum air temperature (Tmax). Estimates are pooled all-age slopes for England and Wales from Gasparrini et al. (2012), applied with the source study’s London threshold.
+
+| ICD-10 code / coverage | Cause of death | Relative risk per 1°C (RR) | 95% confidence interval | Source |
+|---|---|---:|---|---|
+| All causes | All-cause mortality | 1.021 | 1.016–1.026 | Gasparrini et al. (2012) |
+| F00–F99 | Mental and behavioural disorders | 1.031 | 1.017–1.046 | Gasparrini et al. (2012) |
+| I00–I99 | Cardiovascular diseases | 1.018 | 1.012–1.025 | Gasparrini et al. (2012) |
+| J00–J99 | Respiratory diseases | 1.041 | 1.035–1.048 | Gasparrini et al. (2012) |
+| X60–X84 | Intentional self-harm | 1.028 | 1.014–1.043 | Gasparrini et al. (2012) |
+
+**Notes.** CI, confidence interval. Slopes are regional pooled estimates, not London-specific slopes. The shared London threshold comes from the source’s common modelling framework; it was not independently estimated for each outcome. Cause-specific categories are included within all-cause mortality and should not be added to it. Coefficient confidence limits are propagated as exposure–response uncertainty intervals, not total model uncertainty. Supporting meta-analytic estimates and differences in population coverage and exposure specification are summarised in Supplementary Table 4.
+
+**Source:** Gasparrini A, Armstrong B, Kovats S, Wilkinson P. The effect of high temperatures on cause-specific mortality in England and Wales. *Occupational and Environmental Medicine* 69, 56–61 (2012). https://doi.org/10.1136/oem.2010.059782. Reference number should follow the final manuscript bibliography.
+
+Supporting meta-analysis estimates belong in the [separate supplementary comparison table](supporting_mortality_effect_sizes.html), not among the adopted main-table inputs. That supporting table retains two explicitly flagged extraction checks.
+
+## Historical search and pilot record — 12 November 2026
+
+The following sections retain the terminology used at the time of extraction. References to “production” denote the earlier annual framework; “candidate” denotes estimates subsequently adopted in the seasonal framework. For completed-run status, see [seasonal-health results](seasonal_health_rerun_comparison.md).
 
 ## Manuscript-only follow-up: complete five-endpoint candidate set
 
 Scope clarified by the author: only the five mortality endpoints used in this paper, not the full collection workbook. **Correction to the earlier search:** mental-disorder and self-harm responses were not unavailable; their matching rows in Gasparrini's Table 2 had not yet been extracted. Main Table 2 (p. 58) was visually checked and supplementary eTables 1–2 checked for ICD definitions and all-age estimates.
 
-| Manuscript endpoint | ICD-10 | Current production RR | Extracted candidate RR (95% CI), per °C |
+| Manuscript endpoint | ICD-10 | Earlier annual-model RR | Subsequently adopted seasonal RR (95% CI), per °C |
 |---|---|---:|---|
 | All-cause deaths | All causes | 1.020 | 1.021 (1.016–1.026) |
 | Cardiovascular deaths | I00–I99 | 1.0344 | 1.018 (1.012–1.025) |
