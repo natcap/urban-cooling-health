@@ -30,6 +30,8 @@ machine-readable derivative data.
 
 ## Supplementary and sensitivity figures
 
+- **Extended Data Figure 1** — [extended_data_figure_01_mortality_by_cause_20261118_v03.png](extended_data_figure_01_mortality_by_cause_20261118_v03.png) (selected seasonal larger text)
+- **Extended Data Figure 1 comparison version** — [extended_data_figure_01_mortality_by_cause_20261118_v02.png](extended_data_figure_01_mortality_by_cause_20261118_v02.png) (seasonal smaller text)
 - **Figure 6 comparison version** — [figure_06_green30_health_equity_seasonal_v02.png](figure_06_green30_health_equity_seasonal_v02.png) (previous five-indicator seasonal layout)
 - **Figure 7 comparison version** — [figure_07_green30_target30_equity_seasonal_v05.png](figure_07_green30_target30_equity_seasonal_v05.png) (previous four-panel seasonal layout)
 - **Supplementary Figure 15** — [supp_figure_15_indicator_shares_seasonal_v01.png](supp_figure_15_indicator_shares_seasonal_v01.png) (selected; former panel d)

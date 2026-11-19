@@ -1,4 +1,6 @@
 asset,role,status,source,generator
+extended_data_figure_01_mortality_by_cause_20261118_v03.png,Extended Data Figure 1,selected seasonal larger text,${PROJECT_ROOT}/figures/extended_data_figure1/extended_data_figure_01_mortality_by_cause_20261118_v03.png,code/health_assessment/plot_extended_data_health.R
+extended_data_figure_01_mortality_by_cause_20261118_v02.png,Extended Data Figure 1 comparison version,seasonal smaller text,${PROJECT_ROOT}/figures/extended_data_figure1/extended_data_figure_01_mortality_by_cause_20261118_v02.png,code/health_assessment/plot_extended_data_health.R
 figure_01_climate_context_v03.png,Main Figure 1,selected,${PROJECT_ROOT}/figures/climate_projections/figure1_main_v03_20261111.png,code/post_processing_layers/plot_figure1.R
 figure_02_baseline_temperature_tree_cover.png,Main Figure 2,selected,${PROJECT_ROOT}/figures/figure2/manuscript/figure2_baseline_temperature_tree_cover.png,code/equity-temp-tcc.Rmd
 figure_03_conditional_cooling_v03.png,Main Figure 3,selected,${URBAN_COOLING_DATA_ROOT}/2_postprocess_intermediate/UCM_official_runs/production/equal_area_2026-09/03_energy_work_capacity/summary/figure3_main_v03_20261111.png,code/post_processing_layers/plot_figure3_temperature.R

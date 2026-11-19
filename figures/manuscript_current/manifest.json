@@ -1,13 +1,31 @@
 {
   "schema_version": 1,
-  "generated_utc": "2026-11-16T02:06:00.025477+00:00",
+  "generated_utc": "2026-11-19T00:07:17.635212+00:00",
   "generator": "code/workflows/build_current_figure_package.py",
-  "generator_commit": "4df4d0ecf79690efd5c2312f6d43ae5ecdb99710",
+  "generator_commit": "2b406c619089910ea320919987cef85c1ef21e2b",
   "configuration": {
     "path": "code/workflows/configs/manuscript_figure_package_2026-11-13.csv",
-    "sha256": "7ccaa1d959b962062ca2fc22693e2cf9ed7e1d032970cfb05f0e94db19ebccfa"
+    "sha256": "54af934c832f94fe957d4ebf89a5b4d5e2dd5bd9c3847b2f8bed6d8efc035563"
   },
   "assets": [
+    {
+      "asset": "extended_data_figure_01_mortality_by_cause_20261118_v03.png",
+      "role": "Extended Data Figure 1",
+      "status": "selected seasonal larger text",
+      "source": "${PROJECT_ROOT}/figures/extended_data_figure1/extended_data_figure_01_mortality_by_cause_20261118_v03.png",
+      "generator": "code/health_assessment/plot_extended_data_health.R",
+      "source_sha256": "a1f28d073b837341104d5023fef7d88898c536ed8bfcb339b2e08a8c37eb5cd4",
+      "curated_sha256": "a1f28d073b837341104d5023fef7d88898c536ed8bfcb339b2e08a8c37eb5cd4"
+    },
+    {
+      "asset": "extended_data_figure_01_mortality_by_cause_20261118_v02.png",
+      "role": "Extended Data Figure 1 comparison version",
+      "status": "seasonal smaller text",
+      "source": "${PROJECT_ROOT}/figures/extended_data_figure1/extended_data_figure_01_mortality_by_cause_20261118_v02.png",
+      "generator": "code/health_assessment/plot_extended_data_health.R",
+      "source_sha256": "9d2e9e6e590544f2b32610f0bf6d39d4a29a33b30b10053d002cf163ffe680d4",
+      "curated_sha256": "9d2e9e6e590544f2b32610f0bf6d39d4a29a33b30b10053d002cf163ffe680d4"
+    },
     {
       "asset": "figure_01_climate_context_v03.png",
       "role": "Main Figure 1",

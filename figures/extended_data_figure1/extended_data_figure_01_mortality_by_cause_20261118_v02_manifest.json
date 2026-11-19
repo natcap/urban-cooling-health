@@ -1,0 +1,10 @@
+{
+  "source": "/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives/Wellcome Trust Project Data/2_postprocess_intermediate/UCM_official_runs/diagnostics/seasonal_health_all_scenarios_2026-11-12_v1/citywide_results.csv",
+  "source_md5": "aea84d02223c4ab70b0067295e4c5dd2",
+  "script": "/Users/yingjiel/Documents/projects/urban-cooling-health/code/health_assessment/plot_extended_data_health.R",
+  "script_md5": "0c4cab54f6c680f9478359798fa36246",
+  "selection": "worldclim_aligned / ssp370 / central and coefficient endpoints",
+  "units": "London-wide deaths per modelled June-August summer",
+  "rows": 45,
+  "uncertainty": "95% exposure-response coefficient endpoints; not total model uncertainty"
+}
