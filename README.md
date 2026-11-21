@@ -6,6 +6,10 @@ the distribution of heat-related health benefits across London. It is under
 active manuscript revision; the [project TODO](TODO.md) distinguishes completed
 analyses from remaining scientific and release decisions.
 
+The compact public package for reproducing the 13 selected manuscript figures
+is available at [`natcap/urban-heat-health`](https://github.com/natcap/urban-heat-health)
+([release `v0.1.0`](https://github.com/natcap/urban-heat-health/releases/tag/v0.1.0)).
+
 The analysis holds **2021 population and registered mortality fixed** while
 evaluating mid-century temperature scenarios. The primary manuscript setting
 uses assumed 25/5°C reference-temperature/UHI conditions for cooling contrasts;
@@ -20,7 +24,7 @@ baseline, AllBuilt, TreeRisk, TreeOpp, Green10/20/30 and Target10/20/30.
 ```text
 urban-cooling-health/
 ├── README.md                 Project overview and navigation
-├── REPRODUCIBILITY.md        Current Figure 7 procedure
+├── REPRODUCIBILITY.md        Earlier annual-health Figure 7 procedure
 ├── TODO.md                   Open scientific and release gates
 ├── docs/
 │   ├── README.md             Documentation index
@@ -44,15 +48,17 @@ live in the external project store. Neither is included in a Git push.
 
 | Input | What it contributes | Detailed documentation |
 |---|---|---|
-| Land cover and tree canopy | UKCEH LCM2023 land cover plus the project's 2024 canopy overlay define the baseline and planting eligibility. Codes 1–21 are land-cover classes; 100 is the project canopy class. | [Complete code–name table and scenario roles](code/lc_scenarios/README.md#complete-land-cover-code-list) |
-| Climate and weather | CHELSA July 2021 provides the recent historical reference; WorldClim projections and MIDAS station weather support reconstructed daily summer exposures. | [Temperature reconstruction and assumptions](docs/manuscript/temperature_reconstruction_comparison.md) |
-| Population and mortality | Fixed WorldPop 2021 population and ONS/Nomis borough deaths support population-based mortality allocation; seasonal estimates additionally use cause-specific monthly mortality fractions. | [Population and annual mortality selection](code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md) and [seasonal-health analysis](docs/manuscript/seasonal_health_rerun_comparison.md) |
-| Neighbourhood vulnerability | The four-dimension Social Vulnerability Index (SVI) and its component indicators support targeting and neighbourhood equity comparisons. | [SVI construction and comparison](docs/manuscript/SVI_SPATIAL_RESULTS.md) |
-| Buildings and electricity demand | Colouring Britain building footprints, demand-response assumptions and tariffs support conditional electricity-saving estimates. | [Energy inputs and allocation](docs/manuscript/energy_capacity_candidate_results.md) |
+| Land cover and tree canopy | [UKCEH LCM2023](https://doi.org/10.5285/7727ce7d-531e-4d77-b756-5cc59ff016bd) plus the [GLA Tree Canopy Cover 2024 release](https://data.london.gov.uk/dataset/tree-canopy-cover-2024-2w4m3) define the baseline and planting eligibility. Codes 1–21 are land-cover classes; 100 is the project canopy class. | [Complete code–name table and scenario roles](code/lc_scenarios/README.md#complete-land-cover-code-list) |
+| Climate and weather | [CHELSA V2.1](https://www.chelsa-climate.org/datasets) July 2021 provides the recent historical reference; [WorldClim CMIP6](https://www.worldclim.org/data/cmip6/cmip6climate.html) projections and the exact [MIDAS Open v202407](https://catalogue.ceda.ac.uk/uuid/c50776e4903942cdb329589da70b83fe/) station release support reconstructed daily summer exposures. | [Temperature reconstruction and assumptions](docs/manuscript/temperature_reconstruction_comparison.md) |
+| Population and mortality | Fixed [WorldPop UK 2021](https://doi.org/10.5258/SOTON/WP00839) population and [ONS/Nomis mortality registrations](https://www.nomisweb.co.uk/datasets/mortsa) support population-based mortality allocation. Seasonal estimates additionally use [ONS cause-specific monthly occurrence counts](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/adhocs/2155deathsbymonthofoccurrenceagegroupcauseandsexengland2014to2023). | [Population and annual mortality selection](code/health_assessment/DATA_SELECTION_AND_METHOD_DECISIONS.md) and [seasonal-health analysis](docs/manuscript/seasonal_health_rerun_comparison.md) |
+| Neighbourhood vulnerability | The four-dimension SVI and its component indicators are derived from the [GLA/Bloomberg Associates Climate Risk Mapping](https://data.london.gov.uk/dataset/climate-risk-mapping-2oxg6) dataset and support targeting and neighbourhood equity comparisons. | [SVI construction and comparison](docs/manuscript/SVI_SPATIAL_RESULTS.md) |
+| Buildings and electricity demand | [Colouring Britain](https://colouringbritain.org/data-extracts.html) building data, [DESNZ regional electricity statistics](https://www.gov.uk/government/statistics/regional-and-local-authority-electricity-consumption-statistics) and the [Electric Insights temperature-demand analysis](https://reports.electricinsights.co.uk/?noamp=mobile&p=462) support conditional electricity-saving estimates. | [Energy inputs and allocation](docs/manuscript/energy_capacity_candidate_results.md) |
 
 For storage locations and raw-versus-derived data handling, see the
 [data directory guide](data/README.md). Use the linked stage documentation and
 run manifests for exact input versions; this overview is not a download inventory.
+The public figure package provides a consolidated, reader-facing
+[source and attribution guide](https://github.com/natcap/urban-heat-health/blob/main/docs/data.md).
 
 ## Where to start
 
@@ -84,7 +90,8 @@ numbers into Word. UCM temperature and health-model outputs are unchanged.
 
 | You want to… | Open this guide | External project data? |
 |---|---|---:|
-| Reproduce the current Figure 7 from tracked derived inputs | [Figure 7 reproduction](REPRODUCIBILITY.md) | No |
+| Reproduce the earlier annual-health Figure 7 from tracked inputs | [Historical Figure 7 reproduction](REPRODUCIBILITY.md) | No |
+| Reproduce the selected manuscript figures from the public package | [`natcap/urban-heat-health`](https://github.com/natcap/urban-heat-health) and [release record](docs/publication_release.md) | No |
 | Rebuild scenarios, model results and figures in order | [Full workflow map](docs/WORKFLOW.md) | Yes |
 | Find the current production scripts | [Code/figure index](code/README.md) | Depends on stage |
 | Find the latest manuscript figures and copy-ready text | [Current figure folder](figures/manuscript_current/) and [manuscript index](docs/manuscript/index.md) | No |
@@ -93,8 +100,9 @@ numbers into Word. UCM temperature and health-model outputs are unchanged.
 | Verify selected figures or prepare a full rebuild | [Reproducibility guide](docs/reproducibility.md) | Figure verification: yes; full rebuild: yes |
 | Check whether data or figures can be shared | [Licence and redistribution review](DATA_LICENCE_AND_REDISTRIBUTION.md) | No |
 
-The repository tracks the small derived inputs required for the current
-Figure 7 run. A full rebuild requires authorized access to the separately
+The repository tracks small derived inputs for the earlier annual-health
+Figure 7 run. They are not substitutes for the selected seasonal-health outputs.
+A full rebuild requires authorized access to the separately
 stored, versioned geospatial inputs; raw UKCEH land cover, scenario and UCM
 rasters are not included here. The [full workflow map](docs/WORKFLOW.md)
 identifies each stage's authoritative instructions and validation gate.

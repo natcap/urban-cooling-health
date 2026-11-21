@@ -1,5 +1,12 @@
 # Small derived inputs for Figure 7
 
+**Scope clarification (19 November 2026):** the annual-health and Monte Carlo
+tables listed below support the earlier Figure 7 workflow. They are not the
+selected seasonal-health manuscript results. See
+[public-release record](../../docs/publication_release.md) for the separate final
+summary-to-figure package. Shared population and
+vulnerability inputs remain applicable to the seasonal figures.
+
 The project deliberately uses 2021 population and 2021 baseline mortality for
 all land-cover and 2050 temperature scenarios. These files provide the small
 denominators and uncertainty outputs needed to reproduce Figure 7; large source
@@ -12,9 +19,11 @@ rasters remain on the shared drive.
   [10.5258/SOTON/WP00839](https://doi.org/10.5258/SOTON/WP00839), licensed
   CC BY 4.0. The values here are modified by count-preserving reprojection and
   LSOA aggregation.
-- **ONS/Nomis mortality:** Source: Office for National Statistics, licensed
-  under the Open Government Licence. Values here are transformed through
-  population-weighted spatial allocation and health-impact modeling.
+- **ONS/Nomis mortality:** [Mortality statistics - underlying cause, sex and
+  age](https://www.nomisweb.co.uk/datasets/mortsa), Office for National
+  Statistics, licensed under the Open Government Licence. The project uses
+  deaths registered in calendar year 2021; values here are transformed through
+  population-weighted spatial allocation and health-impact modelling.
 - **GLA vulnerability variables:** Greater London Authority and Bloomberg
   Associates, [Climate Risk Mapping
   2024](https://data.london.gov.uk/dataset/climate-risk-mapping-2oxg6),
